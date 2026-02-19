@@ -1,0 +1,360 @@
+// База винрейтов матчапов: архетип -> архетип противника -> процент побед
+export const matchupDB: Record<string, Record<string, number>> = {
+  "Control Warrior": {
+    "Face Hunter": 35,
+    "Midrange Hunter": 45,
+    "Miracle Rogue": 55,
+    "Aggro Rogue": 40,
+    "Quest Mage": 60,
+    "Tempo Mage": 50,
+    "Control Priest": 45,
+    "Aggro Paladin": 55,
+    "Control Warlock": 50,
+    "Zoo Warlock": 60,
+    "Aggro Shaman": 40,
+    "Control Shaman": 55,
+    "Token Druid": 50,
+    "Ramp Druid": 45,
+    "Aggro Demon Hunter": 35,
+    "Control Warrior": 50,
+  },
+  "Face Hunter": {
+    "Control Warrior": 65,
+    "Midrange Hunter": 50,
+    "Miracle Rogue": 40,
+    "Aggro Rogue": 50,
+    "Quest Mage": 70,
+    "Tempo Mage": 55,
+    "Control Priest": 30,
+    "Aggro Paladin": 45,
+    "Control Warlock": 60,
+    "Zoo Warlock": 50,
+    "Aggro Shaman": 50,
+    "Control Shaman": 65,
+    "Token Druid": 55,
+    "Ramp Druid": 60,
+    "Aggro Demon Hunter": 45,
+    "Face Hunter": 50,
+  },
+  "Miracle Rogue": {
+    "Control Warrior": 45,
+    "Face Hunter": 60,
+    "Midrange Hunter": 55,
+    "Aggro Rogue": 50,
+    "Quest Mage": 45,
+    "Tempo Mage": 55,
+    "Control Priest": 50,
+    "Aggro Paladin": 60,
+    "Control Warlock": 55,
+    "Zoo Warlock": 45,
+    "Aggro Shaman": 55,
+    "Control Shaman": 50,
+    "Token Druid": 55,
+    "Ramp Druid": 50,
+    "Aggro Demon Hunter": 50,
+    "Miracle Rogue": 50,
+  },
+  "Aggro Rogue": {
+    "Control Warrior": 60,
+    "Face Hunter": 50,
+    "Midrange Hunter": 55,
+    "Miracle Rogue": 50,
+    "Quest Mage": 65,
+    "Tempo Mage": 50,
+    "Control Priest": 35,
+    "Aggro Paladin": 50,
+    "Control Warlock": 55,
+    "Zoo Warlock": 50,
+    "Aggro Shaman": 50,
+    "Control Shaman": 60,
+    "Token Druid": 55,
+    "Ramp Druid": 55,
+    "Aggro Demon Hunter": 50,
+    "Aggro Rogue": 50,
+  },
+  "Quest Mage": {
+    "Control Warrior": 40,
+    "Face Hunter": 30,
+    "Midrange Hunter": 35,
+    "Miracle Rogue": 55,
+    "Aggro Rogue": 35,
+    "Tempo Mage": 50,
+    "Control Priest": 60,
+    "Aggro Paladin": 30,
+    "Control Warlock": 55,
+    "Zoo Warlock": 30,
+    "Aggro Shaman": 30,
+    "Control Shaman": 55,
+    "Token Druid": 35,
+    "Ramp Druid": 50,
+    "Aggro Demon Hunter": 25,
+    "Quest Mage": 50,
+  },
+  "Tempo Mage": {
+    "Control Warrior": 50,
+    "Face Hunter": 45,
+    "Midrange Hunter": 50,
+    "Miracle Rogue": 45,
+    "Aggro Rogue": 50,
+    "Quest Mage": 50,
+    "Control Priest": 45,
+    "Aggro Paladin": 50,
+    "Control Warlock": 50,
+    "Zoo Warlock": 55,
+    "Aggro Shaman": 50,
+    "Control Shaman": 50,
+    "Token Druid": 50,
+    "Ramp Druid": 50,
+    "Aggro Demon Hunter": 45,
+    "Tempo Mage": 50,
+  },
+  "Control Priest": {
+    "Control Warrior": 55,
+    "Face Hunter": 70,
+    "Midrange Hunter": 60,
+    "Miracle Rogue": 50,
+    "Aggro Rogue": 65,
+    "Quest Mage": 40,
+    "Tempo Mage": 55,
+    "Aggro Paladin": 65,
+    "Control Warlock": 45,
+    "Zoo Warlock": 65,
+    "Aggro Shaman": 60,
+    "Control Shaman": 50,
+    "Token Druid": 55,
+    "Ramp Druid": 45,
+    "Aggro Demon Hunter": 60,
+    "Control Priest": 50,
+  },
+  "Aggro Paladin": {
+    "Control Warrior": 45,
+    "Face Hunter": 55,
+    "Midrange Hunter": 50,
+    "Miracle Rogue": 40,
+    "Aggro Rogue": 50,
+    "Quest Mage": 70,
+    "Tempo Mage": 50,
+    "Control Priest": 35,
+    "Control Warlock": 55,
+    "Zoo Warlock": 50,
+    "Aggro Shaman": 50,
+    "Control Shaman": 60,
+    "Token Druid": 55,
+    "Ramp Druid": 55,
+    "Aggro Demon Hunter": 50,
+    "Aggro Paladin": 50,
+  },
+  "Control Warlock": {
+    "Control Warrior": 50,
+    "Face Hunter": 40,
+    "Midrange Hunter": 45,
+    "Miracle Rogue": 45,
+    "Aggro Rogue": 45,
+    "Quest Mage": 45,
+    "Tempo Mage": 50,
+    "Control Priest": 55,
+    "Aggro Paladin": 45,
+    "Zoo Warlock": 60,
+    "Aggro Shaman": 45,
+    "Control Shaman": 50,
+    "Token Druid": 45,
+    "Ramp Druid": 50,
+    "Aggro Demon Hunter": 40,
+    "Control Warlock": 50,
+  },
+  "Zoo Warlock": {
+    "Control Warrior": 40,
+    "Face Hunter": 50,
+    "Midrange Hunter": 50,
+    "Miracle Rogue": 55,
+    "Aggro Rogue": 50,
+    "Quest Mage": 70,
+    "Tempo Mage": 45,
+    "Control Priest": 35,
+    "Aggro Paladin": 50,
+    "Control Warlock": 40,
+    "Aggro Shaman": 50,
+    "Control Shaman": 55,
+    "Token Druid": 50,
+    "Ramp Druid": 55,
+    "Aggro Demon Hunter": 50,
+    "Zoo Warlock": 50,
+  },
+  "Aggro Shaman": {
+    "Control Warrior": 60,
+    "Face Hunter": 50,
+    "Midrange Hunter": 55,
+    "Miracle Rogue": 45,
+    "Aggro Rogue": 50,
+    "Quest Mage": 70,
+    "Tempo Mage": 50,
+    "Control Priest": 40,
+    "Aggro Paladin": 50,
+    "Control Warlock": 55,
+    "Zoo Warlock": 50,
+    "Control Shaman": 55,
+    "Token Druid": 55,
+    "Ramp Druid": 55,
+    "Aggro Demon Hunter": 50,
+    "Aggro Shaman": 50,
+  },
+  "Control Shaman": {
+    "Control Warrior": 45,
+    "Face Hunter": 35,
+    "Midrange Hunter": 45,
+    "Miracle Rogue": 50,
+    "Aggro Rogue": 40,
+    "Quest Mage": 45,
+    "Tempo Mage": 50,
+    "Control Priest": 50,
+    "Aggro Paladin": 40,
+    "Control Warlock": 50,
+    "Zoo Warlock": 45,
+    "Aggro Shaman": 45,
+    "Token Druid": 45,
+    "Ramp Druid": 50,
+    "Aggro Demon Hunter": 40,
+    "Control Shaman": 50,
+  },
+  "Token Druid": {
+    "Control Warrior": 50,
+    "Face Hunter": 45,
+    "Midrange Hunter": 50,
+    "Miracle Rogue": 45,
+    "Aggro Rogue": 45,
+    "Quest Mage": 65,
+    "Tempo Mage": 50,
+    "Control Priest": 45,
+    "Aggro Paladin": 45,
+    "Control Warlock": 55,
+    "Zoo Warlock": 50,
+    "Aggro Shaman": 45,
+    "Control Shaman": 55,
+    "Ramp Druid": 50,
+    "Aggro Demon Hunter": 45,
+    "Token Druid": 50,
+  },
+  "Ramp Druid": {
+    "Control Warrior": 55,
+    "Face Hunter": 40,
+    "Midrange Hunter": 45,
+    "Miracle Rogue": 50,
+    "Aggro Rogue": 45,
+    "Quest Mage": 50,
+    "Tempo Mage": 50,
+    "Control Priest": 55,
+    "Aggro Paladin": 45,
+    "Control Warlock": 50,
+    "Zoo Warlock": 45,
+    "Aggro Shaman": 45,
+    "Control Shaman": 50,
+    "Token Druid": 50,
+    "Aggro Demon Hunter": 40,
+    "Ramp Druid": 50,
+  },
+  "Aggro Demon Hunter": {
+    "Control Warrior": 65,
+    "Face Hunter": 55,
+    "Midrange Hunter": 55,
+    "Miracle Rogue": 50,
+    "Aggro Rogue": 50,
+    "Quest Mage": 75,
+    "Tempo Mage": 55,
+    "Control Priest": 40,
+    "Aggro Paladin": 50,
+    "Control Warlock": 60,
+    "Zoo Warlock": 50,
+    "Aggro Shaman": 50,
+    "Control Shaman": 60,
+    "Token Druid": 55,
+    "Ramp Druid": 60,
+    "Aggro Demon Hunter": 50,
+  },
+  "Midrange Hunter": {
+    "Control Warrior": 55,
+    "Face Hunter": 50,
+    "Miracle Rogue": 45,
+    "Aggro Rogue": 45,
+    "Quest Mage": 65,
+    "Tempo Mage": 50,
+    "Control Priest": 40,
+    "Aggro Paladin": 50,
+    "Control Warlock": 55,
+    "Zoo Warlock": 50,
+    "Aggro Shaman": 45,
+    "Control Shaman": 55,
+    "Token Druid": 50,
+    "Ramp Druid": 55,
+    "Aggro Demon Hunter": 45,
+    "Midrange Hunter": 50,
+  },
+};
+
+// Все доступные архетипы
+export const allArchetypes = Object.keys(matchupDB);
+
+// Получить винрейт матчапа
+export function getWinrate(myArchetype: string, opponentArchetype: string): number {
+  if (matchupDB[myArchetype]?.[opponentArchetype] !== undefined) {
+    return matchupDB[myArchetype][opponentArchetype];
+  }
+  // Дефолтные винрейты по типу
+  const myType = getArchetypeType(myArchetype);
+  const oppType = getArchetypeType(opponentArchetype);
+  return getDefaultWinrate(myType, oppType);
+}
+
+type ArchetypeType = "aggro" | "midrange" | "control" | "combo";
+
+function getArchetypeType(archetype: string): ArchetypeType {
+  const lower = archetype.toLowerCase();
+  if (lower.includes("face") || lower.includes("aggro") || lower.includes("zoo")) return "aggro";
+  if (lower.includes("midrange") || lower.includes("tempo") || lower.includes("token")) return "midrange";
+  if (lower.includes("quest") || lower.includes("miracle") || lower.includes("combo")) return "combo";
+  return "control";
+}
+
+function getDefaultWinrate(my: ArchetypeType, opp: ArchetypeType): number {
+  const defaults: Record<string, number> = {
+    "aggro-control": 65,
+    "control-aggro": 35,
+    "aggro-combo": 65,
+    "combo-aggro": 35,
+    "control-combo": 55,
+    "combo-control": 45,
+    "midrange-aggro": 50,
+    "aggro-midrange": 50,
+    "midrange-control": 50,
+    "control-midrange": 50,
+    "midrange-combo": 55,
+    "combo-midrange": 45,
+  };
+  return defaults[`${my}-${opp}`] ?? 50;
+}
+
+// Рассчитать стратегию бана
+export interface BanOption {
+  bannedIndex: number;
+  bannedArchetype: string;
+  avgWinrate: number;
+  winrates: number[];
+}
+
+export function calculateBanStrategy(
+  myArchetype: string,
+  opponentArchetypes: string[]
+): BanOption[] {
+  const options: BanOption[] = opponentArchetypes.map((_, banIdx) => {
+    const remaining = opponentArchetypes.filter((_, i) => i !== banIdx);
+    const winrates = remaining.map((opp) => getWinrate(myArchetype, opp));
+    const avg = winrates.reduce((sum, w) => sum + w, 0) / winrates.length;
+    return {
+      bannedIndex: banIdx,
+      bannedArchetype: opponentArchetypes[banIdx],
+      avgWinrate: Math.round(avg * 10) / 10,
+      winrates,
+    };
+  });
+  // Сортировка: лучший вариант бана первый (наивысший средний винрейт после бана)
+  return options.sort((a, b) => b.avgWinrate - a.avgWinrate);
+}
