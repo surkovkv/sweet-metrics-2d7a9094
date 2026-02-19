@@ -14,6 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
+        display: ['Cinzel', 'serif'],
         body: ['Inter', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
@@ -60,6 +61,11 @@ export default {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
+        },
+        winrate: {
+          good: "hsl(var(--winrate-good))",
+          neutral: "hsl(var(--winrate-neutral))",
+          bad: "hsl(var(--winrate-bad))",
         },
       },
       borderRadius: {
