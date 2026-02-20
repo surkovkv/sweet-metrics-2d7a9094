@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
-import { Eye, Swords, Crown } from "lucide-react";
+import { Eye, Swords } from "lucide-react";
+import UserMenu from "@/components/UserMenu";
 
 const ManaLensNavbar = () => {
   const location = useLocation();
@@ -20,10 +21,10 @@ const ManaLensNavbar = () => {
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Link to="/" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <Eye className="h-4 w-4 text-primary-foreground" />
+            <span className="font-display text-xs font-bold text-primary-foreground">TH</span>
           </div>
           <span className="font-display text-lg font-bold text-foreground">
-            Mana<span className="text-primary">Lens</span>
+            Tourney<span className="text-primary">Helper</span>
           </span>
         </Link>
 
@@ -45,10 +46,7 @@ const ManaLensNavbar = () => {
               </Link>
             );
           })}
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors">
-            <Crown className="h-4 w-4" />
-            <span className="hidden sm:inline">Pro</span>
-          </button>
+          <UserMenu />
         </div>
       </div>
     </motion.nav>
