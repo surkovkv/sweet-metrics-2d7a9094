@@ -22,7 +22,7 @@ const Landing = () => {
           </div>
           <h1 className="font-display text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
             Побеждай в турнирах<br />
-            с <span className="text-primary">ManaLens</span>
+            с <span className="text-primary">TourneyHelper</span>
           </h1>
           <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-10">
             Анализируй колоды, рассчитывай оптимальные баны и получай преимущество над соперниками
@@ -84,7 +84,7 @@ const Landing = () => {
         {/* Footer */}
         <footer className="text-center border-t border-border pt-8">
           <p className="text-sm text-muted-foreground">
-            © 2024 ManaLens. Все права защищены.
+            © 2024 TourneyHelper. Все права защищены.
           </p>
         </footer>
       </main>
