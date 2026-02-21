@@ -141,6 +141,9 @@ export const matchupDB: Record<string, Record<string, number>> = {
   },
 };
 
+// Примерное общее количество игр в выборке Legend за неделю
+const ESTIMATED_TOTAL_GAMES = 200000;
+
 // Все доступные архетипы (отсортированы по популярности)
 export const allArchetypes = archetypeList.map((a) => a.name);
 
@@ -152,6 +155,16 @@ export function getArchetypeInfo(name: string): ArchetypeInfo | undefined {
 // Получить винрейт матчапа (null если нет данных)
 export function getWinrate(myArchetype: string, opponentArchetype: string): number | null {
   return matchupDB[myArchetype]?.[opponentArchetype] ?? null;
+}
+
+// Оценить количество игр в матчапе на основе популярности
+export function getEstimatedGames(arch1: string, arch2: string): number | null {
+  if (getWinrate(arch1, arch2) === null) return null;
+  const info1 = getArchetypeInfo(arch1);
+  const info2 = getArchetypeInfo(arch2);
+  if (!info1 || !info2) return null;
+  const est = Math.round(ESTIMATED_TOTAL_GAMES * (info1.popularity / 100) * (info2.popularity / 100));
+  return Math.max(est, 500);
 }
 
 // Рассчитать стратегию бана
@@ -171,6 +184,37 @@ export function calculateBanStrategy(
     const winrates = remaining.map((opp) => getWinrate(myArchetype, opp));
     const known = winrates.filter((w): w is number => w !== null);
     const avg = known.length > 0 ? known.reduce((sum, w) => sum + w, 0) / known.length : 50;
+    return {
+      bannedIndex: banIdx,
+      bannedArchetype: opponentArchetypes[banIdx],
+      avgWinrate: Math.round(avg * 10) / 10,
+      winrates,
+    };
+  });
+  return options.sort((a, b) => b.avgWinrate - a.avgWinrate);
+}
+
+// Рассчитать стратегию бана для нескольких своих колод
+export function calculateMultiBanStrategy(
+  myArchetypes: string[],
+  opponentArchetypes: string[]
+): BanOption[] {
+  const options: BanOption[] = opponentArchetypes.map((_, banIdx) => {
+    const remaining = opponentArchetypes.filter((_, i) => i !== banIdx);
+    const allWinrates: number[] = [];
+    const winrates: (number | null)[] = [];
+
+    for (const opp of remaining) {
+      const wrs = myArchetypes.map((my) => getWinrate(my, opp)).filter((w): w is number => w !== null);
+      const best = wrs.length > 0 ? Math.max(...wrs) : null;
+      winrates.push(best);
+      if (best !== null) allWinrates.push(best);
+    }
+
+    const avg = allWinrates.length > 0
+      ? allWinrates.reduce((sum, w) => sum + w, 0) / allWinrates.length
+      : 50;
+
     return {
       bannedIndex: banIdx,
       bannedArchetype: opponentArchetypes[banIdx],
