@@ -42,7 +42,7 @@ const UserMenu = () => {
         <DropdownMenuItem className="cursor-pointer gap-2" asChild>
           <Link to="/profile">
             <User className="h-4 w-4" />
-            Профиль игрока
+            Личный кабинет
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer gap-2" asChild>

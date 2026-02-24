@@ -11,6 +11,9 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import Upgrade from "./pages/Upgrade";
+import News from "./pages/News";
+import NewsPost from "./pages/NewsPost";
+import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +32,9 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/upgrade" element={<Upgrade />} />
+            <Route path="/news" element={<News />} />
+            <Route path="/news/:slug" element={<NewsPost />} />
+            <Route path="/contact" element={<Contact />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

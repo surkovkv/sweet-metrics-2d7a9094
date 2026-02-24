@@ -2,7 +2,7 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
-type Profile = { nickname: string } | null;
+type Profile = { nickname: string; is_pro: boolean } | null;
 
 type AuthContext = {
   user: User | null;
@@ -17,8 +17,17 @@ const AuthCtx = createContext<AuthContext>({
   session: null,
   profile: null,
   loading: true,
-  signOut: async () => {},
+  signOut: async () => { },
 });
+
+const fetchProfile = async (userId: string) => {
+  const { data } = await supabase
+    .from("profiles")
+    .select("nickname, is_pro")
+    .eq("user_id", userId)
+    .single();
+  return data;
+};
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -31,13 +40,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        // Fetch profile with setTimeout to avoid Supabase deadlock
         setTimeout(async () => {
-          const { data } = await supabase
-            .from("profiles")
-            .select("nickname")
-            .eq("user_id", session.user.id)
-            .single();
+          const data = await fetchProfile(session.user.id);
           setProfile(data);
         }, 0);
       } else {
@@ -50,12 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        supabase
-          .from("profiles")
-          .select("nickname")
-          .eq("user_id", session.user.id)
-          .single()
-          .then(({ data }) => setProfile(data));
+        fetchProfile(session.user.id).then(setProfile);
       }
       setLoading(false);
     });

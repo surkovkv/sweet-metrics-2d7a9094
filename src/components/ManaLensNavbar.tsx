@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
-import { Eye, Swords } from "lucide-react";
+import { Eye, Swords, Newspaper, Mail } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 
 const ManaLensNavbar = () => {
@@ -9,6 +9,8 @@ const ManaLensNavbar = () => {
   const links = [
     { to: "/analyzer", label: "Анализатор", icon: Eye },
     { to: "/tournament", label: "Турнирный стратег", icon: Swords },
+    { to: "/news", label: "Новости", icon: Newspaper },
+    { to: "/contact", label: "Контакты", icon: Mail },
   ];
 
   return (
@@ -35,11 +37,10 @@ const ManaLensNavbar = () => {
               <Link
                 key={to}
                 to={to}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm transition-colors ${
-                  isActive
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm transition-colors ${isActive
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  }`}
               >
                 <Icon className="h-4 w-4" />
                 <span className="hidden sm:inline">{label}</span>
