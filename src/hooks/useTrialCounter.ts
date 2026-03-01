@@ -24,5 +24,12 @@ export function useTrialCounter() {
     } catch {}
   }, [usedTrials]);
 
-  return { remaining, isExhausted, consumeTrial, maxTrials: MAX_FREE_TRIALS };
+  const resetTrials = useCallback(() => {
+    setUsedTrials(0);
+    try {
+      localStorage.setItem(STORAGE_KEY, "0");
+    } catch {}
+  }, []);
+
+  return { remaining, isExhausted, consumeTrial, resetTrials, maxTrials: MAX_FREE_TRIALS };
 }
