@@ -49,7 +49,7 @@ const Landing = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16"
         >
           {[
             {
@@ -58,14 +58,9 @@ const Landing = () => {
               desc: "Мана-кривая, типы карт, стоимость в пыли — всё за секунду",
             },
             {
-              icon: Swords,
-              title: "Оптимальный бан",
-              desc: "Матрица винрейтов и рекомендация — какую колоду забанить",
-            },
-            {
               icon: Trophy,
               title: "Турнирный режим",
-              desc: "3 или 4 колоды, детальная стратегия с расчётом последствий",
+              desc: "3 или 4 колоды, матрица винрейтов, рекомендация по бану и детальная стратегия с расчётом последствий",
             },
           ].map((feature, i) => (
             <div
