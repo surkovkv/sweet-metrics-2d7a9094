@@ -26,8 +26,7 @@ import { useTrialCounter } from "@/hooks/useTrialCounter";
 type DeckMode = 3 | 4;
 
 // Временно: PRO-статус. Заменить на реальную проверку позже.
-const IS_PRO = false;
-
+// Для тестирования используется админ-панель (Shift+клик на логотип)
 const TournamentStrategist = () => {
   const [mode, setMode] = useState<DeckMode>(3);
   const [myArchetypes, setMyArchetypes] = useState<string[]>(["", "", ""]);
@@ -35,8 +34,15 @@ const TournamentStrategist = () => {
   const [showResult, setShowResult] = useState(false);
   const [manualBanIndex, setManualBanIndex] = useState<number | null>(null);
   const [showOpponentBan, setShowOpponentBan] = useState(false);
+  const [debugPro, setDebugPro] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
 
-  const { remaining, isExhausted, consumeTrial, maxTrials } = useTrialCounter();
+  const { remaining, isExhausted, consumeTrial, maxTrials, resetTrials } = useTrialCounter();
+
+  // PRO = debug toggle или реальный профиль (TODO)
+  const IS_PRO = debugPro;
+  // Полный доступ к контенту: PRO или есть оставшиеся попытки
+  const hasPremiumAccess = IS_PRO || !isExhausted;
 
   // --- Mode toggle ---
   const handleModeChange = (newMode: DeckMode) => {
@@ -51,13 +57,12 @@ const TournamentStrategist = () => {
   };
 
   // --- Duplicate check ---
+  // Проверка дубликатов только ВНУТРИ одной стороны (противник МОЖЕТ взять ту же колоду)
   const hasDuplicates = useMemo(() => {
-    const mySet = new Set(myArchetypes.filter(Boolean));
-    const oppSet = new Set(oppArchetypes.filter(Boolean));
-    for (const a of mySet) if (oppSet.has(a)) return true;
-    // Also check duplicates within same side
-    if (myArchetypes.filter(Boolean).length !== mySet.size) return true;
-    if (oppArchetypes.filter(Boolean).length !== oppSet.size) return true;
+    const myFiltered = myArchetypes.filter(Boolean);
+    const oppFiltered = oppArchetypes.filter(Boolean);
+    if (myFiltered.length !== new Set(myFiltered).size) return true;
+    if (oppFiltered.length !== new Set(oppFiltered).size) return true;
     return false;
   }, [myArchetypes, oppArchetypes]);
 
@@ -83,7 +88,7 @@ const TournamentStrategist = () => {
   const handleCalculate = () => {
     if (!allFilled) return;
     if (hasDuplicates) {
-      toast.error("Ваша колода и колода противника не могут быть одинаковыми");
+      toast.error("Нельзя выбрать одну и ту же колоду дважды на одной стороне");
       return;
     }
 
@@ -153,7 +158,7 @@ const TournamentStrategist = () => {
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 className="mb-4 p-3 rounded-lg bg-destructive/15 border border-destructive/30 text-destructive text-sm text-center font-medium">
-                ⚠️ Ваша колода и колода противника не могут быть одинаковыми
+                ⚠️ Нельзя выбрать одну и ту же колоду дважды на одной стороне
               </motion.div>
             )}
           </AnimatePresence>
@@ -262,12 +267,12 @@ const TournamentStrategist = () => {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }} className="space-y-6">
 
-                {/* Matchup Matrix — blurred for FREE */}
+                {/* Matchup Matrix — blurred for exhausted FREE */}
                 <div className="relative">
                   <MatchupMatrix myArchetypes={myArchetypes} oppArchetypes={oppArchetypes}
                     bannedIndex={effectiveBanIdx} />
-                  {!IS_PRO && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl backdrop-blur-md bg-background/70">
+                  {!hasPremiumAccess && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl backdrop-blur-xl bg-background/80">
                       <div className="text-center p-6">
                         <Crown className="h-8 w-8 text-primary mx-auto mb-3" />
                         <p className="text-foreground font-semibold mb-1">⭐ Детальная статистика матчапов в PRO</p>
@@ -277,14 +282,14 @@ const TournamentStrategist = () => {
                   )}
                 </div>
 
-                {/* Ban Recommendation */}
-                {IS_PRO ? (
+                {/* Ban Recommendation — видно при hasPremiumAccess, ручной бан только PRO */}
+                {hasPremiumAccess ? (
                   <Card className="bg-card border-border border-l-4 border-l-destructive">
                     <CardHeader>
                       <CardTitle className="font-display text-lg flex items-center gap-2">
                         <ShieldAlert className="h-5 w-5 text-destructive" />
                         Рекомендация по бану
-                        {manualBanIndex !== null && (
+                        {manualBanIndex !== null && IS_PRO && (
                           <button onClick={() => setManualBanIndex(null)}
                             className="ml-auto text-xs text-muted-foreground hover:text-foreground underline">
                             Сбросить ручной бан
@@ -299,6 +304,11 @@ const TournamentStrategist = () => {
                           onManualBan={IS_PRO ? () => setManualBanIndex(option.bannedIndex) : undefined}
                         />
                       ))}
+                      {!IS_PRO && (
+                        <p className="text-xs text-muted-foreground text-center mt-2">
+                          🔒 Ручной выбор бана доступен только в PRO
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
                 ) : (
@@ -315,7 +325,7 @@ const TournamentStrategist = () => {
                   </Card>
                 )}
 
-                {/* Opponent Ban Section */}
+                {/* Opponent Ban Section — PRO only */}
                 <div className="relative">
                   {IS_PRO ? (
                     <Card className="bg-card border-border">
@@ -365,7 +375,7 @@ const TournamentStrategist = () => {
                   ) : (
                     <Card className="bg-card border-border overflow-hidden">
                       <div className="relative p-6">
-                        <div className="absolute inset-0 backdrop-blur-md bg-background/70 z-10 flex items-center justify-center">
+                        <div className="absolute inset-0 backdrop-blur-xl bg-background/80 z-10 flex items-center justify-center">
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <div className="text-center cursor-help">
@@ -379,7 +389,6 @@ const TournamentStrategist = () => {
                             </TooltipContent>
                           </Tooltip>
                         </div>
-                        {/* Blurred content placeholder */}
                         <div className="space-y-3 opacity-30 select-none" aria-hidden>
                           <p className="font-display text-lg flex items-center gap-2">
                             <ArrowLeftRight className="h-5 w-5" /> Бан противника
@@ -394,6 +403,17 @@ const TournamentStrategist = () => {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Admin Panel */}
+          <AdminPanel
+            show={showAdminPanel}
+            onToggle={() => setShowAdminPanel(!showAdminPanel)}
+            isPro={IS_PRO}
+            onTogglePro={() => setDebugPro(!debugPro)}
+            remaining={remaining}
+            maxTrials={maxTrials}
+            onResetTrials={resetTrials}
+          />
         </main>
       </div>
     </TooltipProvider>
@@ -589,6 +609,62 @@ function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [] }: {
         ))}
       </SelectContent>
     </Select>
+  );
+}
+
+/** Админ-панель для тестирования */
+function AdminPanel({ show, onToggle, isPro, onTogglePro, remaining, maxTrials, onResetTrials }: {
+  show: boolean; onToggle: () => void;
+  isPro: boolean; onTogglePro: () => void;
+  remaining: number; maxTrials: number; onResetTrials: () => void;
+}) {
+  return (
+    <>
+      {/* Скрытая кнопка — двойной клик для открытия */}
+      <button
+        onDoubleClick={onToggle}
+        className="fixed bottom-4 right-4 z-50 h-8 w-8 rounded-full bg-secondary/50 hover:bg-secondary text-muted-foreground flex items-center justify-center text-xs opacity-30 hover:opacity-100 transition-opacity"
+        title="Двойной клик — админ-панель"
+      >
+        ⚙
+      </button>
+
+      <AnimatePresence>
+        {show && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-14 right-4 z-50 w-72 p-4 rounded-xl border border-border bg-card shadow-lg space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-foreground">🛠 Админ-панель</span>
+              <button onClick={onToggle} className="text-muted-foreground hover:text-foreground text-xs">✕</button>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">PRO-статус</span>
+              <button
+                onClick={onTogglePro}
+                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  isPro ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                }`}
+              >
+                {isPro ? "PRO ✓" : "FREE"}
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Попытки: {remaining}/{maxTrials}</span>
+              <button
+                onClick={onResetTrials}
+                className="px-3 py-1 rounded text-xs font-medium bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Сбросить
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
