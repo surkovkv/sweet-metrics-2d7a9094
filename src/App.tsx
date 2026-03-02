@@ -14,6 +14,7 @@ import Upgrade from "./pages/Upgrade";
 import News from "./pages/News";
 import NewsPost from "./pages/NewsPost";
 import Contact from "./pages/Contact";
+import MetaTracker from "./pages/MetaTracker";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/news" element={<News />} />
             <Route path="/news/:slug" element={<NewsPost />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/meta" element={<MetaTracker />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
