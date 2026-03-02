@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Copy, Check, Sparkles, Shield, Wand2 } from "lucide-react";
+import { Search, Copy, Check, Sparkles, Shield, Wand2, GitCompare } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { decodeDeck, getManaCurve, getDustCost, getTypeCounts, DeckInfo } from "@/utils/deckCode";
 import { archetypeList } from "@/data/matchups";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
+import DeckCompare from "@/components/DeckCompare";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 function getTier(winrate: number): { tier: string; color: string } {
@@ -19,13 +20,21 @@ function getTier(winrate: number): { tier: string; color: string } {
 
 const Analyzer = () => {
   const [deckCode, setDeckCode] = useState("");
+  const [deckCode2, setDeckCode2] = useState("");
   const [deckInfo, setDeckInfo] = useState<DeckInfo | null>(null);
+  const [deckInfo2, setDeckInfo2] = useState<DeckInfo | null>(null);
   const [copied, setCopied] = useState(false);
+  const [compareMode, setCompareMode] = useState(false);
 
   const handleAnalyze = () => {
     if (!deckCode.trim()) return;
     const info = decodeDeck(deckCode);
     setDeckInfo(info);
+    if (compareMode && deckCode2.trim()) {
+      setDeckInfo2(decodeDeck(deckCode2));
+    } else {
+      setDeckInfo2(null);
+    }
   };
 
   const handleCopy = () => {
@@ -61,28 +70,75 @@ const Analyzer = () => {
           </p>
         </motion.div>
 
+        {/* Compare toggle */}
+        <div className="flex justify-center mb-4">
+          <Button
+            variant={compareMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setCompareMode(!compareMode);
+              if (!compareMode) setDeckInfo2(null);
+            }}
+            className="gap-2"
+          >
+            <GitCompare className="h-4 w-4" />
+            Сравнить две колоды
+          </Button>
+        </div>
+
         {/* Input */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex gap-3 mb-10"
+          className="space-y-3 mb-10"
         >
-          <Input
-            value={deckCode}
-            onChange={(e) => setDeckCode(e.target.value)}
-            placeholder="Вставь deck code, например: AAECAQcG..."
-            className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
-          />
-          <Button onClick={handleAnalyze} className="shrink-0 gap-2">
-            <Search className="h-4 w-4" />
-            Анализ
-          </Button>
+          <div className="flex gap-3">
+            <Input
+              value={deckCode}
+              onChange={(e) => setDeckCode(e.target.value)}
+              placeholder={compareMode ? "Deck code колоды #1..." : "Вставь deck code, например: AAECAQcG..."}
+              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+            />
+            {!compareMode && (
+              <Button onClick={handleAnalyze} className="shrink-0 gap-2">
+                <Search className="h-4 w-4" />
+                Анализ
+              </Button>
+            )}
+          </div>
+          {compareMode && (
+            <div className="flex gap-3">
+              <Input
+                value={deckCode2}
+                onChange={(e) => setDeckCode2(e.target.value)}
+                placeholder="Deck code колоды #2..."
+                className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+              />
+              <Button onClick={handleAnalyze} className="shrink-0 gap-2">
+                <Search className="h-4 w-4" />
+                Сравнить
+              </Button>
+            </div>
+          )}
         </motion.div>
 
-        {/* Results */}
+        {/* Comparison view */}
         <AnimatePresence>
-          {deckInfo && (
+          {compareMode && deckInfo && deckInfo2 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <DeckCompare deck1={deckInfo} deck2={deckInfo2} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Single deck results */}
+        <AnimatePresence>
+          {deckInfo && !compareMode && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

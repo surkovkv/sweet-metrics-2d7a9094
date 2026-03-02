@@ -3,16 +3,34 @@ import { Newspaper, Loader2 } from "lucide-react";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
 import NewsCard from "@/components/NewsCard";
 import { useNewsPosts } from "@/hooks/useNewsPosts";
+import { newsPosts as staticPosts } from "@/data/news";
 
 const News = () => {
     const { posts, loading, error } = useNewsPosts();
+
+    // Fallback to static data when Supabase returns empty or errors
+    const displayPosts = (!loading && (error || posts.length === 0))
+        ? staticPosts.map((p, i) => ({
+            id: p.id.toString(),
+            slug: p.slug,
+            title: p.title,
+            summary: p.summary,
+            content: p.content,
+            created_at: p.date,
+            author_name: p.author,
+            tags: p.tags,
+            cover_image: p.coverImage ?? null,
+            published: true,
+            author_id: null,
+            updated_at: p.date,
+        }))
+        : posts;
 
     return (
         <div className="min-h-screen bg-background">
             <ManaLensNavbar />
 
             <main className="container mx-auto px-4 pt-28 pb-16 max-w-5xl">
-                {/* Заголовок раздела */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -31,7 +49,6 @@ const News = () => {
                     </p>
                 </motion.div>
 
-                {/* Состояния */}
                 {loading && (
                     <div className="flex items-center justify-center py-24 text-muted-foreground gap-3">
                         <Loader2 className="h-6 w-6 animate-spin" />
@@ -39,23 +56,9 @@ const News = () => {
                     </div>
                 )}
 
-                {error && !loading && (
-                    <div className="text-center py-24 text-destructive">
-                        <p>Ошибка загрузки: {error}</p>
-                    </div>
-                )}
-
-                {!loading && !error && posts.length === 0 && (
-                    <div className="text-center py-24 text-muted-foreground">
-                        <Newspaper className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                        <p className="text-lg">Публикаций пока нет</p>
-                        <p className="text-sm mt-1">Первая статья скоро появится!</p>
-                    </div>
-                )}
-
-                {!loading && !error && posts.length > 0 && (
+                {!loading && displayPosts.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {posts.map((post, i) => (
+                        {displayPosts.map((post, i) => (
                             <NewsCard
                                 key={post.id}
                                 post={{
