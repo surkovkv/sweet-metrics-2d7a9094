@@ -5,8 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { decodeDeck, getManaCurve, getDustCost, getTypeCounts, DeckInfo } from "@/utils/deckCode";
+import { archetypeList } from "@/data/matchups";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+
+function getTier(winrate: number): { tier: string; color: string } {
+  if (winrate >= 54) return { tier: "S", color: "hsl(var(--winrate-good))" };
+  if (winrate >= 52) return { tier: "A", color: "hsl(142 71% 55%)" };
+  if (winrate >= 50) return { tier: "B", color: "hsl(var(--winrate-neutral))" };
+  if (winrate >= 48) return { tier: "C", color: "hsl(25 95% 53%)" };
+  return { tier: "D", color: "hsl(var(--winrate-bad))" };
+}
 
 const Analyzer = () => {
   const [deckCode, setDeckCode] = useState("");
@@ -132,6 +141,60 @@ const Analyzer = () => {
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Archetype Strength */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="font-display text-lg">Сила архетипа в мете</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    const archInfo = archetypeList.find(a => a.name === deckInfo.archetype);
+                    if (!archInfo) return (
+                      <p className="text-sm text-muted-foreground">Архетип не найден в текущей мете</p>
+                    );
+                    const { tier, color } = getTier(archInfo.winrate);
+                    return (
+                      <div className="flex items-center gap-4">
+                        <div
+                          className="w-12 h-12 rounded-lg flex items-center justify-center text-lg font-bold"
+                          style={{ backgroundColor: color, color: "hsl(var(--background))" }}
+                        >
+                          {tier}
+                        </div>
+                        <div>
+                          <div className="text-foreground font-semibold">{archInfo.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            Винрейт: {archInfo.winrate}% · Популярность: {archInfo.popularity}%
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+
+              {/* Rarity Breakdown */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="font-display text-lg">Распределение по редкости</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex gap-3">
+                    {(["legendary", "epic", "rare", "common"] as const).map((r) => {
+                      const count = deckInfo.cards.filter(c => c.rarity === r).reduce((s, c) => s + c.count, 0);
+                      const labels: Record<string, string> = { legendary: "Легенд.", epic: "Эпич.", rare: "Редкие", common: "Обычные" };
+                      const colors: Record<string, string> = { legendary: "bg-primary/20 text-primary", epic: "bg-purple-500/20 text-purple-400", rare: "bg-blue-500/20 text-blue-400", common: "bg-secondary text-muted-foreground" };
+                      return (
+                        <div key={r} className={`flex-1 rounded-lg p-3 text-center ${colors[r]}`}>
+                          <div className="text-2xl font-bold">{count}</div>
+                          <div className="text-xs mt-1">{labels[r]}</div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
