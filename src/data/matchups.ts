@@ -5,32 +5,34 @@ export interface ArchetypeInfo {
   name: string;
   winrate: number; // Общий винрейт
   popularity: number; // Популярность в %
+  trend: "up" | "down" | "stable"; // Тренд за последнюю неделю
+  hsClass: string; // Класс героя
 }
 
 // Все архетипы с общим винрейтом и популярностью
 export const archetypeList: ArchetypeInfo[] = [
-  { name: "Control DK", winrate: 51.5, popularity: 12.5 },
-  { name: "Elise DH", winrate: 55.2, popularity: 11.9 },
-  { name: "Control Warrior", winrate: 49.1, popularity: 11.5 },
-  { name: "Arkwing Mage", winrate: 53.5, popularity: 11.0 },
-  { name: "Maestra Rogue", winrate: 46.1, popularity: 6.7 },
-  { name: "Elise Rogue", winrate: 47.2, popularity: 6.7 },
-  { name: "Dragon Warrior", winrate: 54.2, popularity: 3.2 },
-  { name: "Discover Hunter", winrate: 50.7, popularity: 2.9 },
-  { name: "Herenn DK", winrate: 51.6, popularity: 2.8 },
-  { name: "Wallow Warlock", winrate: 48.0, popularity: 2.6 },
-  { name: "Copy Druid", winrate: 50.2, popularity: 2.5 },
-  { name: "Aura Paladin", winrate: 54.0, popularity: 2.0 },
-  { name: "Libram Paladin", winrate: 50.9, popularity: 1.6 },
-  { name: "Aviana Priest", winrate: 41.9, popularity: 1.2 },
-  { name: "Hagatha Shaman", winrate: 49.9, popularity: 1.2 },
-  { name: "Protoss Mage", winrate: 44.6, popularity: 1.0 },
-  { name: "Protoss Rogue", winrate: 50.5, popularity: 0.8 },
-  { name: "Spell Mage", winrate: 45.9, popularity: 0.8 },
-  { name: "Toki Mage", winrate: 37.9, popularity: 0.7 },
-  { name: "Protoss Priest", winrate: 50.1, popularity: 0.7 },
-  { name: "Aggro Warlock", winrate: 49.3, popularity: 0.7 },
-  { name: "Quest Mage", winrate: 47.8, popularity: 0.6 },
+  { name: "Control DK", winrate: 51.5, popularity: 12.5, trend: "stable", hsClass: "Death Knight" },
+  { name: "Elise DH", winrate: 55.2, popularity: 11.9, trend: "up", hsClass: "Demon Hunter" },
+  { name: "Control Warrior", winrate: 49.1, popularity: 11.5, trend: "down", hsClass: "Warrior" },
+  { name: "Arkwing Mage", winrate: 53.5, popularity: 11.0, trend: "up", hsClass: "Mage" },
+  { name: "Maestra Rogue", winrate: 46.1, popularity: 6.7, trend: "down", hsClass: "Rogue" },
+  { name: "Elise Rogue", winrate: 47.2, popularity: 6.7, trend: "down", hsClass: "Rogue" },
+  { name: "Dragon Warrior", winrate: 54.2, popularity: 3.2, trend: "up", hsClass: "Warrior" },
+  { name: "Discover Hunter", winrate: 50.7, popularity: 2.9, trend: "stable", hsClass: "Hunter" },
+  { name: "Herenn DK", winrate: 51.6, popularity: 2.8, trend: "stable", hsClass: "Death Knight" },
+  { name: "Wallow Warlock", winrate: 48.0, popularity: 2.6, trend: "down", hsClass: "Warlock" },
+  { name: "Copy Druid", winrate: 50.2, popularity: 2.5, trend: "stable", hsClass: "Druid" },
+  { name: "Aura Paladin", winrate: 54.0, popularity: 2.0, trend: "up", hsClass: "Paladin" },
+  { name: "Libram Paladin", winrate: 50.9, popularity: 1.6, trend: "stable", hsClass: "Paladin" },
+  { name: "Aviana Priest", winrate: 41.9, popularity: 1.2, trend: "down", hsClass: "Priest" },
+  { name: "Hagatha Shaman", winrate: 49.9, popularity: 1.2, trend: "stable", hsClass: "Shaman" },
+  { name: "Protoss Mage", winrate: 44.6, popularity: 1.0, trend: "down", hsClass: "Mage" },
+  { name: "Protoss Rogue", winrate: 50.5, popularity: 0.8, trend: "stable", hsClass: "Rogue" },
+  { name: "Spell Mage", winrate: 45.9, popularity: 0.8, trend: "down", hsClass: "Mage" },
+  { name: "Toki Mage", winrate: 37.9, popularity: 0.7, trend: "down", hsClass: "Mage" },
+  { name: "Protoss Priest", winrate: 50.1, popularity: 0.7, trend: "stable", hsClass: "Priest" },
+  { name: "Aggro Warlock", winrate: 49.3, popularity: 0.7, trend: "up", hsClass: "Warlock" },
+  { name: "Quest Mage", winrate: 47.8, popularity: 0.6, trend: "down", hsClass: "Mage" },
 ];
 
 // Матрица матчапов: архетип -> архетип противника -> процент побед
@@ -146,6 +148,9 @@ const ESTIMATED_TOTAL_GAMES = 200000;
 
 // Все доступные архетипы (отсортированы по популярности)
 export const allArchetypes = archetypeList.map((a) => a.name);
+
+// Уникальные классы
+export const allClasses = [...new Set(archetypeList.map((a) => a.hsClass))].sort();
 
 // Получить информацию об архетипе
 export function getArchetypeInfo(name: string): ArchetypeInfo | undefined {
