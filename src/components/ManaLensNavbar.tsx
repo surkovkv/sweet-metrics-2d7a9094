@@ -1,17 +1,17 @@
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
-import { Eye, Swords, Newspaper, Mail, TrendingUp } from "lucide-react";
+import { Swords, Newspaper, MessageCircle, TrendingUp } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const ManaLensNavbar = () => {
   const location = useLocation();
 
   const links = [
-    { to: "/analyzer", label: "Анализатор", icon: Eye },
     { to: "/tournament", label: "Турнирный стратег", icon: Swords },
     { to: "/meta", label: "Мета", icon: TrendingUp },
     { to: "/news", label: "Новости", icon: Newspaper },
-    { to: "/contact", label: "Контакты", icon: Mail },
+    { to: "/contact", label: "Связаться", icon: MessageCircle },
   ];
 
   return (
@@ -48,6 +48,7 @@ const ManaLensNavbar = () => {
               </Link>
             );
           })}
+          <LanguageSwitcher />
           <UserMenu />
         </div>
       </div>

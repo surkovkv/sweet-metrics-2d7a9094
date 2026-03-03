@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, User, MessageSquare, Send, CheckCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -9,25 +10,41 @@ import { sendContact } from "@/hooks/useContacts";
 import { useAuth } from "@/hooks/useAuth";
 
 const Contact = () => {
-    const { user, profile } = useAuth();
+    const { user, profile, loading: authLoading } = useAuth();
+    const navigate = useNavigate();
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [sent, setSent] = useState(false);
 
-    const [name, setName] = useState(profile?.nickname || "");
-    const [email, setEmail] = useState(user?.email || "");
     const [message, setMessage] = useState("");
+
+    useEffect(() => {
+        if (!authLoading && !user) {
+            navigate("/auth", { replace: true });
+        }
+    }, [user, authLoading, navigate]);
+
+    if (authLoading || !user) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
+
+    const nameToSubmit = profile?.nickname || "Аноним";
+    const emailToSubmit = user.email || "";
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!name.trim() || !email.trim() || !message.trim()) return;
+        if (!message.trim()) return;
 
         setLoading(true);
         const { error } = await sendContact({
-            name: name.trim(),
-            email: email.trim(),
+            name: nameToSubmit,
+            email: emailToSubmit,
             message: message.trim(),
-            user_id: user?.id ?? null,
+            user_id: user.id,
         });
         setLoading(false);
 
@@ -52,7 +69,7 @@ const Contact = () => {
                         <Mail className="h-4 w-4" />
                         Связаться с нами
                     </div>
-                    <h1 className="font-display text-4xl font-bold text-foreground mb-3">Контакты</h1>
+                    <h1 className="font-display text-4xl font-bold text-foreground mb-3">Связаться с нами</h1>
                     <p className="text-muted-foreground text-lg mb-10">
                         Есть вопросы, идеи или нашёл баг? Напиши нам — ответим как можно скорее.
                     </p>
@@ -77,30 +94,28 @@ const Contact = () => {
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
-                                <label className="text-sm text-muted-foreground mb-1.5 block">Имя *</label>
+                                <label className="text-sm text-muted-foreground mb-1.5 block">Имя</label>
                                 <div className="relative">
                                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                     <Input
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        placeholder="Твоё имя или никнейм"
-                                        className="pl-10 bg-secondary border-border"
-                                        required
+                                        value={nameToSubmit}
+                                        readOnly
+                                        disabled
+                                        className="pl-10 bg-secondary/50 border-border text-muted-foreground"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="text-sm text-muted-foreground mb-1.5 block">Email *</label>
+                                <label className="text-sm text-muted-foreground mb-1.5 block">Email</label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="example@mail.com"
-                                        className="pl-10 bg-secondary border-border"
-                                        required
+                                        value={emailToSubmit}
+                                        readOnly
+                                        disabled
+                                        className="pl-10 bg-secondary/50 border-border text-muted-foreground"
                                     />
                                 </div>
                             </div>

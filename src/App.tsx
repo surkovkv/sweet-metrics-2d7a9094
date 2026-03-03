@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Landing from "./pages/Landing";
-import Analyzer from "./pages/Analyzer";
 import TournamentStrategist from "./pages/TournamentStrategist";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
@@ -15,6 +14,7 @@ import News from "./pages/News";
 import NewsPost from "./pages/NewsPost";
 import Contact from "./pages/Contact";
 import MetaTracker from "./pages/MetaTracker";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -27,7 +27,6 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/analyzer" element={<Analyzer />} />
             <Route path="/tournament" element={<TournamentStrategist />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -37,6 +36,7 @@ const App = () => (
             <Route path="/news/:slug" element={<NewsPost />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/meta" element={<MetaTracker />} />
+            <Route path="/admin" element={<Admin />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

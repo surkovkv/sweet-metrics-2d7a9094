@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, Check, X } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Check, X, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,7 +43,7 @@ const Auth = () => {
     const { data } = await supabase
       .from("profiles")
       .select("id")
-      .eq("nickname", nick.trim())
+      .ilike("nickname", nick.trim())
       .maybeSingle();
     return !data; // true = уникален
   };
@@ -150,8 +150,18 @@ const Auth = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6">
+        <div className="text-center mb-8 relative">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="absolute left-0 top-0 text-muted-foreground hover:text-foreground"
+            onClick={() => navigate("/")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            На главную
+          </Button>
+
+          <Link to="/" className="inline-flex items-center gap-2 mb-6 mt-8">
             <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
               <span className="font-display text-sm font-bold text-primary-foreground">TH</span>
             </div>

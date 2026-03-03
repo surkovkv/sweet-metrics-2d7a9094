@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { User, Crown, LogOut } from "lucide-react";
+import { User, Crown, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   DropdownMenu,
@@ -45,6 +45,14 @@ const UserMenu = () => {
             Личный кабинет
           </Link>
         </DropdownMenuItem>
+        {profile?.nickname === "kikusadmin" && (
+          <DropdownMenuItem className="cursor-pointer gap-2 text-primary focus:text-primary" asChild>
+            <Link to="/admin">
+              <Shield className="h-4 w-4" />
+              Админ-панель
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem className="cursor-pointer gap-2" asChild>
           <Link to="/upgrade">
             <Crown className="h-4 w-4" />
