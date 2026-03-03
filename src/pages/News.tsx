@@ -1,26 +1,20 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Newspaper, Loader2, PlusCircle, X, Clock, Eye } from "lucide-react";
+import { Newspaper, Loader2, PlusCircle, Clock } from "lucide-react";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
 import NewsCard from "@/components/NewsCard";
-<<<<<<< Updated upstream
-import { useNewsPosts } from "@/hooks/useNewsPosts";
-import { newsPosts as staticPosts } from "@/data/news";
-=======
 import NewsEditor from "@/components/NewsEditor";
 import { useNewsPosts, useMyNewsPosts } from "@/hooks/useNewsPosts";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
->>>>>>> Stashed changes
 
 const News = () => {
     const { user, profile } = useAuth();
     const { posts, loading, error, refetch } = useNewsPosts();
-    const { posts: myPosts, loading: loadingMy, refetch: refetchMy } = useMyNewsPosts(user?.id);
+    const { posts: myPosts, refetch: refetchMy } = useMyNewsPosts(user?.id);
     const [showEditor, setShowEditor] = useState(false);
 
-    // My unpublished posts
     const myPending = myPosts.filter((p) => !p.published);
     const isAdmin = profile?.nickname === "kikusadmin";
 
@@ -30,33 +24,12 @@ const News = () => {
         refetchMy();
     };
 
-    // Fallback to static data when Supabase returns empty or errors
-    const displayPosts = (!loading && (error || posts.length === 0))
-        ? staticPosts.map((p, i) => ({
-            id: p.id.toString(),
-            slug: p.slug,
-            title: p.title,
-            summary: p.summary,
-            content: p.content,
-            created_at: p.date,
-            author_name: p.author,
-            tags: p.tags,
-            cover_image: p.coverImage ?? null,
-            published: true,
-            author_id: null,
-            updated_at: p.date,
-        }))
-        : posts;
-
     return (
         <div className="min-h-screen bg-background">
             <ManaLensNavbar />
 
             <main className="container mx-auto px-4 pt-28 pb-16 max-w-5xl">
-<<<<<<< Updated upstream
-=======
                 {/* Header */}
->>>>>>> Stashed changes
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -86,8 +59,6 @@ const News = () => {
                     </div>
                 </motion.div>
 
-<<<<<<< Updated upstream
-=======
                 {/* Editor */}
                 <AnimatePresence>
                     {showEditor && (
@@ -139,8 +110,7 @@ const News = () => {
                     </motion.div>
                 )}
 
-                {/* Published news */}
->>>>>>> Stashed changes
+                {/* Loading state */}
                 {loading && (
                     <div className="flex items-center justify-center py-24 text-muted-foreground gap-3">
                         <Loader2 className="h-6 w-6 animate-spin" />
@@ -148,9 +118,23 @@ const News = () => {
                     </div>
                 )}
 
-                {!loading && displayPosts.length > 0 && (
+                {error && !loading && (
+                    <div className="text-center py-24 text-destructive">
+                        <p>Ошибка загрузки: {error}</p>
+                    </div>
+                )}
+
+                {!loading && !error && posts.length === 0 && (
+                    <div className="text-center py-24 text-muted-foreground">
+                        <Newspaper className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                        <p className="text-lg">Публикаций пока нет</p>
+                        <p className="text-sm mt-1">Первая статья скоро появится!</p>
+                    </div>
+                )}
+
+                {!loading && !error && posts.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {displayPosts.map((post, i) => (
+                        {posts.map((post, i) => (
                             <NewsCard
                                 key={post.id}
                                 post={{
