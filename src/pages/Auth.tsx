@@ -7,23 +7,34 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useT } from "@/i18n/useTranslation";
 
 type AuthMode = "login" | "signup" | "forgot";
 
-// Требования к паролю
-const PASSWORD_RULES = [
-  { label: "Минимум 8 символов", test: (p: string) => p.length >= 8 },
-  { label: "Заглавная буква (A–Z)", test: (p: string) => /[A-Z]/.test(p) },
-  { label: "Строчная буква (a–z)", test: (p: string) => /[a-z]/.test(p) },
-  { label: "Цифра (0–9)", test: (p: string) => /\d/.test(p) },
-  { label: "Спецсимвол (@$!%*?&_#-)", test: (p: string) => /[@$!%*?&_#\-]/.test(p) },
-];
-
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-const isPasswordStrong = (p: string) => PASSWORD_RULES.every((r) => r.test(p));
+const NICKNAME_RULES = [
+  { key: "auth.nickRule1", test: (n: string) => n.length >= 3 && n.length <= 20 },
+  { key: "auth.nickRule2", test: (n: string) => /^[a-zA-Z0-9_-]*$/.test(n) },
+  { key: "auth.nickRule3", test: (n: string) => /^[a-zA-Z]/.test(n) },
+  { key: "auth.nickRule4", test: (n: string) => !/\s/.test(n) },
+];
+
+const isNicknameValid = (n: string) => NICKNAME_RULES.every((r) => r.test(n));
 
 const Auth = () => {
+  const t = useT();
+
+  const PASSWORD_RULES = [
+    { label: t("auth.pwdRule1"), test: (p: string) => p.length >= 8 },
+    { label: t("auth.pwdRule2"), test: (p: string) => /[A-Z]/.test(p) },
+    { label: t("auth.pwdRule3"), test: (p: string) => /[a-z]/.test(p) },
+    { label: t("auth.pwdRule4"), test: (p: string) => /\d/.test(p) },
+    { label: t("auth.pwdRule5"), test: (p: string) => /[@$!%*?&_#\-]/.test(p) },
+  ];
+
+  const isPasswordStrong = (p: string) => PASSWORD_RULES.every((r) => r.test(p));
+
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,10 +44,10 @@ const Auth = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [showNickRules, setShowNickRules] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // --- Валидация ---
   const validateEmail = () => emailRegex.test(email);
 
   const checkNicknameUnique = async (nick: string): Promise<boolean> => {
@@ -45,46 +56,44 @@ const Auth = () => {
       .select("id")
       .ilike("nickname", nick.trim())
       .maybeSingle();
-    return !data; // true = уникален
+    return !data;
   };
 
-  // --- Обработчики ---
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) return;
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
-      toast({ title: "Ошибка входа", description: error.message, variant: "destructive" });
+      toast({ title: t("auth.loginError"), description: error.message, variant: "destructive" });
     } else {
       navigate("/");
     }
   };
 
   const handleSignup = async () => {
-    if (!nickname.trim()) {
-      toast({ title: "Введи никнейм", variant: "destructive" });
+    if (!nickname.trim() || !isNicknameValid(nickname)) {
+      toast({ title: t("auth.enterNickname"), variant: "destructive" });
       return;
     }
     if (!validateEmail()) {
-      toast({ title: "Некорректный email", description: "Формат: name@domain.tld", variant: "destructive" });
+      toast({ title: t("auth.invalidEmail"), description: t("auth.emailError"), variant: "destructive" });
       return;
     }
     if (!isPasswordStrong(password)) {
-      toast({ title: "Пароль не соответствует требованиям", variant: "destructive" });
+      toast({ title: t("auth.passwordWeak"), variant: "destructive" });
       return;
     }
     if (password !== confirmPassword) {
-      toast({ title: "Пароли не совпадают", variant: "destructive" });
+      toast({ title: t("auth.passwordMismatch"), variant: "destructive" });
       return;
     }
 
     setLoading(true);
-
     const isUnique = await checkNicknameUnique(nickname);
     if (!isUnique) {
       setLoading(false);
-      toast({ title: "Никнейм уже занят", description: "Выбери другой никнейм", variant: "destructive" });
+      toast({ title: t("auth.nicknameTaken"), description: t("auth.nicknameChooseOther"), variant: "destructive" });
       return;
     }
 
@@ -99,19 +108,16 @@ const Auth = () => {
     setLoading(false);
 
     if (error) {
-      toast({ title: "Ошибка регистрации", description: error.message, variant: "destructive" });
+      toast({ title: t("auth.signupError"), description: error.message, variant: "destructive" });
     } else {
-      toast({
-        title: "Проверь почту!",
-        description: "Мы отправили письмо для подтверждения аккаунта",
-      });
+      toast({ title: t("auth.checkEmail"), description: t("auth.checkEmailDesc") });
     }
   };
 
   const handleForgotPassword = async () => {
     if (!email.trim()) return;
     if (!validateEmail()) {
-      toast({ title: "Некорректный email", variant: "destructive" });
+      toast({ title: t("auth.invalidEmail"), variant: "destructive" });
       return;
     }
     setLoading(true);
@@ -120,12 +126,9 @@ const Auth = () => {
     });
     setLoading(false);
     if (error) {
-      toast({ title: "Ошибка", description: error.message, variant: "destructive" });
+      toast({ title: t("auth.forgotError"), description: error.message, variant: "destructive" });
     } else {
-      toast({
-        title: "Письмо отправлено",
-        description: "Проверь почту — там ссылка для смены пароля",
-      });
+      toast({ title: t("auth.resetSent"), description: t("auth.resetSentDesc") });
     }
   };
 
@@ -140,7 +143,7 @@ const Auth = () => {
     ? PASSWORD_RULES.filter((r) => r.test(password)).length
     : 0;
 
-  const strengthLabel = passwordStrength <= 2 ? "Слабый" : passwordStrength <= 4 ? "Средний" : "Сильный";
+  const strengthLabel = passwordStrength <= 2 ? t("auth.pwdWeak") : passwordStrength <= 4 ? t("auth.pwdMedium") : t("auth.pwdStrong");
   const strengthColor = passwordStrength <= 2 ? "bg-destructive" : passwordStrength <= 4 ? "bg-yellow-500" : "bg-green-500";
 
   return (
@@ -150,7 +153,7 @@ const Auth = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <div className="text-center mb-8 relative">
+        <div className="text-center mb-8 relative min-h-[80px]">
           <Button 
             variant="ghost" 
             size="sm" 
@@ -158,15 +161,15 @@ const Auth = () => {
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            На главную
+            {t("auth.backToHome")}
           </Button>
 
-          <Link to="/" className="inline-flex items-center gap-2 mb-6 mt-8">
+          <Link to="/" className="inline-flex items-center gap-2 mt-12">
             <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
               <span className="font-display text-sm font-bold text-primary-foreground">TH</span>
             </div>
             <span className="font-display text-2xl font-bold text-foreground">
-              Tourney<span className="text-primary">Helper2</span>
+              Tourney<span className="text-primary">Helper</span>
             </span>
           </Link>
         </div>
@@ -174,26 +177,42 @@ const Auth = () => {
         <Card className="bg-card border-border">
           <CardHeader className="text-center">
             <CardTitle className="font-display text-xl">
-              {mode === "login" && "Вход в аккаунт"}
-              {mode === "signup" && "Регистрация"}
-              {mode === "forgot" && "Восстановление пароля"}
+              {mode === "login" && t("auth.login")}
+              {mode === "signup" && t("auth.signup")}
+              {mode === "forgot" && t("auth.forgot")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
 
-              {/* Никнейм — только при регистрации */}
+              {/* Nickname — signup only */}
               {mode === "signup" && (
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
-                    placeholder="Никнейм (уникальный)"
-                    className="pl-10 bg-secondary border-border"
-                    required
-                    maxLength={32}
-                  />
+                <div className="space-y-2">
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      value={nickname}
+                      onChange={(e) => setNickname(e.target.value)}
+                      onFocus={() => setShowNickRules(true)}
+                      placeholder={t("auth.nicknamePlaceholder")}
+                      className="pl-10 bg-secondary border-border"
+                      required
+                      maxLength={20}
+                    />
+                  </div>
+                  {showNickRules && nickname && (
+                    <ul className="space-y-1">
+                      {NICKNAME_RULES.map((rule) => {
+                        const ok = rule.test(nickname);
+                        return (
+                          <li key={rule.key} className={`flex items-center gap-1.5 text-xs ${ok ? "text-green-500" : "text-muted-foreground"}`}>
+                            {ok ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                            {t(rule.key)}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </div>
               )}
 
@@ -204,17 +223,16 @@ const Auth = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email"
-                  className={`pl-10 bg-secondary border-border ${email && !validateEmail() ? "border-destructive" : ""
-                    }`}
+                  placeholder={t("auth.emailPlaceholder")}
+                  className={`pl-10 bg-secondary border-border ${email && !validateEmail() ? "border-destructive" : ""}`}
                   required
                 />
                 {email && !validateEmail() && (
-                  <p className="text-xs text-destructive mt-1">Формат: name@domain.tld</p>
+                  <p className="text-xs text-destructive mt-1">{t("auth.emailError")}</p>
                 )}
               </div>
 
-              {/* Пароль */}
+              {/* Password */}
               {mode !== "forgot" && (
                 <div className="space-y-2">
                   <div className="relative">
@@ -224,7 +242,7 @@ const Auth = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       onFocus={() => mode === "signup" && setShowRules(true)}
-                      placeholder="Пароль"
+                      placeholder={t("auth.passwordPlaceholder")}
                       className="pl-10 pr-10 bg-secondary border-border"
                       required
                     />
@@ -237,7 +255,6 @@ const Auth = () => {
                     </button>
                   </div>
 
-                  {/* Индикатор силы + правила — только при регистрации */}
                   {mode === "signup" && password && (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
@@ -267,7 +284,7 @@ const Auth = () => {
                 </div>
               )}
 
-              {/* Подтверждение пароля — только при регистрации */}
+              {/* Confirm password */}
               {mode === "signup" && (
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -275,9 +292,8 @@ const Auth = () => {
                     type={showConfirm ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Повтори пароль"
-                    className={`pl-10 pr-10 bg-secondary border-border ${confirmPassword && confirmPassword !== password ? "border-destructive" : ""
-                      }`}
+                    placeholder={t("auth.confirmPlaceholder")}
+                    className={`pl-10 pr-10 bg-secondary border-border ${confirmPassword && confirmPassword !== password ? "border-destructive" : ""}`}
                     required
                   />
                   <button
@@ -288,19 +304,18 @@ const Auth = () => {
                     {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                   {confirmPassword && confirmPassword !== password && (
-                    <p className="text-xs text-destructive mt-1">Пароли не совпадают</p>
+                    <p className="text-xs text-destructive mt-1">{t("auth.passwordMismatch")}</p>
                   )}
                 </div>
               )}
 
-              {/* Забыли пароль */}
               {mode === "login" && (
                 <button
                   type="button"
                   onClick={() => setMode("forgot")}
                   className="text-sm text-primary hover:underline block w-full text-right"
                 >
-                  Забыл пароль?
+                  {t("auth.forgotLink")}
                 </button>
               )}
 
@@ -308,32 +323,32 @@ const Auth = () => {
                 type="submit"
                 className="w-full h-11 font-semibold"
                 disabled={loading || (mode === "signup" && (
-                  !isPasswordStrong(password) || password !== confirmPassword || !validateEmail()
+                  !isPasswordStrong(password) || password !== confirmPassword || !validateEmail() || !isNicknameValid(nickname)
                 ))}
               >
                 {loading
-                  ? "Загрузка..."
+                  ? t("auth.loading")
                   : mode === "login"
-                    ? "Войти"
+                    ? t("auth.loginBtn")
                     : mode === "signup"
-                      ? "Зарегистрироваться"
-                      : "Отправить письмо"}
+                      ? t("auth.signupBtn")
+                      : t("auth.sendEmailBtn")}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm text-muted-foreground">
               {mode === "login" ? (
                 <>
-                  Нет аккаунта?{" "}
+                  {t("auth.noAccount")}{" "}
                   <button onClick={() => setMode("signup")} className="text-primary hover:underline">
-                    Зарегистрируйся
+                    {t("auth.signupLink")}
                   </button>
                 </>
               ) : (
                 <>
-                  Уже есть аккаунт?{" "}
+                  {t("auth.haveAccount")}{" "}
                   <button onClick={() => setMode("login")} className="text-primary hover:underline">
-                    Войти
+                    {t("auth.loginLink")}
                   </button>
                 </>
               )}
