@@ -22,7 +22,7 @@ export default function Admin() {
     const [news, setNews] = useState<NewsPost[]>([]);
     const [loadingData, setLoadingData] = useState(false);
 
-    const isAdmin = profile?.nickname === "kikusadmin";
+    const isAdmin = profile?.nickname === "admin";
     const [editingPost, setEditingPost] = useState<NewsPost | null>(null);
     const [showNewEditor, setShowNewEditor] = useState(false);
 

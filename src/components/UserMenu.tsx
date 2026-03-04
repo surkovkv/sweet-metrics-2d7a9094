@@ -45,7 +45,7 @@ const UserMenu = () => {
             Личный кабинет
           </Link>
         </DropdownMenuItem>
-        {profile?.nickname === "kikusadmin" && (
+        {profile?.nickname === "admin" && (
           <DropdownMenuItem className="cursor-pointer gap-2 text-primary focus:text-primary" asChild>
             <Link to="/admin">
               <Shield className="h-4 w-4" />

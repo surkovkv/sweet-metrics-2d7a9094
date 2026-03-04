@@ -16,7 +16,7 @@ const News = () => {
     const [showEditor, setShowEditor] = useState(false);
 
     const myPending = myPosts.filter((p) => !p.published);
-    const isAdmin = profile?.nickname === "kikusadmin";
+    const isAdmin = profile?.nickname === "admin";
 
     const handleSave = () => {
         setShowEditor(false);
