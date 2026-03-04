@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { User, Crown, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useT } from "@/i18n/useTranslation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +13,7 @@ import {
 const UserMenu = () => {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const t = useT();
 
   if (!user) {
     return (
@@ -19,12 +21,13 @@ const UserMenu = () => {
         to="/auth"
         className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
       >
-        Войти
+        {t("userMenu.login")}
       </Link>
     );
   }
 
   const initial = (profile?.nickname?.[0] || user.email?.[0] || "U").toUpperCase();
+  const isPro = profile?.is_pro ?? false;
 
   return (
     <DropdownMenu>
@@ -35,28 +38,31 @@ const UserMenu = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <div className="px-3 py-2">
-          <p className="text-sm font-medium text-foreground">{profile?.nickname || "Player"}</p>
+          <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
+            {profile?.nickname || "Player"}
+            {isPro && <Crown className="h-3.5 w-3.5 text-primary" />}
+          </p>
           <p className="text-xs text-muted-foreground">{user.email}</p>
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer gap-2" asChild>
           <Link to="/profile">
             <User className="h-4 w-4" />
-            Личный кабинет
+            {t("userMenu.profile")}
           </Link>
         </DropdownMenuItem>
         {profile?.nickname === "kikusadmin" && (
           <DropdownMenuItem className="cursor-pointer gap-2 text-primary focus:text-primary" asChild>
             <Link to="/admin">
               <Shield className="h-4 w-4" />
-              Админ-панель
+              {t("userMenu.admin")}
             </Link>
           </DropdownMenuItem>
         )}
         <DropdownMenuItem className="cursor-pointer gap-2" asChild>
           <Link to="/upgrade">
             <Crown className="h-4 w-4" />
-            Тарифный план
+            {t("userMenu.plan")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -68,7 +74,7 @@ const UserMenu = () => {
           }}
         >
           <LogOut className="h-4 w-4" />
-          Выйти
+          {t("userMenu.logout")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

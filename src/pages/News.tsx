@@ -8,12 +8,14 @@ import { useNewsPosts, useMyNewsPosts } from "@/hooks/useNewsPosts";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useT } from "@/i18n/useTranslation";
 
 const News = () => {
     const { user, profile } = useAuth();
     const { posts, loading, error, refetch } = useNewsPosts();
     const { posts: myPosts, refetch: refetchMy } = useMyNewsPosts(user?.id);
     const [showEditor, setShowEditor] = useState(false);
+    const t = useT();
 
     const myPending = myPosts.filter((p) => !p.published);
     const isAdmin = profile?.nickname === "kikusadmin";
@@ -29,7 +31,6 @@ const News = () => {
             <ManaLensNavbar />
 
             <main className="container mx-auto px-4 pt-28 pb-16 max-w-5xl">
-                {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -40,26 +41,25 @@ const News = () => {
                         <div>
                             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
                                 <Newspaper className="h-4 w-4" />
-                                Новости и обновления
+                                {t("news.badge")}
                             </div>
                             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
-                                Новости
+                                {t("news.title")}
                             </h1>
                             <p className="text-muted-foreground text-lg max-w-2xl">
-                                Следи за обновлениями платформы, гайдами по стратегии и патч-нотами.
+                                {t("news.subtitle")}
                             </p>
                         </div>
 
                         {user && !showEditor && (
                             <Button onClick={() => setShowEditor(true)} className="gap-2">
                                 <PlusCircle className="h-4 w-4" />
-                                Написать статью
+                                {t("news.writeArticle")}
                             </Button>
                         )}
                     </div>
                 </motion.div>
 
-                {/* Editor */}
                 <AnimatePresence>
                     {showEditor && (
                         <motion.div
@@ -77,16 +77,11 @@ const News = () => {
                     )}
                 </AnimatePresence>
 
-                {/* My pending posts */}
                 {user && myPending.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="mb-10"
-                    >
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-10">
                         <h2 className="font-display text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
                             <Clock className="h-5 w-5 text-yellow-500" />
-                            Мои статьи на модерации ({myPending.length})
+                            {t("news.pendingTitle")} ({myPending.length})
                         </h2>
                         <div className="space-y-3">
                             {myPending.map((post) => (
@@ -95,13 +90,11 @@ const News = () => {
                                         <div>
                                             <p className="font-semibold text-foreground">{post.title}</p>
                                             <p className="text-xs text-muted-foreground mt-1">
-                                                ID: <code className="bg-secondary px-1 rounded text-xs">{post.id}</code>
-                                                {" · "}
                                                 {new Date(post.created_at).toLocaleDateString()}
                                             </p>
                                         </div>
                                         <span className="flex items-center gap-1 text-xs bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded-full whitespace-nowrap">
-                                            <Clock className="h-3 w-3" /> На модерации
+                                            <Clock className="h-3 w-3" /> {t("news.onModeration")}
                                         </span>
                                     </CardContent>
                                 </Card>
@@ -110,25 +103,24 @@ const News = () => {
                     </motion.div>
                 )}
 
-                {/* Loading state */}
                 {loading && (
                     <div className="flex items-center justify-center py-24 text-muted-foreground gap-3">
                         <Loader2 className="h-6 w-6 animate-spin" />
-                        <span>Загрузка новостей...</span>
+                        <span>{t("news.loading")}</span>
                     </div>
                 )}
 
                 {error && !loading && (
                     <div className="text-center py-24 text-destructive">
-                        <p>Ошибка загрузки: {error}</p>
+                        <p>{t("news.loadError")} {error}</p>
                     </div>
                 )}
 
                 {!loading && !error && posts.length === 0 && (
                     <div className="text-center py-24 text-muted-foreground">
                         <Newspaper className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                        <p className="text-lg">Публикаций пока нет</p>
-                        <p className="text-sm mt-1">Первая статья скоро появится!</p>
+                        <p className="text-lg">{t("news.noPosts")}</p>
+                        <p className="text-sm mt-1">{t("news.firstPost")}</p>
                     </div>
                 )}
 

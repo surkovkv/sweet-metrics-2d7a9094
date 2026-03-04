@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
 import { archetypeList, allClasses, getWinrate } from "@/data/matchups";
+import { useT } from "@/i18n/useTranslation";
 
 function getTier(winrate: number): { tier: string; color: string } {
   if (winrate >= 54) return { tier: "S", color: "hsl(var(--winrate-good))" };
@@ -24,6 +25,7 @@ function TrendIcon({ trend }: { trend: "up" | "down" | "stable" }) {
 const MetaTracker = () => {
   const [selected, setSelected] = useState<string | null>(null);
   const [classFilter, setClassFilter] = useState<string>("all");
+  const t = useT();
 
   const filteredArchetypes = useMemo(() => {
     let list = [...archetypeList].sort((a, b) => b.popularity - a.popularity);
@@ -35,34 +37,27 @@ const MetaTracker = () => {
 
   const maxPop = Math.max(...filteredArchetypes.map((a) => a.popularity));
 
-  // Recommendation: highest WR deck that beats the top 3 popular decks
   const recommendation = useMemo(() => {
     const top3 = [...archetypeList].sort((a, b) => b.popularity - a.popularity).slice(0, 3);
     let best: typeof archetypeList[0] | null = null;
     let bestScore = -1;
-
     for (const arch of archetypeList) {
       let wins = 0;
-      for (const t of top3) {
-        if (arch.name === t.name) continue;
-        const wr = getWinrate(arch.name, t.name);
+      for (const tt of top3) {
+        if (arch.name === tt.name) continue;
+        const wr = getWinrate(arch.name, tt.name);
         if (wr && wr > 50) wins++;
       }
       const score = wins * 100 + arch.winrate;
-      if (score > bestScore) {
-        bestScore = score;
-        best = arch;
-      }
+      if (score > bestScore) { bestScore = score; best = arch; }
     }
     return best;
   }, []);
 
-  // Matchup details for selected
   const matchupDetails = useMemo(() => {
     if (!selected) return null;
     const counters: { name: string; wr: number }[] = [];
     const counteredBy: { name: string; wr: number }[] = [];
-
     for (const arch of archetypeList) {
       if (arch.name === selected) continue;
       const wr = getWinrate(selected, arch.name);
@@ -79,27 +74,17 @@ const MetaTracker = () => {
     <div className="min-h-screen bg-background">
       <ManaLensNavbar />
       <main className="container mx-auto px-4 pt-24 pb-12 max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-10"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
-            Live <span className="text-primary">Meta-трекер</span>
+            {t("meta.title")} <span className="text-primary">{t("meta.titleHighlight")}</span>
           </h1>
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
-            Популярность и сила архетипов на Legend-рангах. Кликни на колоду — узнай, кто её контрит.
+            {t("meta.subtitle")}
           </p>
         </motion.div>
 
-        {/* Recommendation Box */}
         {recommendation && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="mb-6"
-          >
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-6">
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="py-4 px-5 flex items-center gap-4">
                 <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
@@ -107,10 +92,10 @@ const MetaTracker = () => {
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-foreground">
-                    Лучший выбор для лестницы: <span className="text-primary">{recommendation.name}</span>
+                    {t("meta.bestChoice")} <span className="text-primary">{recommendation.name}</span>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {recommendation.winrate}% WR · {recommendation.popularity}% популярность · Бьёт большинство топ-колод
+                    {recommendation.winrate}% WR · {recommendation.popularity}% pop · {t("meta.beatsTop")}
                   </div>
                 </div>
               </CardContent>
@@ -118,15 +103,14 @@ const MetaTracker = () => {
           </motion.div>
         )}
 
-        {/* Class filter */}
         <div className="flex items-center gap-3 mb-6">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <Select value={classFilter} onValueChange={setClassFilter}>
             <SelectTrigger className="w-48 bg-secondary border-border">
-              <SelectValue placeholder="Все классы" />
+              <SelectValue placeholder={t("meta.allClasses")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Все классы</SelectItem>
+              <SelectItem value="all">{t("meta.allClasses")}</SelectItem>
               {allClasses.map((cls) => (
                 <SelectItem key={cls} value={cls}>{cls}</SelectItem>
               ))}
@@ -135,27 +119,23 @@ const MetaTracker = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Bubble Chart Area */}
           <Card className="lg:col-span-2 bg-card border-border">
             <CardHeader>
               <CardTitle className="font-display text-lg flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                Мета-карта
+                {t("meta.metaMap")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="relative w-full" style={{ minHeight: 420 }}>
-                {/* Axis labels */}
                 <div className="absolute -left-2 top-1/2 -translate-y-1/2 -rotate-90 text-[10px] text-muted-foreground tracking-wider uppercase">
-                  Винрейт %
+                  {t("meta.winrateAxis")}
                 </div>
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground tracking-wider uppercase">
-                  Популярность %
+                  {t("meta.popularityAxis")}
                 </div>
 
-                {/* Grid & axis ticks */}
                 <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>
-                  {/* Horizontal grid lines */}
                   {[44, 48, 50, 52, 56].map((wr) => {
                     const yPct = 90 - ((wr - 36) / (58 - 36)) * 80;
                     return (
@@ -165,7 +145,6 @@ const MetaTracker = () => {
                       </g>
                     );
                   })}
-                  {/* Legend */}
                   <g transform="translate(20, 15)">
                     <circle cx="0" cy="0" r="4" fill="hsl(var(--winrate-good))" opacity="0.8" />
                     <text x="8" y="1" fill="hsl(var(--muted-foreground))" fontSize="8" dominantBaseline="middle">S-Tier</text>
@@ -178,7 +157,6 @@ const MetaTracker = () => {
                   </g>
                 </svg>
 
-                {/* Bubbles */}
                 {filteredArchetypes.map((arch) => {
                   const { tier, color } = getTier(arch.winrate);
                   const size = 28 + (arch.popularity / maxPop) * 52;
@@ -196,10 +174,8 @@ const MetaTracker = () => {
                           onClick={() => setSelected(isSelected ? null : arch.name)}
                           className="absolute cursor-pointer flex items-center justify-center rounded-full transition-all duration-200"
                           style={{
-                            width: size,
-                            height: size,
-                            left: `${xPct}%`,
-                            top: `${yPct}%`,
+                            width: size, height: size,
+                            left: `${xPct}%`, top: `${yPct}%`,
                             transform: "translate(-50%, -50%)",
                             backgroundColor: color,
                             opacity: isSelected ? 1 : selected ? 0.35 : 0.75,
@@ -227,12 +203,10 @@ const MetaTracker = () => {
             </CardContent>
           </Card>
 
-          {/* Side Panel */}
           <div className="space-y-6">
-            {/* Tier List */}
             <Card className="bg-card border-border">
               <CardHeader className="pb-3">
-                <CardTitle className="font-display text-base">Тир-лист</CardTitle>
+                <CardTitle className="font-display text-base">{t("meta.tierList")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-1.5">
                 {filteredArchetypes.map((arch) => {
@@ -246,10 +220,7 @@ const MetaTracker = () => {
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <span
-                          className="w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: color, color: "hsl(var(--background))" }}
-                        >
+                        <span className="w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center shrink-0" style={{ backgroundColor: color, color: "hsl(var(--background))" }}>
                           {tier}
                         </span>
                         <span className="text-foreground truncate">{arch.name}</span>
@@ -258,10 +229,7 @@ const MetaTracker = () => {
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span>{arch.winrate}%</span>
                         <div className="w-16 h-1.5 rounded-full bg-secondary overflow-hidden">
-                          <div
-                            className="h-full rounded-full"
-                            style={{ width: `${(arch.winrate / 60) * 100}%`, backgroundColor: color }}
-                          />
+                          <div className="h-full rounded-full" style={{ width: `${(arch.winrate / 60) * 100}%`, backgroundColor: color }} />
                         </div>
                       </div>
                     </div>
@@ -270,7 +238,6 @@ const MetaTracker = () => {
               </CardContent>
             </Card>
 
-            {/* Matchup Details */}
             {selected && matchupDetails && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                 <Card className="bg-card border-border">
@@ -285,7 +252,7 @@ const MetaTracker = () => {
                       <div>
                         <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
                           <ArrowUpRight className="h-3 w-3 text-green-400" />
-                          Контрит (WR 55%+)
+                          {t("meta.counters")}
                         </div>
                         {matchupDetails.counters.map((m) => (
                           <div key={m.name} className="flex items-center justify-between text-sm py-1">
@@ -299,7 +266,7 @@ const MetaTracker = () => {
                       <div>
                         <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
                           <ArrowDownRight className="h-3 w-3 text-red-400" />
-                          Проигрывает (WR ≤45%)
+                          {t("meta.counteredBy")}
                         </div>
                         {matchupDetails.counteredBy.map((m) => (
                           <div key={m.name} className="flex items-center justify-between text-sm py-1">
@@ -312,7 +279,7 @@ const MetaTracker = () => {
                     {matchupDetails.counters.length === 0 && matchupDetails.counteredBy.length === 0 && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Minus className="h-4 w-4" />
-                        Нет ярко выраженных контр-матчапов
+                        {t("meta.noCounters")}
                       </div>
                     )}
                   </CardContent>
