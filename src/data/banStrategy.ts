@@ -34,7 +34,8 @@ const OBVIOUS_THRESHOLD = 3.0;
  */
 export function calculateOptimalBan(
   myArchetypes: string[],
-  oppArchetypes: string[]
+  oppArchetypes: string[],
+  getWinrate: GetWinrateFn = defaultGetWinrate
 ): BanResult[] {
   const results: BanResult[] = oppArchetypes.map((banned, banIdx) => {
     const remaining = oppArchetypes.filter((_, i) => i !== banIdx);
