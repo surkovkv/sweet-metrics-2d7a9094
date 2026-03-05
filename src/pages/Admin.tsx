@@ -245,8 +245,9 @@ export default function Admin() {
                                             <p className="font-semibold">Tournament Strategist</p>
                                             <p className="text-sm text-muted-foreground">Принудительно загрузить свежие данные HSGuru</p>
                                         </div>
-                                        <Button onClick={triggerHsguruFetch}>
-                                            Синхронизировать
+                                        <Button onClick={triggerHsguruFetch} disabled={syncLoading}>
+                                            {syncLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                                            {syncLoading ? "Синхронизация..." : "Синхронизировать"}
                                         </Button>
                                     </div>
                                 </CardContent>
