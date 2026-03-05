@@ -32,6 +32,27 @@ const TournamentStrategist = () => {
   const { user, profile } = useAuth();
   const IS_PRO = profile?.is_pro ?? false;
   const IS_LOGGED_IN = !!user;
+  const { archetypeList, matchupDB, date, isFromDB } = useMatchupData();
+
+  const getWinrate = useCallback((my: string, opp: string): number | null => {
+    return matchupDB[my]?.[opp] ?? null;
+  }, [matchupDB]);
+
+  const getArchetypeInfo = useCallback((name: string) => {
+    const found = archetypeList.find((a) => a.name === name);
+    return found ?? staticGetArchetypeInfo(name);
+  }, [archetypeList]);
+
+  const getEstimatedGames = useCallback((arch1: string, arch2: string): number | null => {
+    if (getWinrate(arch1, arch2) === null) return null;
+    const info1 = getArchetypeInfo(arch1);
+    const info2 = getArchetypeInfo(arch2);
+    if (!info1 || !info2) return null;
+    const est = Math.round(200000 * (info1.popularity / 100) * (info2.popularity / 100));
+    return Math.max(est, 500);
+  }, [getWinrate, getArchetypeInfo]);
+
+  const DATA_UPDATED = date || "2026-03-03";
 
   const [mode, setMode] = useState<DeckMode>(3);
   const [myArchetypes, setMyArchetypes] = useState<string[]>(["", "", ""]);
