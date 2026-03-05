@@ -27,6 +27,16 @@ const MetaTracker = () => {
   const [selected, setSelected] = useState<string | null>(null);
   const [classFilter, setClassFilter] = useState<string>("all");
   const t = useT();
+  const { archetypeList, matchupDB, loading, date, isFromDB } = useMatchupData();
+
+  const getWinrate = useCallback((my: string, opp: string): number | null => {
+    return matchupDB[my]?.[opp] ?? null;
+  }, [matchupDB]);
+
+  const allClasses = useMemo(() => {
+    const classes = [...new Set(archetypeList.map((a) => a.hsClass))].sort();
+    return classes.length > 0 ? classes : staticAllClasses;
+  }, [archetypeList]);
 
   const filteredArchetypes = useMemo(() => {
     let list = [...archetypeList].sort((a, b) => b.popularity - a.popularity);
