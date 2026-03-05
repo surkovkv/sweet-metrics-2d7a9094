@@ -106,7 +106,8 @@ export function calculateOptimalBan(
  */
 export function calculateOpponentBan(
   myArchetypes: string[],
-  oppArchetypes: string[]
+  oppArchetypes: string[],
+  getWinrate: GetWinrateFn = defaultGetWinrate
 ): BanResult[] {
   const results: BanResult[] = myArchetypes.map((banned, banIdx) => {
     const remainingMy = myArchetypes.filter((_, i) => i !== banIdx);
