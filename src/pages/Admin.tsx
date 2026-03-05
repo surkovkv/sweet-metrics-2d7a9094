@@ -21,6 +21,7 @@ export default function Admin() {
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [news, setNews] = useState<NewsPost[]>([]);
     const [loadingData, setLoadingData] = useState(false);
+    const [syncLoading, setSyncLoading] = useState(false);
 
     const isAdmin = profile?.nickname === "kikusadmin";
     const [editingPost, setEditingPost] = useState<NewsPost | null>(null);
