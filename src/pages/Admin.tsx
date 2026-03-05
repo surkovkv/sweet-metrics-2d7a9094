@@ -87,7 +87,7 @@ export default function Admin() {
         }
     };
 
-    const [syncLoading, setSyncLoading] = useState(false);
+
 
     const triggerHsguruFetch = async () => {
         setSyncLoading(true);
