@@ -86,9 +86,34 @@ export default function Admin() {
         }
     };
 
-    const triggerHsguruFetch = () => {
-        // Mock function for now, until backend is ready
-        toast({ title: "Синхронизация", description: "Запрос к HSGuru отправлен (имитация)" });
+    const [syncLoading, setSyncLoading] = useState(false);
+
+    const triggerHsguruFetch = async () => {
+        setSyncLoading(true);
+        try {
+            const { data, error } = await supabase.functions.invoke("scrape-hsguru");
+            if (error) throw error;
+            if (data?.success) {
+                toast({
+                    title: "Синхронизация завершена",
+                    description: `Загружено ${data.matchupsCount} матчапов для ${data.archetypesCount} архетипов (${data.date})`,
+                });
+            } else {
+                toast({
+                    title: "Ошибка синхронизации",
+                    description: data?.error || "Неизвестная ошибка",
+                    variant: "destructive",
+                });
+            }
+        } catch (err: any) {
+            toast({
+                title: "Ошибка",
+                description: err.message || "Не удалось выполнить синхронизацию",
+                variant: "destructive",
+            });
+        } finally {
+            setSyncLoading(false);
+        }
     };
 
     if (authLoading || !isAdmin) {
