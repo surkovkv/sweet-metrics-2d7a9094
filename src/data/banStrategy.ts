@@ -1,4 +1,6 @@
-import { getWinrate } from "./matchups";
+import { getWinrate as defaultGetWinrate } from "./matchups";
+
+type GetWinrateFn = (my: string, opp: string) => number | null;
 
 /** Результат расчёта бана для одного кандидата */
 export interface BanResult {
