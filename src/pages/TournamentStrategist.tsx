@@ -18,6 +18,8 @@ import ManaLensNavbar from "@/components/ManaLensNavbar";
 import {
   getArchetypeInfo as staticGetArchetypeInfo,
   getEstimatedGames as staticGetEstimatedGames,
+  getWinrate as staticGetWinrate,
+  archetypeList as staticArchetypeList,
 } from "@/data/matchups";
 import {
   calculateOptimalBan, calculateOpponentBan, calculateOptimalFirstDeck, type BanResult,
