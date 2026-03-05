@@ -92,7 +92,18 @@ const MetaTracker = () => {
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
             {t("meta.subtitle")}
           </p>
+          {date && isFromDB && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Данные из БД · обновлены {date}
+            </p>
+          )}
         </motion.div>
+
+        {loading && (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        )}
 
         {recommendation && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-6">
