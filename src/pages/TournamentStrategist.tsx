@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Swords, Trophy, ShieldAlert, Target, Info, Gamepad2,
@@ -16,17 +16,17 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
 import {
-  getWinrate, getEstimatedGames, archetypeList, getArchetypeInfo,
+  getArchetypeInfo as staticGetArchetypeInfo,
+  getEstimatedGames as staticGetEstimatedGames,
 } from "@/data/matchups";
 import {
   calculateOptimalBan, calculateOpponentBan, calculateOptimalFirstDeck, type BanResult,
 } from "@/data/banStrategy";
 import { useAuth } from "@/hooks/useAuth";
+import { useMatchupData } from "@/hooks/useMatchupData";
 
 type DeckMode = 3 | 4;
 
-// Last data update date
-const DATA_UPDATED = "2026-03-03";
 
 const TournamentStrategist = () => {
   const { user, profile } = useAuth();
