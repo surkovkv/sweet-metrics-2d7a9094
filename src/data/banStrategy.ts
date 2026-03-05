@@ -155,7 +155,8 @@ export function calculateOptimalFirstDeck(
   myArchetypes: string[],
   oppArchetypes: string[],
   myBannedIndex: number | null = null,
-  oppBannedIndex: number | null = null
+  oppBannedIndex: number | null = null,
+  getWinrate: GetWinrateFn = defaultGetWinrate
 ): { archetype: string; avgWr: number; reasoning: string } | null {
   const effectiveMyDecks = myArchetypes.filter((_, i) => i !== myBannedIndex);
   const effectiveOppDecks = oppArchetypes.filter((_, i) => i !== oppBannedIndex);
