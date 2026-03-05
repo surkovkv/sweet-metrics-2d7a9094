@@ -1,4 +1,6 @@
-import { getWinrate } from "./matchups";
+import { getWinrate as defaultGetWinrate } from "./matchups";
+
+type GetWinrateFn = (my: string, opp: string) => number | null;
 
 /** Результат расчёта бана для одного кандидата */
 export interface BanResult {
@@ -32,7 +34,8 @@ const OBVIOUS_THRESHOLD = 3.0;
  */
 export function calculateOptimalBan(
   myArchetypes: string[],
-  oppArchetypes: string[]
+  oppArchetypes: string[],
+  getWinrate: GetWinrateFn = defaultGetWinrate
 ): BanResult[] {
   const results: BanResult[] = oppArchetypes.map((banned, banIdx) => {
     const remaining = oppArchetypes.filter((_, i) => i !== banIdx);
@@ -103,7 +106,8 @@ export function calculateOptimalBan(
  */
 export function calculateOpponentBan(
   myArchetypes: string[],
-  oppArchetypes: string[]
+  oppArchetypes: string[],
+  getWinrate: GetWinrateFn = defaultGetWinrate
 ): BanResult[] {
   const results: BanResult[] = myArchetypes.map((banned, banIdx) => {
     const remainingMy = myArchetypes.filter((_, i) => i !== banIdx);
@@ -151,7 +155,8 @@ export function calculateOptimalFirstDeck(
   myArchetypes: string[],
   oppArchetypes: string[],
   myBannedIndex: number | null = null,
-  oppBannedIndex: number | null = null
+  oppBannedIndex: number | null = null,
+  getWinrate: GetWinrateFn = defaultGetWinrate
 ): { archetype: string; avgWr: number; reasoning: string } | null {
   const effectiveMyDecks = myArchetypes.filter((_, i) => i !== myBannedIndex);
   const effectiveOppDecks = oppArchetypes.filter((_, i) => i !== oppBannedIndex);

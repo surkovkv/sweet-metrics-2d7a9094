@@ -1,1 +1,7 @@
 project_id = "snfmczvliqhhmkudccxi"
+
+[functions.scrape-hsguru]
+verify_jwt = false
+
+[functions.get-matchups]
+verify_jwt = false

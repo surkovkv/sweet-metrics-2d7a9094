@@ -21,6 +21,7 @@ export default function Admin() {
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [news, setNews] = useState<NewsPost[]>([]);
     const [loadingData, setLoadingData] = useState(false);
+    const [syncLoading, setSyncLoading] = useState(false);
 
     const isAdmin = profile?.nickname === "kikusadmin";
     const [editingPost, setEditingPost] = useState<NewsPost | null>(null);
@@ -86,9 +87,34 @@ export default function Admin() {
         }
     };
 
-    const triggerHsguruFetch = () => {
-        // Mock function for now, until backend is ready
-        toast({ title: "Синхронизация", description: "Запрос к HSGuru отправлен (имитация)" });
+
+
+    const triggerHsguruFetch = async () => {
+        setSyncLoading(true);
+        try {
+            const { data, error } = await supabase.functions.invoke("scrape-hsguru");
+            if (error) throw error;
+            if (data?.success) {
+                toast({
+                    title: "Синхронизация завершена",
+                    description: `Загружено ${data.matchupsCount} матчапов для ${data.archetypesCount} архетипов (${data.date})`,
+                });
+            } else {
+                toast({
+                    title: "Ошибка синхронизации",
+                    description: data?.error || "Неизвестная ошибка",
+                    variant: "destructive",
+                });
+            }
+        } catch (err: any) {
+            toast({
+                title: "Ошибка",
+                description: err.message || "Не удалось выполнить синхронизацию",
+                variant: "destructive",
+            });
+        } finally {
+            setSyncLoading(false);
+        }
     };
 
     if (authLoading || !isAdmin) {
@@ -220,8 +246,9 @@ export default function Admin() {
                                             <p className="font-semibold">Tournament Strategist</p>
                                             <p className="text-sm text-muted-foreground">Принудительно загрузить свежие данные HSGuru</p>
                                         </div>
-                                        <Button onClick={triggerHsguruFetch}>
-                                            Синхронизировать
+                                        <Button onClick={triggerHsguruFetch} disabled={syncLoading}>
+                                            {syncLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                                            {syncLoading ? "Синхронизация..." : "Синхронизировать"}
                                         </Button>
                                     </div>
                                 </CardContent>
