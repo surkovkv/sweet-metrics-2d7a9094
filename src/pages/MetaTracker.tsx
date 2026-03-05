@@ -1,11 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Minus, Info, ArrowUpRight, ArrowDownRight, Filter, Trophy } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Info, ArrowUpRight, ArrowDownRight, Filter, Trophy, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
-import { archetypeList, allClasses, getWinrate } from "@/data/matchups";
+import { allClasses as staticAllClasses } from "@/data/matchups";
+import { useMatchupData } from "@/hooks/useMatchupData";
 import { useT } from "@/i18n/useTranslation";
 
 function getTier(winrate: number): { tier: string; color: string } {
