@@ -523,7 +523,7 @@ function PreBanMiniMatrix({ myArchetypes, oppArchetypes }: {
           <tr key={ri}>
             <td className="p-1 text-primary font-medium truncate max-w-[60px]">{my}</td>
             {oppArchetypes.map((opp, ci) => {
-              const wr = getWinrate(my, opp);
+               const wr = staticGetWinrate(my, opp);
               return (
                 <td key={ci} className={`p-1 text-center font-bold ${getWinrateColor(wr)}`}>
                   {wr !== null ? `${wr}%` : "—"}
@@ -558,7 +558,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                 </th>
                 {oppArchetypes.map((opp, i) => {
                   const isBanned = bannedIndex === i;
-                  const info = getArchetypeInfo(opp);
+                  const info = staticGetArchetypeInfo(opp);
                   return (
                     <th key={i} className={`text-center py-2 px-3 font-medium text-xs ${isBanned ? "text-destructive" : "text-muted-foreground"
                       }`}>
@@ -582,7 +582,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
             <tbody>
               {myArchetypes.map((my, rowIdx) => {
                 const isMyBanned = oppBannedIndex === rowIdx;
-                const info = getArchetypeInfo(my);
+                const info = staticGetArchetypeInfo(my);
                 return (
                   <tr key={rowIdx} className={`border-t border-border ${isMyBanned ? "opacity-40" : ""}`}>
                     <td className="py-3 px-3 font-medium text-primary">
@@ -599,8 +599,8 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                       )}
                     </td>
                     {oppArchetypes.map((opp, colIdx) => {
-                      const wr = getWinrate(my, opp);
-                      const games = getEstimatedGames(my, opp);
+                      const wr = staticGetWinrate(my, opp);
+                      const games = staticGetEstimatedGames(my, opp);
                       const isBanned = bannedIndex === colIdx;
                       return (
                         <td key={colIdx}
@@ -685,7 +685,7 @@ function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [] }: {
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {archetypeList.map((arch) => (
+        {staticArchetypeList.map((arch) => (
           <SelectItem key={arch.name} value={arch.name}
             disabled={excludeValues.includes(arch.name)}>
             <span className="flex items-center justify-between gap-3 w-full">
