@@ -558,7 +558,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                 </th>
                 {oppArchetypes.map((opp, i) => {
                   const isBanned = bannedIndex === i;
-                  const info = getArchetypeInfo(opp);
+                  const info = staticGetArchetypeInfo(opp);
                   return (
                     <th key={i} className={`text-center py-2 px-3 font-medium text-xs ${isBanned ? "text-destructive" : "text-muted-foreground"
                       }`}>
