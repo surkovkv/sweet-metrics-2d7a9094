@@ -599,8 +599,8 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                       )}
                     </td>
                     {oppArchetypes.map((opp, colIdx) => {
-                      const wr = getWinrate(my, opp);
-                      const games = getEstimatedGames(my, opp);
+                      const wr = staticGetWinrate(my, opp);
+                      const games = staticGetEstimatedGames(my, opp);
                       const isBanned = bannedIndex === colIdx;
                       return (
                         <td key={colIdx}
