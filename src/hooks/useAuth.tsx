@@ -9,6 +9,7 @@ type AuthContext = {
   session: Session | null;
   profile: Profile;
   loading: boolean;
+  isAdmin: boolean;
   signOut: () => Promise<void>;
 };
 
@@ -17,6 +18,7 @@ const AuthCtx = createContext<AuthContext>({
   session: null,
   profile: null,
   loading: true,
+  isAdmin: false,
   signOut: async () => { },
 });
 
@@ -29,11 +31,16 @@ const fetchProfile = async (userId: string) => {
   return data;
 };
 
+// Admin check: uses nickname until user_roles table is set up
+const ADMIN_NICKNAME = "KikusAdministrator";
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile>(null);
   const [loading, setLoading] = useState(true);
+
+  const isAdmin = profile?.nickname === ADMIN_NICKNAME;
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -67,7 +74,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthCtx.Provider value={{ user, session, profile, loading, signOut }}>
+    <AuthCtx.Provider value={{ user, session, profile, loading, isAdmin, signOut }}>
       {children}
     </AuthCtx.Provider>
   );

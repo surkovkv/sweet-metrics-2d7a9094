@@ -20,21 +20,26 @@ import {
   getEstimatedGames as staticGetEstimatedGames,
   getWinrate as staticGetWinrate,
   archetypeList as staticArchetypeList,
+  type ArchetypeInfo,
 } from "@/data/matchups";
 import {
   calculateOptimalBan, calculateOpponentBan, calculateOptimalFirstDeck, type BanResult,
 } from "@/data/banStrategy";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatchupData } from "@/hooks/useMatchupData";
+import { useT } from "@/i18n/useTranslation";
 
 type DeckMode = 3 | 4;
-
+type GetWinrateFn = (my: string, opp: string) => number | null;
+type GetArchetypeInfoFn = (name: string) => ArchetypeInfo | undefined;
+type GetEstimatedGamesFn = (a: string, b: string) => number | null;
 
 const TournamentStrategist = () => {
   const { user, profile } = useAuth();
   const IS_PRO = profile?.is_pro ?? false;
   const IS_LOGGED_IN = !!user;
   const { archetypeList, matchupDB, date, isFromDB } = useMatchupData();
+  const t = useT();
 
   const getWinrate = useCallback((my: string, opp: string): number | null => {
     return matchupDB[my]?.[opp] ?? null;
@@ -65,7 +70,6 @@ const TournamentStrategist = () => {
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [oppManualBanIndex, setOppManualBanIndex] = useState<number | null>(null);
 
-  // --- Mode toggle ---
   const handleModeChange = (newMode: DeckMode) => {
     setMode(newMode);
     const resize = (arr: string[]) =>
@@ -107,7 +111,7 @@ const TournamentStrategist = () => {
   const handleCalculate = () => {
     if (!allFilled) return;
     if (hasDuplicates) {
-      toast.error("Нельзя выбрать одну и ту же колоду дважды на одной стороне");
+      toast.error(t("tournament.duplicateWarning"));
       return;
     }
     setShowResult(true);
@@ -118,22 +122,20 @@ const TournamentStrategist = () => {
 
   const banOptions = useMemo(() => {
     if (!showResult) return [];
-    return calculateOptimalBan(myArchetypes, oppArchetypes);
-  }, [showResult, myArchetypes, oppArchetypes]);
+    return calculateOptimalBan(myArchetypes, oppArchetypes, getWinrate);
+  }, [showResult, myArchetypes, oppArchetypes, getWinrate]);
 
   const oppBanOptions = useMemo(() => {
     if (!showResult || !showOpponentBan) return [];
-    return calculateOpponentBan(myArchetypes, oppArchetypes);
-  }, [showResult, showOpponentBan, myArchetypes, oppArchetypes]);
+    return calculateOpponentBan(myArchetypes, oppArchetypes, getWinrate);
+  }, [showResult, showOpponentBan, myArchetypes, oppArchetypes, getWinrate]);
 
   const effectiveBanIdx = manualBanIndex ?? (banOptions.length > 0 ? banOptions[0].bannedIndex : null);
 
-  // Optimal first deck calculation (PRO)
   const optimalFirstDeck = useMemo(() => {
     if (!showResult || !IS_PRO) return null;
-    const oppBanned = oppBanOptions.length > 0 ? oppBanOptions[0].bannedIndex : null;
-    return calculateOptimalFirstDeck(myArchetypes, oppArchetypes, oppManualBanIndex, effectiveBanIdx);
-  }, [showResult, IS_PRO, myArchetypes, oppArchetypes, effectiveBanIdx, oppManualBanIndex, oppBanOptions]);
+    return calculateOptimalFirstDeck(myArchetypes, oppArchetypes, oppManualBanIndex, effectiveBanIdx, getWinrate);
+  }, [showResult, IS_PRO, myArchetypes, oppArchetypes, effectiveBanIdx, oppManualBanIndex, getWinrate]);
 
   return (
     <TooltipProvider>
@@ -144,10 +146,10 @@ const TournamentStrategist = () => {
           {/* Header */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-6">
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
-              Турнирный <span className="text-primary">стратег</span>
+              {t("tournament.title")} <span className="text-primary">{t("tournament.titleHighlight")}</span>
             </h1>
             <p className="text-muted-foreground text-sm">
-              Обновлено {DATA_UPDATED} · данные с ранга Legend
+              {t("tournament.updated")} {DATA_UPDATED} · {t("tournament.legendData")}
             </p>
           </motion.div>
 
@@ -158,7 +160,7 @@ const TournamentStrategist = () => {
               className="flex items-center gap-2 mx-auto text-sm text-muted-foreground hover:text-primary transition-colors bg-secondary/60 px-4 py-2 rounded-full border border-border"
             >
               <HelpCircle className="h-4 w-4" />
-              Как это работает? (аббревиатуры и концепция)
+              {t("tournament.howItWorks")}
               {showInfoBox ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
             </button>
             <AnimatePresence>
@@ -169,14 +171,14 @@ const TournamentStrategist = () => {
                   exit={{ opacity: 0, height: 0 }}
                   className="mt-3 p-4 rounded-xl bg-secondary/60 border border-border text-sm text-muted-foreground space-y-2"
                 >
-                  <h3 className="font-semibold text-foreground mb-2">Концепция турнирного бана</h3>
-                  <p>В турнирном формате оба игрока берут <strong>3–4 колоды</strong>. До начала серии каждый <strong>банит (запрещает)</strong> одну колоду противника.</p>
+                  <h3 className="font-semibold text-foreground mb-2">{t("tournament.conceptTitle")}</h3>
+                  <p>{t("tournament.conceptDesc")}</p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
                     {[
-                      { abbr: "AVG WR", desc: "Средний винрейт колоды против всех других в мете" },
-                      { abbr: "Pop.", desc: "Популярность архетипа на ранге Legend (% от всех игр)" },
-                      { abbr: "min WR", desc: "Худший матчап среди оставшихся после бана" },
-                      { abbr: "BAN", desc: "Рекомендуемая колода на бан (убирается из серии)" },
+                      { abbr: t("tournament.avgWr"), desc: t("tournament.avgWrDesc") },
+                      { abbr: t("tournament.popLabel"), desc: t("tournament.popDesc") },
+                      { abbr: t("tournament.minWrLabel"), desc: t("tournament.minWrDesc") },
+                      { abbr: t("tournament.banLabel"), desc: t("tournament.banDesc") },
                     ].map((item) => (
                       <div key={item.abbr} className="p-2 bg-background/50 rounded-lg border border-border">
                         <p className="font-bold text-primary text-xs">{item.abbr}</p>
@@ -184,7 +186,7 @@ const TournamentStrategist = () => {
                       </div>
                     ))}
                   </div>
-                  <p className="mt-2 text-xs">Цвета: <span className="text-green-400">зелёный ≥55%</span> · <span className="text-yellow-400">жёлтый 45–55%</span> · <span className="text-red-400">красный &lt;45%</span></p>
+                  <p className="mt-2 text-xs">{t("tournament.colors")} <span className="text-green-400">{t("tournament.colorGreen")}</span> · <span className="text-yellow-400">{t("tournament.colorYellow")}</span> · <span className="text-red-400">{t("tournament.colorRed")}</span></p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -197,7 +199,7 @@ const TournamentStrategist = () => {
               <button key={m} onClick={() => handleModeChange(m)}
                 className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${mode === m ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
                   }`}>
-                {m} колоды
+                {t(m === 3 ? "tournament.decks3" : "tournament.decks4")}
               </button>
             ))}
           </motion.div>
@@ -208,7 +210,7 @@ const TournamentStrategist = () => {
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 className="mb-4 p-3 rounded-lg bg-destructive/15 border border-destructive/30 text-destructive text-sm text-center font-medium">
-                ⚠️ Нельзя выбрать одну и ту же колоду дважды на одной стороне
+                {t("tournament.duplicateWarning")}
               </motion.div>
             )}
           </AnimatePresence>
@@ -219,14 +221,15 @@ const TournamentStrategist = () => {
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
               <label className="block text-sm font-medium text-foreground mb-3">
                 <Swords className="inline h-4 w-4 mr-1.5 text-primary" />
-                Твои колоды
+                {t("tournament.yourDecks")}
               </label>
               <div className="space-y-3">
                 {myArchetypes.map((arch, i) => (
                   <ArchetypeSelect key={`my-${i}`} value={arch}
                     onChange={(val) => updateMyArchetype(i, val)}
-                    placeholder={`Колода ${i + 1}...`}
+                    placeholder={`${t("tournament.deck")} ${i + 1}...`}
                     excludeValues={[...myArchetypes.filter((_, j) => j !== i).filter(Boolean)]}
+                    archetypeList={archetypeList}
                   />
                 ))}
               </div>
@@ -237,7 +240,7 @@ const TournamentStrategist = () => {
               <div className="flex items-center gap-2 mb-3">
                 <label className="block text-sm font-medium text-foreground">
                   <Target className="inline h-4 w-4 mr-1.5 text-destructive" />
-                  Колоды противника
+                  {t("tournament.oppDecks")}
                 </label>
                 {showResult && (
                   <Tooltip>
@@ -247,8 +250,8 @@ const TournamentStrategist = () => {
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="max-w-sm p-3">
-                      <p className="text-xs font-semibold mb-2">Матрица до бана:</p>
-                      <PreBanMiniMatrix myArchetypes={myArchetypes} oppArchetypes={oppArchetypes} />
+                      <p className="text-xs font-semibold mb-2">{t("tournament.preBanMatrix")}</p>
+                      <PreBanMiniMatrix myArchetypes={myArchetypes} oppArchetypes={oppArchetypes} getWinrate={getWinrate} />
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -260,8 +263,9 @@ const TournamentStrategist = () => {
                     <div key={`opp-${i}`} className="relative">
                       <ArchetypeSelect value={arch}
                         onChange={(val) => updateOppArchetype(i, val)}
-                        placeholder={`Колода ${i + 1} противника...`}
+                        placeholder={`${t("tournament.oppDeck")} ${i + 1}...`}
                         excludeValues={[...oppArchetypes.filter((_, j) => j !== i).filter(Boolean)]}
+                        archetypeList={archetypeList}
                       />
                       {isBanned && (
                         <div className="absolute inset-0 flex items-center pointer-events-none">
@@ -272,12 +276,11 @@ const TournamentStrategist = () => {
                           </span>
                         </div>
                       )}
-                      {/* Manual ban — PRO only */}
                       {showResult && IS_PRO && !isBanned && (
                         <button
                           onClick={() => setManualBanIndex(i)}
                           className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-destructive transition-colors text-xs opacity-60 hover:opacity-100"
-                          title="Назначить бан вручную"
+                          title={t("tournament.banThis")}
                         >
                           <Ban className="h-4 w-4" />
                         </button>
@@ -294,15 +297,15 @@ const TournamentStrategist = () => {
             {!IS_LOGGED_IN ? (
               <div className="text-center p-4 rounded-xl bg-secondary border border-border">
                 <Lock className="h-6 w-6 text-primary mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground mb-3">Для использования стратега необходимо войти в аккаунт</p>
-                <Link to="/auth"><Button className="gap-2">Войти / Зарегистрироваться</Button></Link>
+                <p className="text-sm text-muted-foreground mb-3">{t("tournament.loginRequired")}</p>
+                <Link to="/auth"><Button className="gap-2">{t("tournament.loginSignup")}</Button></Link>
               </div>
             ) : (
               <Button onClick={handleCalculate}
                 disabled={!allFilled || hasDuplicates}
                 className="w-full gap-2 h-12 text-base font-semibold">
                 <Trophy className="h-5 w-5" />
-                Рассчитать стратегию
+                {t("tournament.calculateStrategy")}
               </Button>
             )}
           </motion.div>
@@ -313,20 +316,24 @@ const TournamentStrategist = () => {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }} className="space-y-6">
 
-                {/* Matchup Matrix — with blur for non-logged */}
+                {/* Matchup Matrix */}
                 <div className="relative">
                   <MatchupMatrix
                     myArchetypes={myArchetypes}
                     oppArchetypes={oppArchetypes}
                     bannedIndex={effectiveBanIdx}
                     oppBannedIndex={oppManualBanIndex}
+                    getWinrate={getWinrate}
+                    getArchetypeInfo={getArchetypeInfo}
+                    getEstimatedGames={getEstimatedGames}
+                    t={t}
                   />
                   {!IS_LOGGED_IN && (
                     <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl backdrop-blur-xl bg-background/80">
                       <div className="text-center p-6">
                         <Lock className="h-8 w-8 text-primary mx-auto mb-3" />
-                        <p className="text-foreground font-semibold mb-1">Зарегистрируйтесь для просмотра таблицы</p>
-                        <Link to="/auth"><Button size="sm" className="mt-2">Войти</Button></Link>
+                        <p className="text-foreground font-semibold mb-1">{t("tournament.signUpToView")}</p>
+                        <Link to="/auth"><Button size="sm" className="mt-2">{t("auth.loginBtn")}</Button></Link>
                       </div>
                     </div>
                   )}
@@ -337,11 +344,11 @@ const TournamentStrategist = () => {
                   <CardHeader>
                     <CardTitle className="font-display text-lg flex items-center gap-2">
                       <ShieldAlert className="h-5 w-5 text-destructive" />
-                      Рекомендация по бану
+                      {t("tournament.banRecommendation")}
                       {manualBanIndex !== null && IS_PRO && (
                         <button onClick={() => setManualBanIndex(null)}
                           className="ml-auto text-xs text-muted-foreground hover:text-foreground underline">
-                          Сбросить ручной бан
+                          {t("tournament.resetManualBan")}
                         </button>
                       )}
                     </CardTitle>
@@ -351,11 +358,12 @@ const TournamentStrategist = () => {
                       <BanOptionCard key={i} option={option} index={i}
                         isActive={effectiveBanIdx === option.bannedIndex}
                         onManualBan={IS_PRO ? () => setManualBanIndex(option.bannedIndex) : undefined}
+                        t={t}
                       />
                     ))}
                     {!IS_PRO && (
                       <p className="text-xs text-muted-foreground text-center mt-2">
-                        🔒 Ручной выбор бана доступен только в PRO
+                        {t("tournament.manualBanProOnly")}
                       </p>
                     )}
                   </CardContent>
@@ -368,14 +376,14 @@ const TournamentStrategist = () => {
                       <CardHeader>
                         <CardTitle className="font-display text-lg flex items-center gap-2">
                           <ArrowLeftRight className="h-5 w-5 text-primary" />
-                          Бан противника
+                          {t("tournament.oppBan")}
                           <button
                             onClick={() => setShowOpponentBan(!showOpponentBan)}
                             className={`ml-auto text-xs px-3 py-1 rounded-md transition-colors ${showOpponentBan
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-secondary text-muted-foreground hover:text-foreground"
                               }`}>
-                            {showOpponentBan ? "Скрыть" : "Показать"}
+                            {showOpponentBan ? t("tournament.hide") : t("tournament.show")}
                           </button>
                         </CardTitle>
                       </CardHeader>
@@ -385,7 +393,7 @@ const TournamentStrategist = () => {
                             exit={{ opacity: 0, height: 0 }}>
                             <CardContent className="space-y-3 pt-0">
                               <p className="text-xs text-muted-foreground mb-2">
-                                Какую из ваших колод, скорее всего, забанит противник:
+                                {t("tournament.oppBanDesc")}
                               </p>
                               {oppBanOptions.map((opt, i) => {
                                 const isOppBanned = oppManualBanIndex === opt.bannedIndex;
@@ -407,7 +415,7 @@ const TournamentStrategist = () => {
                                     </div>
                                     {isOppBanned && (
                                       <p className="text-xs text-muted-foreground mt-1">
-                                        ✅ Отмечено как забаненное противником — учтено в оптимальной колоде
+                                        {t("tournament.markedAsBanned")}
                                       </p>
                                     )}
                                   </div>
@@ -423,12 +431,12 @@ const TournamentStrategist = () => {
                       <div className="relative p-6">
                         <div className="absolute inset-0 backdrop-blur-xl bg-background/80 z-10 flex flex-col items-center justify-center gap-2">
                           <Crown className="h-6 w-6 text-primary" />
-                          <p className="text-foreground font-medium text-sm">🔒 Доступно на PRO</p>
-                          <p className="text-xs text-muted-foreground">Прогноз бана противника</p>
+                          <p className="text-foreground font-medium text-sm">{t("tournament.proOnly")}</p>
+                          <p className="text-xs text-muted-foreground">{t("tournament.oppBanProDesc")}</p>
                         </div>
                         <div className="space-y-3 opacity-30 select-none" aria-hidden>
                           <p className="font-display text-lg flex items-center gap-2">
-                            <ArrowLeftRight className="h-5 w-5" /> Бан противника
+                            <ArrowLeftRight className="h-5 w-5" /> {t("tournament.oppBan")}
                           </p>
                           <div className="h-10 bg-secondary/50 rounded" />
                           <div className="h-10 bg-secondary/50 rounded" />
@@ -445,7 +453,7 @@ const TournamentStrategist = () => {
                       <CardHeader>
                         <CardTitle className="font-display text-lg flex items-center gap-2">
                           <Star className="h-5 w-5 text-primary" />
-                          Оптимальная колода для первого матча
+                          {t("tournament.optimalFirstDeck")}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -461,14 +469,14 @@ const TournamentStrategist = () => {
                             {(effectiveBanIdx !== null || oppManualBanIndex !== null) && (
                               <div className="mt-2 p-2 bg-secondary/50 rounded text-xs text-muted-foreground flex items-center gap-2">
                                 <Info className="h-3 w-3" />
-                                Рассчитано с учётом банов
-                                {effectiveBanIdx !== null ? ` (бан: ${oppArchetypes[effectiveBanIdx]})` : ""}
-                                {oppManualBanIndex !== null ? ` (их бан: ${myArchetypes[oppManualBanIndex]})` : ""}
+                                {t("tournament.calculatedWithBans")}
+                                {effectiveBanIdx !== null ? ` (ban: ${oppArchetypes[effectiveBanIdx]})` : ""}
+                                {oppManualBanIndex !== null ? ` (${t("tournament.oppBan")}: ${myArchetypes[oppManualBanIndex]})` : ""}
                               </div>
                             )}
                           </div>
                         ) : (
-                          <p className="text-muted-foreground text-sm">Недостаточно данных для расчёта.</p>
+                          <p className="text-muted-foreground text-sm">{t("tournament.notEnoughData")}</p>
                         )}
                       </CardContent>
                     </Card>
@@ -477,12 +485,12 @@ const TournamentStrategist = () => {
                       <div className="relative p-6">
                         <div className="absolute inset-0 backdrop-blur-xl bg-background/80 z-10 flex flex-col items-center justify-center gap-2">
                           <Crown className="h-6 w-6 text-primary" />
-                          <p className="text-foreground font-medium text-sm">🔒 Доступно на PRO</p>
-                          <p className="text-xs text-muted-foreground">Оптимальная колода для первого матча</p>
+                          <p className="text-foreground font-medium text-sm">{t("tournament.proOnly")}</p>
+                          <p className="text-xs text-muted-foreground">{t("tournament.optimalFirstDeckProDesc")}</p>
                         </div>
                         <div className="space-y-3 opacity-30 select-none" aria-hidden>
                           <p className="font-display text-lg flex items-center gap-2">
-                            <Star className="h-5 w-5" /> Оптимальная колода
+                            <Star className="h-5 w-5" /> {t("tournament.optimalFirstDeck")}
                           </p>
                           <div className="h-12 bg-secondary/50 rounded" />
                         </div>
@@ -505,8 +513,8 @@ const TournamentStrategist = () => {
    Sub-components
    ============================================================ */
 
-function PreBanMiniMatrix({ myArchetypes, oppArchetypes }: {
-  myArchetypes: string[]; oppArchetypes: string[];
+function PreBanMiniMatrix({ myArchetypes, oppArchetypes, getWinrate }: {
+  myArchetypes: string[]; oppArchetypes: string[]; getWinrate: GetWinrateFn;
 }) {
   return (
     <table className="w-full text-[10px]">
@@ -523,7 +531,7 @@ function PreBanMiniMatrix({ myArchetypes, oppArchetypes }: {
           <tr key={ri}>
             <td className="p-1 text-primary font-medium truncate max-w-[60px]">{my}</td>
             {oppArchetypes.map((opp, ci) => {
-               const wr = staticGetWinrate(my, opp);
+               const wr = getWinrate(my, opp);
               return (
                 <td key={ci} className={`p-1 text-center font-bold ${getWinrateColor(wr)}`}>
                   {wr !== null ? `${wr}%` : "—"}
@@ -537,15 +545,17 @@ function PreBanMiniMatrix({ myArchetypes, oppArchetypes }: {
   );
 }
 
-function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedIndex }: {
+function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedIndex, getWinrate, getArchetypeInfo, getEstimatedGames, t }: {
   myArchetypes: string[]; oppArchetypes: string[]; bannedIndex: number | null; oppBannedIndex: number | null;
+  getWinrate: GetWinrateFn; getArchetypeInfo: GetArchetypeInfoFn; getEstimatedGames: GetEstimatedGamesFn;
+  t: (key: string) => string;
 }) {
   return (
     <Card className="bg-card border-border overflow-hidden">
       <CardHeader>
         <CardTitle className="font-display text-lg flex items-center gap-2">
           <Gamepad2 className="h-5 w-5 text-primary" />
-          Матрица матчапов
+          {t("tournament.matchupMatrix")}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -554,11 +564,11 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
             <thead>
               <tr>
                 <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">
-                  Ты ↓ / Противник →
+                  {t("tournament.youVsOpp")}
                 </th>
                 {oppArchetypes.map((opp, i) => {
                   const isBanned = bannedIndex === i;
-                  const info = staticGetArchetypeInfo(opp);
+                  const info = getArchetypeInfo(opp);
                   return (
                     <th key={i} className={`text-center py-2 px-3 font-medium text-xs ${isBanned ? "text-destructive" : "text-muted-foreground"
                       }`}>
@@ -582,7 +592,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
             <tbody>
               {myArchetypes.map((my, rowIdx) => {
                 const isMyBanned = oppBannedIndex === rowIdx;
-                const info = staticGetArchetypeInfo(my);
+                const info = getArchetypeInfo(my);
                 return (
                   <tr key={rowIdx} className={`border-t border-border ${isMyBanned ? "opacity-40" : ""}`}>
                     <td className="py-3 px-3 font-medium text-primary">
@@ -595,12 +605,12 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                         </div>
                       )}
                       {isMyBanned && (
-                        <span className="text-[9px] bg-destructive/20 text-destructive px-1 py-0.5 rounded">Забанена</span>
+                        <span className="text-[9px] bg-destructive/20 text-destructive px-1 py-0.5 rounded">{t("tournament.banned")}</span>
                       )}
                     </td>
                     {oppArchetypes.map((opp, colIdx) => {
-                      const wr = staticGetWinrate(my, opp);
-                      const games = staticGetEstimatedGames(my, opp);
+                      const wr = getWinrate(my, opp);
+                      const games = getEstimatedGames(my, opp);
                       const isBanned = bannedIndex === colIdx;
                       return (
                         <td key={colIdx}
@@ -610,7 +620,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                             {wr !== null ? `${wr}%` : "—"}
                           </div>
                           <div className="text-[10px] text-muted-foreground mt-0.5">
-                            {games !== null ? `~${games} игр` : "< 500"}
+                            {games !== null ? `~${games} ${t("tournament.games")}` : t("tournament.lessGames")}
                           </div>
                         </td>
                       );
@@ -623,16 +633,16 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
         </div>
         <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
           <Info className="h-3 w-3" />
-          «—» — менее 500 игр · Pop. = популярность колоды в мете Legend
+          {t("tournament.matrixNote")}
         </p>
       </CardContent>
     </Card>
   );
 }
 
-function BanOptionCard({ option, index, isActive, onManualBan }: {
+function BanOptionCard({ option, index, isActive, onManualBan, t }: {
   option: BanResult; index: number; isActive: boolean;
-  onManualBan?: () => void;
+  onManualBan?: () => void; t: (key: string) => string;
 }) {
   return (
     <div className={`p-4 rounded-lg transition-all ${isActive
@@ -649,7 +659,7 @@ function BanOptionCard({ option, index, isActive, onManualBan }: {
             <span className="text-muted-foreground text-sm">#{index + 1}</span>
           )}
           <span className={`font-medium ${isActive ? "text-foreground" : "text-muted-foreground"}`}>
-            Забанить{" "}
+            {t("tournament.banThis")}{" "}
             <span className={isActive ? "text-destructive font-bold" : ""}>{option.bannedArchetype}</span>
           </span>
         </div>
@@ -662,22 +672,21 @@ function BanOptionCard({ option, index, isActive, onManualBan }: {
           </span>
         </div>
       </div>
-      {/* Reasoning */}
       {option.reasoning && (
         <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{option.reasoning}</p>
       )}
       {isActive && !option.reasoning && (
         <p className="text-sm text-muted-foreground mt-2">
-          Минимальный винрейт: {option.minWinrate}% · Средний: {option.avgWinrate}%
+          {t("tournament.minWinrate")} {option.minWinrate}% · {t("tournament.avgWinrate")} {option.avgWinrate}%
         </p>
       )}
     </div>
   );
 }
 
-function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [] }: {
+function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [], archetypeList }: {
   value: string; onChange: (val: string) => void; placeholder: string;
-  excludeValues?: string[];
+  excludeValues?: string[]; archetypeList: ArchetypeInfo[];
 }) {
   return (
     <Select value={value} onValueChange={onChange}>
@@ -685,7 +694,7 @@ function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [] }: {
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {staticArchetypeList.map((arch) => (
+        {archetypeList.map((arch) => (
           <SelectItem key={arch.name} value={arch.name}
             disabled={excludeValues.includes(arch.name)}>
             <span className="flex items-center justify-between gap-3 w-full">

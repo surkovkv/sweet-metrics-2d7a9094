@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, MessageSquare, Newspaper, Settings, Check, X, ToggleLeft, ToggleRight, Loader2, RefreshCcw } from "lucide-react";
+import { Shield, MessageSquare, Newspaper, Settings, Check, X, ToggleLeft, ToggleRight, Loader2, RefreshCcw, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import { Contact } from "@/hooks/useContacts";
 import { NewsPost } from "@/hooks/useNewsPosts";
 
 export default function Admin() {
-    const { user, profile, loading: authLoading } = useAuth();
+    const { user, profile, loading: authLoading, isAdmin } = useAuth();
     const navigate = useNavigate();
     const { toast } = useToast();
 
@@ -22,8 +22,8 @@ export default function Admin() {
     const [news, setNews] = useState<NewsPost[]>([]);
     const [loadingData, setLoadingData] = useState(false);
     const [syncLoading, setSyncLoading] = useState(false);
+    const [userStats, setUserStats] = useState<{ total: number; pro: number } | null>(null);
 
-    const isAdmin = profile?.nickname === "kikusadmin";
     const [editingPost, setEditingPost] = useState<NewsPost | null>(null);
     const [showNewEditor, setShowNewEditor] = useState(false);
 
@@ -37,19 +37,20 @@ export default function Admin() {
         if (!isAdmin) return;
         setLoadingData(true);
 
-        // Fetch contacts
-        const { data: contactsData } = await supabase
-            .from("contacts")
-            .select("*")
-            .order("created_at", { ascending: false });
-        if (contactsData) setContacts(contactsData);
+        const [contactsRes, newsRes, statsRes] = await Promise.all([
+            supabase.from("contacts").select("*").order("created_at", { ascending: false }),
+            supabase.from("news_posts").select("*").order("created_at", { ascending: false }),
+            supabase.from("profiles").select("is_pro"),
+        ]);
 
-        // Fetch all news
-        const { data: newsData } = await supabase
-            .from("news_posts")
-            .select("*")
-            .order("created_at", { ascending: false });
-        if (newsData) setNews(newsData);
+        if (contactsRes.data) setContacts(contactsRes.data);
+        if (newsRes.data) setNews(newsRes.data);
+        if (statsRes.data) {
+            setUserStats({
+                total: statsRes.data.length,
+                pro: statsRes.data.filter((p: any) => p.is_pro).length,
+            });
+        }
 
         setLoadingData(false);
     };
@@ -82,12 +83,9 @@ export default function Admin() {
             toast({ title: "Ошибка", description: error.message, variant: "destructive" });
         } else {
             toast({ title: "PRO Статус обновлен", description: `Теперь статус PRO: ${newStatus}` });
-            // Require refresh or useAuth reload to take effect immediately in other tabs
             setTimeout(() => window.location.reload(), 1000);
         }
     };
-
-
 
     const triggerHsguruFetch = async () => {
         setSyncLoading(true);
@@ -144,6 +142,48 @@ export default function Admin() {
                             Обновить
                         </Button>
                     </div>
+
+                    {/* Quick Stats */}
+                    {userStats && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <Card className="bg-card border-border">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <Users className="h-5 w-5 text-primary" />
+                                    <div>
+                                        <p className="text-2xl font-bold text-foreground">{userStats.total}</p>
+                                        <p className="text-xs text-muted-foreground">Пользователей</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-card border-border">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <Shield className="h-5 w-5 text-primary" />
+                                    <div>
+                                        <p className="text-2xl font-bold text-foreground">{userStats.pro}</p>
+                                        <p className="text-xs text-muted-foreground">PRO</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-card border-border">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <MessageSquare className="h-5 w-5 text-primary" />
+                                    <div>
+                                        <p className="text-2xl font-bold text-foreground">{contacts.length}</p>
+                                        <p className="text-xs text-muted-foreground">Сообщений</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-card border-border">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <Newspaper className="h-5 w-5 text-primary" />
+                                    <div>
+                                        <p className="text-2xl font-bold text-foreground">{news.length}</p>
+                                        <p className="text-xs text-muted-foreground">Новостей</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
 
                     <Tabs defaultValue="news" className="space-y-6">
                         <TabsList className="bg-secondary">
