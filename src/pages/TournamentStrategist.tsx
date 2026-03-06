@@ -582,7 +582,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
             <tbody>
               {myArchetypes.map((my, rowIdx) => {
                 const isMyBanned = oppBannedIndex === rowIdx;
-                const info = getArchetypeInfo(my);
+                const info = staticGetArchetypeInfo(my);
                 return (
                   <tr key={rowIdx} className={`border-t border-border ${isMyBanned ? "opacity-40" : ""}`}>
                     <td className="py-3 px-3 font-medium text-primary">
