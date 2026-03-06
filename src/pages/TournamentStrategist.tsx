@@ -685,7 +685,7 @@ function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [] }: {
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {archetypeList.map((arch) => (
+        {staticArchetypeList.map((arch) => (
           <SelectItem key={arch.name} value={arch.name}
             disabled={excludeValues.includes(arch.name)}>
             <span className="flex items-center justify-between gap-3 w-full">
