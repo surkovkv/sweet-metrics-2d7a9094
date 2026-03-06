@@ -523,7 +523,7 @@ function PreBanMiniMatrix({ myArchetypes, oppArchetypes }: {
           <tr key={ri}>
             <td className="p-1 text-primary font-medium truncate max-w-[60px]">{my}</td>
             {oppArchetypes.map((opp, ci) => {
-              const wr = getWinrate(my, opp);
+               const wr = staticGetWinrate(my, opp);
               return (
                 <td key={ci} className={`p-1 text-center font-bold ${getWinrateColor(wr)}`}>
                   {wr !== null ? `${wr}%` : "—"}
