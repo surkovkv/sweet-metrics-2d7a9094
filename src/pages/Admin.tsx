@@ -9,9 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
-import NewsEditor from "@/components/NewsEditor";
 import { Contact } from "@/hooks/useContacts";
 import { NewsPost } from "@/hooks/useNewsPosts";
+
+const sb = supabase as any;
 
 export default function Admin() {
     const { user, profile, loading: authLoading, isAdmin } = useAuth();
@@ -24,9 +25,6 @@ export default function Admin() {
     const [syncLoading, setSyncLoading] = useState(false);
     const [userStats, setUserStats] = useState<{ total: number; pro: number } | null>(null);
 
-    const [editingPost, setEditingPost] = useState<NewsPost | null>(null);
-    const [showNewEditor, setShowNewEditor] = useState(false);
-
     useEffect(() => {
         if (!authLoading && !isAdmin) {
             navigate("/", { replace: true });
@@ -38,9 +36,9 @@ export default function Admin() {
         setLoadingData(true);
 
         const [contactsRes, newsRes, statsRes] = await Promise.all([
-            supabase.from("contacts").select("*").order("created_at", { ascending: false }),
-            supabase.from("news_posts").select("*").order("created_at", { ascending: false }),
-            supabase.from("profiles").select("is_pro"),
+            sb.from("contacts").select("*").order("created_at", { ascending: false }),
+            sb.from("news_posts").select("*").order("created_at", { ascending: false }),
+            sb.from("profiles").select("is_pro"),
         ]);
 
         if (contactsRes.data) setContacts(contactsRes.data);
@@ -60,7 +58,7 @@ export default function Admin() {
     }, [isAdmin]);
 
     const publishNews = async (id: string, publish: boolean) => {
-        const { error } = await supabase.from("news_posts").update({ published: publish }).eq("id", id);
+        const { error } = await sb.from("news_posts").update({ published: publish }).eq("id", id);
         if (error) {
             toast({ title: "Ошибка", description: error.message, variant: "destructive" });
         } else {
@@ -69,16 +67,10 @@ export default function Admin() {
         }
     };
 
-    const handleEditorSave = () => {
-        setEditingPost(null);
-        setShowNewEditor(false);
-        fetchData();
-    };
-
     const toggleProStatus = async () => {
         if (!user) return;
         const newStatus = !profile?.is_pro;
-        const { error } = await supabase.from("profiles").update({ is_pro: newStatus }).eq("user_id", user.id);
+        const { error } = await sb.from("profiles").update({ is_pro: newStatus }).eq("user_id", user.id);
         if (error) {
             toast({ title: "Ошибка", description: error.message, variant: "destructive" });
         } else {
@@ -143,7 +135,6 @@ export default function Admin() {
                         </Button>
                     </div>
 
-                    {/* Quick Stats */}
                     {userStats && (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                             <Card className="bg-card border-border">
