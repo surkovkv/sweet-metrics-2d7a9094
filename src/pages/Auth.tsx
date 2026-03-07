@@ -51,7 +51,7 @@ const Auth = () => {
   const validateEmail = () => emailRegex.test(email);
 
   const checkNicknameUnique = async (nick: string): Promise<boolean> => {
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("profiles")
       .select("id")
       .ilike("nickname", nick.trim())
