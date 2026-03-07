@@ -14,6 +14,162 @@ export type Database = {
   }
   public: {
     Tables: {
+      archetype_stats: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          name: string
+          popularity: number | null
+          winrate: number | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          name: string
+          popularity?: number | null
+          winrate?: number | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          name?: string
+          popularity?: number | null
+          winrate?: number | null
+        }
+        Relationships: []
+      }
+      contacts: {
+        Row: {
+          category: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      matchups: {
+        Row: {
+          archetype: string
+          created_at: string
+          date: string
+          estimated_games: number | null
+          id: string
+          opponent: string
+          winrate: number
+        }
+        Insert: {
+          archetype: string
+          created_at?: string
+          date: string
+          estimated_games?: number | null
+          id?: string
+          opponent: string
+          winrate: number
+        }
+        Update: {
+          archetype?: string
+          created_at?: string
+          date?: string
+          estimated_games?: number | null
+          id?: string
+          opponent?: string
+          winrate?: number
+        }
+        Relationships: []
+      }
+      news_posts: {
+        Row: {
+          author_id: string
+          author_name: string
+          content: string
+          cover_image: string | null
+          created_at: string
+          id: string
+          published: boolean
+          slug: string
+          summary: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          author_name: string
+          content: string
+          cover_image?: string | null
+          created_at?: string
+          id?: string
+          published?: boolean
+          slug: string
+          summary: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          author_name?: string
+          content?: string
+          cover_image?: string | null
+          created_at?: string
+          id?: string
+          published?: boolean
+          slug?: string
+          summary?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          is_pro: boolean
+          nickname: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_pro?: boolean
+          nickname: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_pro?: boolean
+          nickname?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
