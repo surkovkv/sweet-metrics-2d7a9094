@@ -2,7 +2,8 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
-type Profile = { nickname: string; is_pro: boolean } | null;
+// ВРЕМЕННО: используем any для Profile
+type Profile = any;
 
 type AuthContext = {
   user: User | null;
@@ -21,11 +22,18 @@ const AuthCtx = createContext<AuthContext>({
 });
 
 const fetchProfile = async (userId: string) => {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("profiles")
-    .select("nickname, is_pro")
+    .select("*")  // ВРЕМЕННО: выбираем все поля
     .eq("user_id", userId)
     .single();
+  
+  if (error) {
+    console.log("Error fetching profile:", error);
+    return { nickname: 'Player', is_pro: false, role: 'user' };
+  }
+  
+  console.log("Profile data from Supabase:", data); // ← посмотрим, что приходит
   return data;
 };
 
@@ -54,7 +62,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id).then(setProfile);
+        fetchProfile(session.user.id).then(data => {
+          console.log("Setting profile:", data);
+          setProfile(data);
+        });
       }
       setLoading(false);
     });

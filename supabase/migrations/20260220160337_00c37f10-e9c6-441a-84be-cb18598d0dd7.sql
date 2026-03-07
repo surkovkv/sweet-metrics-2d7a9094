@@ -11,6 +11,11 @@ CREATE TABLE public.profiles (
 -- Enable RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+ALTER TABLE public.profiles
+ADD COLUMN role TEXT DEFAULT 'user';
+
+UPDATE public.profiles SET role = 'user' WHERE role is NULL;
+
 -- Policies
 CREATE POLICY "Users can view their own profile"
 ON public.profiles FOR SELECT
@@ -24,6 +29,13 @@ CREATE POLICY "Users can insert their own profile"
 ON public.profiles FOR INSERT
 WITH CHECK (auth.uid() = user_id);
 
+CREATE POLICY "Admins can view all profiles"
+ON public.profiles FOR SELECT
+USING (
+  auth.uid() IN (
+    SELECT user_id FROM public.profiles WHERE role = 'admin'
+  )
+);
 -- Auto-create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER

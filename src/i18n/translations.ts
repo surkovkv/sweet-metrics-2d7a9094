@@ -1101,7 +1101,7 @@ const zh: Record<string, string> = {
   "profile.nickUpdated": "昵称已更新",
   "profile.writeArticle": "撰写文章",
   "profile.noArticles": "你还没有文章",
-  "profile.createFirst": "点击"撰写文章"来创建第一篇",
+  "profile.createFirst": "点击\"撰写文章\"来创建第一篇",
   "profile.noMessages": "暂无消息",
   "profile.deleteArticle": "删除文章？",
   "profile.deleteError": "删除错误",
