@@ -492,7 +492,7 @@ const en: Record<string, string> = {
   "tournament.optimalFirstDeck": "Optimal First Deck",
   "tournament.optimalFirstDeckProDesc": "Optimal first deck",
   "tournament.notEnoughData": "Not enough data to calculate.",
-  "tournament.calculatedWithBans": "Calculated considering bans",
+  "tournament.calculatedWithBans": "Calculated considering ban",
   "tournament.matchupMatrix": "Matchup Matrix",
   "tournament.youVsOpp": "You ↓ / Opponent →",
   "tournament.preBanMatrix": "Pre-ban matrix:",
