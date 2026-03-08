@@ -469,7 +469,7 @@ const TournamentStrategist = () => {
                     <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
                       <History className="h-3.5 w-3.5" />
                     </div>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground absolute -top-2 -right-2 bg-background rounded-full" />
+                    <HelpCircle className="h-4 w-4 text-yellow-500 absolute -top-2 -right-2 bg-background rounded-full" />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
