@@ -1522,6 +1522,8 @@ const fr: Record<string, string> = {
   "tournament.noBanHistory": "Aucun ban sauvegardé",
   "tournament.avgWrAfterBan": "Winrate moyen après le ban",
   "tournament.restoreBan": "Restaurer",
+  "tournament.reasoningTemplate": "{deck} affiche un Winrate Moyen (AVG WR) de {wr}% contre les decks restants de l'adversaire. Particulièrement fort contre {opp}.",
+  "tournament.avgWrFull": "Winrate Moyen (Average Winrate)",
 };
 
 // For pt, hi, ar — using concise but natural translations
