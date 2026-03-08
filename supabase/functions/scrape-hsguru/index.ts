@@ -88,16 +88,14 @@ function parseMatchupTable(html: string) {
   const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
   const matchups: Array<{
     archetype: string;
-    opponent_archetype: string;
+    opponent: string;
     winrate: number;
-    total_games: number | null;
+    estimated_games: number | null;
   }> = [];
   const archetypeStats: Array<{
-    archetype: string;
+    name: string;
     winrate: number | null;
     popularity: number | null;
-    total_games: number | null;
-    hs_class: string;
   }> = [];
 
   let rowMatch;
@@ -168,11 +166,9 @@ function parseMatchupTable(html: string) {
         : null;
 
     archetypeStats.push({
-      archetype: archetypeName,
+      name: archetypeName,
       winrate: overallWinrate,
       popularity,
-      total_games: totalGames,
-      hs_class: hsClass,
     });
 
     // Remaining cells are matchup winrates, one per opponent
@@ -184,9 +180,9 @@ function parseMatchupTable(html: string) {
         if (wr >= 0 && wr <= 100) {
           matchups.push({
             archetype: archetypeName,
-            opponent_archetype: opponentNames[i - 2],
+            opponent: opponentNames[i - 2],
             winrate: wr,
-            total_games: null,
+            estimated_games: null,
           });
         }
       }
@@ -196,7 +192,7 @@ function parseMatchupTable(html: string) {
   // Update popularity from header row if we have it
   if (popularityValues.length === opponentNames.length) {
     for (let i = 0; i < opponentNames.length; i++) {
-      const stat = archetypeStats.find((s) => s.archetype === opponentNames[i]);
+      const stat = archetypeStats.find((s) => s.name === opponentNames[i]);
       if (stat && stat.popularity === null) {
         stat.popularity = popularityValues[i];
       }
@@ -347,7 +343,7 @@ Deno.serve(async (req) => {
         date: today,
         matchupsCount: matchups.length,
         archetypesCount: archetypeStats.length,
-        archetypes: archetypeStats.map((a) => a.archetype),
+        archetypes: archetypeStats.map((a) => a.name),
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

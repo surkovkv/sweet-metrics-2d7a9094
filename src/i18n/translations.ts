@@ -309,13 +309,16 @@ const ru: Record<string, string> = {
   "common.loading": "Загрузка...",
   "common.error": "Ошибка",
   "common.cancel": "Отмена",
-  "tournament.manualBanProHint": "💡 Нажми на вариант бана, чтобы выбрать вручную",
+  "tournament.manualBanProHint": "Нажми на вариант бана, чтобы выбрать вручную",
   "tournament.banHistory": "История банов",
   "tournament.noBanHistory": "Нет сохранённых банов",
   "tournament.avgWrAfterBan": "Средний винрейт после бана",
   "tournament.restoreBan": "Восстановить",
-  "tournament.reasoningTemplate": "{deck} показывает средний винрейт (AVG WR) {wr}% против оставшихся колод соперника. Особенно силён против {opp}.",
+  "tournament.reasoningTemplate": "{deck} показывает средний винрейт {wr}% против оставшихся колод соперника. Особенно силён против {opp}.",
   "tournament.avgWrFull": "средний винрейт (Average Winrate)",
+  "tournament.banHistoryProOnly": "История банов доступна на PRO",
+  "tournament.trialsRemaining": "Осталось {n} из {max} бесплатных расчётов",
+  "tournament.trialsExhausted": "Бесплатные расчёты исчерпаны",
 };
 
 const en: Record<string, string> = {
@@ -611,13 +614,16 @@ const en: Record<string, string> = {
   "common.loading": "Loading...",
   "common.error": "Error",
   "common.cancel": "Cancel",
-  "tournament.manualBanProHint": "💡 Click a ban option to select it manually",
+  "tournament.manualBanProHint": "Click a ban option to select it manually",
   "tournament.banHistory": "Ban History",
   "tournament.noBanHistory": "No saved bans",
   "tournament.avgWrAfterBan": "Average winrate after ban",
   "tournament.restoreBan": "Restore",
-  "tournament.reasoningTemplate": "{deck} shows an Average Winrate (AVG WR) of {wr}% against the remaining opponent decks. Especially strong against {opp}.",
+  "tournament.reasoningTemplate": "{deck} shows an average winrate of {wr}% against the remaining opponent decks. Especially strong against {opp}.",
   "tournament.avgWrFull": "Average Winrate",
+  "tournament.banHistoryProOnly": "Ban history available on PRO",
+  "tournament.trialsRemaining": "{n} of {max} free calculations remaining",
+  "tournament.trialsExhausted": "Free calculations exhausted",
 };
 
 const es: Record<string, string> = {
@@ -913,13 +919,16 @@ const es: Record<string, string> = {
   "common.loading": "Cargando...",
   "common.error": "Error",
   "common.cancel": "Cancelar",
-  "tournament.manualBanProHint": "💡 Haz clic en una opción de baneo para seleccionarla manualmente",
+  "tournament.manualBanProHint": "Haz clic en una opción de baneo para seleccionarla manualmente",
   "tournament.banHistory": "Historial de baneos",
   "tournament.noBanHistory": "Sin baneos guardados",
   "tournament.avgWrAfterBan": "Winrate promedio tras el baneo",
   "tournament.restoreBan": "Restaurar",
-  "tournament.reasoningTemplate": "{deck} muestra un Winrate Promedio (AVG WR) de {wr}% contra los mazos restantes del oponente. Especialmente fuerte contra {opp}.",
+  "tournament.reasoningTemplate": "{deck} muestra un winrate promedio de {wr}% contra los mazos restantes del oponente. Especialmente fuerte contra {opp}.",
   "tournament.avgWrFull": "Winrate Promedio (Average Winrate)",
+  "tournament.banHistoryProOnly": "Historial de baneos disponible en PRO",
+  "tournament.trialsRemaining": "{n} de {max} cálculos gratuitos restantes",
+  "tournament.trialsExhausted": "Cálculos gratuitos agotados",
 };
 
 const zh: Record<string, string> = {
@@ -1215,13 +1224,16 @@ const zh: Record<string, string> = {
   "common.loading": "加载中...",
   "common.error": "错误",
   "common.cancel": "取消",
-  "tournament.manualBanProHint": "💡 点击ban选项以手动选择",
+  "tournament.manualBanProHint": "点击ban选项以手动选择",
   "tournament.banHistory": "Ban历史记录",
   "tournament.noBanHistory": "暂无保存的ban记录",
   "tournament.avgWrAfterBan": "ban后平均胜率",
   "tournament.restoreBan": "恢复",
-  "tournament.reasoningTemplate": "{deck} 对对手剩余卡组的平均胜率（AVG WR）为 {wr}%。对 {opp} 尤其强势。",
+  "tournament.reasoningTemplate": "{deck} 对对手剩余卡组的平均胜率为 {wr}%。对 {opp} 尤其强势。",
   "tournament.avgWrFull": "平均胜率 (Average Winrate)",
+  "tournament.banHistoryProOnly": "Ban历史记录仅限PRO",
+  "tournament.trialsRemaining": "剩余 {n}/{max} 次免费计算",
+  "tournament.trialsExhausted": "免费计算已用完",
 };
 
 const fr: Record<string, string> = {
@@ -1517,13 +1529,16 @@ const fr: Record<string, string> = {
   "common.loading": "Chargement...",
   "common.error": "Erreur",
   "common.cancel": "Annuler",
-  "tournament.manualBanProHint": "💡 Cliquez sur une option de ban pour la sélectionner manuellement",
+  "tournament.manualBanProHint": "Cliquez sur une option de ban pour la sélectionner manuellement",
   "tournament.banHistory": "Historique des bans",
   "tournament.noBanHistory": "Aucun ban sauvegardé",
   "tournament.avgWrAfterBan": "Winrate moyen après le ban",
   "tournament.restoreBan": "Restaurer",
-  "tournament.reasoningTemplate": "{deck} affiche un Winrate Moyen (AVG WR) de {wr}% contre les decks restants de l'adversaire. Particulièrement fort contre {opp}.",
+  "tournament.reasoningTemplate": "{deck} affiche un winrate moyen de {wr}% contre les decks restants de l'adversaire. Particulièrement fort contre {opp}.",
   "tournament.avgWrFull": "Winrate Moyen (Average Winrate)",
+  "tournament.banHistoryProOnly": "Historique des bans disponible en PRO",
+  "tournament.trialsRemaining": "{n} sur {max} calculs gratuits restants",
+  "tournament.trialsExhausted": "Calculs gratuits épuisés",
 };
 
 // For pt, hi, ar — using concise but natural translations
@@ -1820,13 +1835,16 @@ const pt: Record<string, string> = {
   "common.loading": "Carregando...",
   "common.error": "Erro",
   "common.cancel": "Cancelar",
-  "tournament.manualBanProHint": "💡 Clique em uma opção de ban para selecioná-la manualmente",
+  "tournament.manualBanProHint": "Clique em uma opção de ban para selecioná-la manualmente",
   "tournament.banHistory": "Histórico de bans",
   "tournament.noBanHistory": "Nenhum ban salvo",
   "tournament.avgWrAfterBan": "Winrate médio após o ban",
   "tournament.restoreBan": "Restaurar",
-  "tournament.reasoningTemplate": "{deck} mostra um Winrate Médio (AVG WR) de {wr}% contra os decks restantes do oponente. Especialmente forte contra {opp}.",
+  "tournament.reasoningTemplate": "{deck} mostra um winrate médio de {wr}% contra os decks restantes do oponente. Especialmente forte contra {opp}.",
   "tournament.avgWrFull": "Winrate Médio (Average Winrate)",
+  "tournament.banHistoryProOnly": "Histórico de bans disponível no PRO",
+  "tournament.trialsRemaining": "{n} de {max} cálculos gratuitos restantes",
+  "tournament.trialsExhausted": "Cálculos gratuitos esgotados",
 };
 
 // Hindi — concise natural translations
@@ -2026,13 +2044,16 @@ const hi: Record<string, string> = {
   "common.loading": "लोड हो रहा है...",
   "common.error": "त्रुटि",
   "common.cancel": "रद्द करें",
-  "tournament.manualBanProHint": "💡 मैनुअल रूप से चुनने के लिए बैन विकल्प पर क्लिक करें",
+  "tournament.manualBanProHint": "मैनुअल रूप से चुनने के लिए बैन विकल्प पर क्लिक करें",
   "tournament.banHistory": "बैन इतिहास",
   "tournament.noBanHistory": "कोई सहेजा हुआ बैन नहीं",
   "tournament.avgWrAfterBan": "बैन के बाद औसत विनरेट",
   "tournament.restoreBan": "पुनर्स्थापित",
-  "tournament.reasoningTemplate": "{deck} शेष प्रतिद्वंद्वी डेक के खिलाफ औसत विनरेट (AVG WR) {wr}% दिखाता है। {opp} के खिलाफ विशेष रूप से मजबूत।",
+  "tournament.reasoningTemplate": "{deck} शेष प्रतिद्वंद्वी डेक के खिलाफ औसत विनरेट {wr}% दिखाता है। {opp} के खिलाफ विशेष रूप से मजबूत।",
   "tournament.avgWrFull": "औसत विनरेट (Average Winrate)",
+  "tournament.banHistoryProOnly": "बैन इतिहास केवल PRO पर उपलब्ध",
+  "tournament.trialsRemaining": "{max} में से {n} मुफ्त गणनाएं शेष",
+  "tournament.trialsExhausted": "मुफ्त गणनाएं समाप्त",
 };
 
 // Arabic — concise natural translations
@@ -2232,13 +2253,16 @@ const ar: Record<string, string> = {
   "common.loading": "جارٍ التحميل...",
   "common.error": "خطأ",
   "common.cancel": "إلغاء",
-  "tournament.manualBanProHint": "💡 انقر على خيار الحظر لتحديده يدويًا",
+  "tournament.manualBanProHint": "انقر على خيار الحظر لتحديده يدويًا",
   "tournament.banHistory": "سجل الحظر",
   "tournament.noBanHistory": "لا يوجد حظر محفوظ",
   "tournament.avgWrAfterBan": "متوسط نسبة الفوز بعد الحظر",
   "tournament.restoreBan": "استعادة",
-  "tournament.reasoningTemplate": "{deck} يُظهر متوسط نسبة فوز (AVG WR) بنسبة {wr}% ضد مجموعات الخصم المتبقية. قوي بشكل خاص ضد {opp}.",
+  "tournament.reasoningTemplate": "{deck} يُظهر متوسط نسبة فوز بنسبة {wr}% ضد مجموعات الخصم المتبقية. قوي بشكل خاص ضد {opp}.",
   "tournament.avgWrFull": "متوسط نسبة الفوز (Average Winrate)",
+  "tournament.banHistoryProOnly": "سجل الحظر متاح في PRO",
+  "tournament.trialsRemaining": "{n} من {max} حسابات مجانية متبقية",
+  "tournament.trialsExhausted": "الحسابات المجانية استُنفدت",
 };
 
 const allTranslations: Record<string, Record<string, string>> = { en, ru, es, zh, hi, ar, pt, fr };
