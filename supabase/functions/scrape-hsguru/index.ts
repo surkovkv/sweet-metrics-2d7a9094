@@ -166,11 +166,9 @@ function parseMatchupTable(html: string) {
         : null;
 
     archetypeStats.push({
-      archetype: archetypeName,
+      name: archetypeName,
       winrate: overallWinrate,
       popularity,
-      total_games: totalGames,
-      hs_class: hsClass,
     });
 
     // Remaining cells are matchup winrates, one per opponent
