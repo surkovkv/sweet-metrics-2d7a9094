@@ -1209,6 +1209,11 @@ const zh: Record<string, string> = {
   "common.loading": "加载中...",
   "common.error": "错误",
   "common.cancel": "取消",
+  "tournament.manualBanProHint": "💡 点击ban选项以手动选择",
+  "tournament.banHistory": "Ban历史记录",
+  "tournament.noBanHistory": "暂无保存的ban记录",
+  "tournament.avgWrAfterBan": "ban后平均胜率",
+  "tournament.restoreBan": "恢复",
 };
 
 const fr: Record<string, string> = {
