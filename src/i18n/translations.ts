@@ -795,7 +795,7 @@ const es: Record<string, string> = {
   "tournament.banned": "Baneado",
   "tournament.games": "partidas",
   "tournament.lessGames": "< 500",
-  "tournament.matrixNote": "'—' — menos de 500 partidas · Pop. = popularidad en meta Leyenda",
+  "tournament.matrixNote": "'—' — menos de 500 partidas",
   "tournament.minWinrate": "Winrate mín.:",
   "tournament.avgWinrate": "Promedio:",
   "tournament.signUpToView": "Regístrate para ver la matriz",
