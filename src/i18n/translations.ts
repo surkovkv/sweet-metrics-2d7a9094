@@ -919,13 +919,16 @@ const es: Record<string, string> = {
   "common.loading": "Cargando...",
   "common.error": "Error",
   "common.cancel": "Cancelar",
-  "tournament.manualBanProHint": "💡 Haz clic en una opción de baneo para seleccionarla manualmente",
+  "tournament.manualBanProHint": "Haz clic en una opción de baneo para seleccionarla manualmente",
   "tournament.banHistory": "Historial de baneos",
   "tournament.noBanHistory": "Sin baneos guardados",
   "tournament.avgWrAfterBan": "Winrate promedio tras el baneo",
   "tournament.restoreBan": "Restaurar",
-  "tournament.reasoningTemplate": "{deck} muestra un Winrate Promedio (AVG WR) de {wr}% contra los mazos restantes del oponente. Especialmente fuerte contra {opp}.",
+  "tournament.reasoningTemplate": "{deck} muestra un winrate promedio de {wr}% contra los mazos restantes del oponente. Especialmente fuerte contra {opp}.",
   "tournament.avgWrFull": "Winrate Promedio (Average Winrate)",
+  "tournament.banHistoryProOnly": "Historial de baneos disponible en PRO",
+  "tournament.trialsRemaining": "{n} de {max} cálculos gratuitos restantes",
+  "tournament.trialsExhausted": "Cálculos gratuitos agotados",
 };
 
 const zh: Record<string, string> = {
