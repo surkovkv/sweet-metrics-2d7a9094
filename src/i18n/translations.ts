@@ -14,7 +14,7 @@ const ru: Record<string, string> = {
   "landing.openStrategist": "Открыть стратег",
   "landing.loginSignup": "Войти / Регистрация",
   "landing.strategistTitle": "Турнирный стратег",
-  "landing.strategistDesc": "Conquest-формат: матрица матчапов, оптимальный бан, оптимальная первая колода, стратегия на серию",
+  "landing.strategistDesc": "Рассчитай оптимальный бан и первую колоду для Conquest. AI-анализ матчапов, стратегия на всю серию",
   "landing.metaTitle": "Live Meta-трекер",
   "landing.metaDesc": "Популярность и винрейты на Legend-рангах — кто кого контрит, что сейчас в топе меты",
   "landing.newsTitle": "Новости",
