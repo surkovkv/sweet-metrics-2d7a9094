@@ -149,7 +149,7 @@ const ru: Record<string, string> = {
   "tournament.legendData": "данные с ранга Legend",
   "tournament.howItWorks": "Как это работает? (аббревиатуры и концепция)",
   "tournament.conceptTitle": "Концепция турнирного бана",
-  "tournament.conceptDesc": "В турнирном формате оба игрока берут 3–4 колоды. До начала серии каждый банит (запрещает) одну колоду противника.",
+  "tournament.conceptDesc": "В турнирном формате оба игрока берут 3–4 колоды. До начала серии каждый банит одну колоду противника.",
   "tournament.avgWr": "AVG WR",
   "tournament.avgWrDesc": "Средний винрейт колоды против всех других в мете",
   "tournament.popLabel": "Pop.",
