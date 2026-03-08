@@ -2253,13 +2253,16 @@ const ar: Record<string, string> = {
   "common.loading": "جارٍ التحميل...",
   "common.error": "خطأ",
   "common.cancel": "إلغاء",
-  "tournament.manualBanProHint": "💡 انقر على خيار الحظر لتحديده يدويًا",
+  "tournament.manualBanProHint": "انقر على خيار الحظر لتحديده يدويًا",
   "tournament.banHistory": "سجل الحظر",
   "tournament.noBanHistory": "لا يوجد حظر محفوظ",
   "tournament.avgWrAfterBan": "متوسط نسبة الفوز بعد الحظر",
   "tournament.restoreBan": "استعادة",
-  "tournament.reasoningTemplate": "{deck} يُظهر متوسط نسبة فوز (AVG WR) بنسبة {wr}% ضد مجموعات الخصم المتبقية. قوي بشكل خاص ضد {opp}.",
+  "tournament.reasoningTemplate": "{deck} يُظهر متوسط نسبة فوز بنسبة {wr}% ضد مجموعات الخصم المتبقية. قوي بشكل خاص ضد {opp}.",
   "tournament.avgWrFull": "متوسط نسبة الفوز (Average Winrate)",
+  "tournament.banHistoryProOnly": "سجل الحظر متاح في PRO",
+  "tournament.trialsRemaining": "{n} من {max} حسابات مجانية متبقية",
+  "tournament.trialsExhausted": "الحسابات المجانية استُنفدت",
 };
 
 const allTranslations: Record<string, Record<string, string>> = { en, ru, es, zh, hi, ar, pt, fr };
