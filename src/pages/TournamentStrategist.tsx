@@ -241,21 +241,21 @@ const TournamentStrategist = () => {
                   exit={{ opacity: 0, height: 0 }}
                   className="mt-3 p-4 rounded-xl bg-secondary/60 border border-border text-sm text-muted-foreground space-y-2"
                 >
-                  <h3 className="font-semibold text-foreground mb-2">{t("tournament.conceptTitle")}</h3>
-                  <p>{t("tournament.conceptDesc")}</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
-                    {[
-                      { abbr: t("tournament.avgWr"), desc: t("tournament.avgWrDesc") },
-                      { abbr: t("tournament.minWrLabel"), desc: t("tournament.minWrDesc") },
-                      { abbr: t("tournament.banLabel"), desc: t("tournament.banDesc") },
-                    ].map((item) => (
-                      <div key={item.abbr} className="p-2 bg-background/50 rounded-lg border border-border">
-                        <p className="font-bold text-primary text-xs">{item.abbr}</p>
-                        <p className="text-xs mt-1">{item.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="mt-2 text-xs">{t("tournament.colors")} <span className="text-green-400">{t("tournament.colorGreen")}</span> · <span className="text-yellow-400">{t("tournament.colorYellow")}</span> · <span className="text-red-400">{t("tournament.colorRed")}</span></p>
+                   <h3 className="font-semibold text-foreground mb-2">{t("tournament.conceptTitle")}</h3>
+                   <p className="text-center">{t("tournament.conceptDesc")}</p>
+                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3 max-w-lg mx-auto">
+                     {[
+                       { abbr: t("tournament.avgWr"), desc: t("tournament.avgWrDesc") },
+                       { abbr: t("tournament.minWrLabel"), desc: t("tournament.minWrDesc") },
+                       { abbr: t("tournament.banLabel"), desc: t("tournament.banDesc") },
+                     ].map((item) => (
+                       <div key={item.abbr} className="p-2 bg-background/50 rounded-lg border border-border">
+                         <p className="font-bold text-primary text-xs">{item.abbr}</p>
+                         <p className="text-xs mt-1">{item.desc}</p>
+                       </div>
+                     ))}
+                   </div>
+                   <p className="mt-2 text-xs text-center">{t("tournament.colors")} <span className="text-green-400">{t("tournament.colorGreen")}</span> · <span className="text-yellow-400">{t("tournament.colorYellow")}</span> · <span className="text-red-400">{t("tournament.colorRed")}</span></p>
                 </motion.div>
               )}
             </AnimatePresence>
