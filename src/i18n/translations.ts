@@ -1011,7 +1011,7 @@ const zh: Record<string, string> = {
   "landing.openStrategist": "打开策略师",
   "landing.loginSignup": "登录 / 注册",
   "landing.strategistTitle": "锦标赛策略师",
-  "landing.strategistDesc": "征服模式：对阵矩阵、最优ban位、最佳首选卡组、系列赛策略",
+  "landing.strategistDesc": "计算征服模式的最优ban位和首选卡组。AI对阵分析，完整系列赛策略",
   "landing.metaTitle": "实时Meta追踪",
   "landing.metaDesc": "传说段位的流行度和胜率——谁克制谁，当前的meta趋势",
   "landing.newsTitle": "新闻",
