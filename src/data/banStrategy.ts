@@ -182,6 +182,7 @@ export function calculateOptimalFirstDeck(
 
   return {
     ...best,
-    reasoning: `${best.archetype} показывает AVG WR ${best.avgWr}% против оставшихся колод соперника. Особенно силён против ${topOpp?.opp ?? "большинства противников"}.`,
+    reasoning: "",
+    topOpponent: topOpp?.opp ?? null,
   };
 }

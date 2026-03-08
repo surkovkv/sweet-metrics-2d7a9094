@@ -2237,6 +2237,8 @@ const ar: Record<string, string> = {
   "tournament.noBanHistory": "لا يوجد حظر محفوظ",
   "tournament.avgWrAfterBan": "متوسط نسبة الفوز بعد الحظر",
   "tournament.restoreBan": "استعادة",
+  "tournament.reasoningTemplate": "{deck} يُظهر متوسط نسبة فوز (AVG WR) بنسبة {wr}% ضد مجموعات الخصم المتبقية. قوي بشكل خاص ضد {opp}.",
+  "tournament.avgWrFull": "متوسط نسبة الفوز (Average Winrate)",
 };
 
 const allTranslations: Record<string, Record<string, string>> = { en, ru, es, zh, hi, ar, pt, fr };
