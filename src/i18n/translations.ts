@@ -309,13 +309,16 @@ const ru: Record<string, string> = {
   "common.loading": "Загрузка...",
   "common.error": "Ошибка",
   "common.cancel": "Отмена",
-  "tournament.manualBanProHint": "💡 Нажми на вариант бана, чтобы выбрать вручную",
+  "tournament.manualBanProHint": "Нажми на вариант бана, чтобы выбрать вручную",
   "tournament.banHistory": "История банов",
   "tournament.noBanHistory": "Нет сохранённых банов",
   "tournament.avgWrAfterBan": "Средний винрейт после бана",
   "tournament.restoreBan": "Восстановить",
-  "tournament.reasoningTemplate": "{deck} показывает средний винрейт (AVG WR) {wr}% против оставшихся колод соперника. Особенно силён против {opp}.",
+  "tournament.reasoningTemplate": "{deck} показывает средний винрейт {wr}% против оставшихся колод соперника. Особенно силён против {opp}.",
   "tournament.avgWrFull": "средний винрейт (Average Winrate)",
+  "tournament.banHistoryProOnly": "История банов доступна на PRO",
+  "tournament.trialsRemaining": "Осталось {n} из {max} бесплатных расчётов",
+  "tournament.trialsExhausted": "Бесплатные расчёты исчерпаны",
 };
 
 const en: Record<string, string> = {
