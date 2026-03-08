@@ -350,7 +350,6 @@ const TournamentStrategist = () => {
             {/* Ban History — compact sidebar */}
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}
               className="hidden md:flex flex-col items-center gap-2 pt-8">
-              <p className="text-[10px] text-muted-foreground font-medium mb-1 text-center whitespace-nowrap">{t("tournament.banHistory")}</p>
               {IS_PRO ? (
                 currentHistory.length > 0 ? (
                   <>
@@ -406,13 +405,14 @@ const TournamentStrategist = () => {
               ) : (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-50 blur-[2px]">
+                    <div className="flex flex-col items-center gap-2 p-2 rounded-lg border-2 border-dashed border-border relative">
+                      <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
                         <Star className="h-4 w-4" />
                       </div>
-                      <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-50 blur-[2px]">
+                      <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
                         <History className="h-3.5 w-3.5" />
                       </div>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground absolute -top-2 -right-2 bg-background rounded-full" />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="left">
