@@ -1377,7 +1377,7 @@ const fr: Record<string, string> = {
   "tournament.optimalFirstDeck": "Deck optimal pour le premier match",
   "tournament.optimalFirstDeckProDesc": "Deck optimal pour le premier match",
   "tournament.notEnoughData": "Données insuffisantes pour le calcul.",
-  "tournament.calculatedWithBans": "Calculé en tenant compte des bans",
+  "tournament.calculatedWithBans": "Calculé en tenant compte du ban",
   "tournament.matchupMatrix": "Matrice de matchups",
   "tournament.youVsOpp": "Vous ↓ / Adversaire →",
   "tournament.preBanMatrix": "Matrice pré-ban :",
