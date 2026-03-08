@@ -309,6 +309,11 @@ const ru: Record<string, string> = {
   "common.loading": "Загрузка...",
   "common.error": "Ошибка",
   "common.cancel": "Отмена",
+  "tournament.manualBanProHint": "💡 Нажми на вариант бана, чтобы выбрать вручную",
+  "tournament.banHistory": "История банов",
+  "tournament.noBanHistory": "Нет сохранённых банов",
+  "tournament.avgWrAfterBan": "Средний винрейт после бана",
+  "tournament.restoreBan": "Восстановить",
 };
 
 const en: Record<string, string> = {
