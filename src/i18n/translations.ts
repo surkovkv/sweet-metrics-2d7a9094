@@ -2031,6 +2031,8 @@ const hi: Record<string, string> = {
   "tournament.noBanHistory": "कोई सहेजा हुआ बैन नहीं",
   "tournament.avgWrAfterBan": "बैन के बाद औसत विनरेट",
   "tournament.restoreBan": "पुनर्स्थापित",
+  "tournament.reasoningTemplate": "{deck} शेष प्रतिद्वंद्वी डेक के खिलाफ औसत विनरेट (AVG WR) {wr}% दिखाता है। {opp} के खिलाफ विशेष रूप से मजबूत।",
+  "tournament.avgWrFull": "औसत विनरेट (Average Winrate)",
 };
 
 // Arabic — concise natural translations
