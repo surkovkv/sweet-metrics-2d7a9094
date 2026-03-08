@@ -184,9 +184,9 @@ function parseMatchupTable(html: string) {
         if (wr >= 0 && wr <= 100) {
           matchups.push({
             archetype: archetypeName,
-            opponent_archetype: opponentNames[i - 2],
+            opponent: opponentNames[i - 2],
             winrate: wr,
-            total_games: null,
+            estimated_games: null,
           });
         }
       }
