@@ -143,8 +143,8 @@ const ru: Record<string, string> = {
   "analyzer.copy": "Копировать",
   "analyzer.copied": "Скопировано",
   // tournament
-  "tournament.title": "Турнирный",
-  "tournament.titleHighlight": "стратег",
+  "tournament.title": "Калькулятор",
+  "tournament.titleHighlight": "банов",
   "tournament.updated": "Обновлено",
   "tournament.legendData": "данные с ранга Legend",
   "tournament.howItWorks": "Как это работает? (аббревиатуры и концепция)",
