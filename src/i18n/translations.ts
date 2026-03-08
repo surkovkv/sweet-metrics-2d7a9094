@@ -1969,7 +1969,7 @@ const hi: Record<string, string> = {
   "tournament.optimalFirstDeck": "पहले मैच के लिए इष्टतम डेक",
   "tournament.optimalFirstDeckProDesc": "पहले मैच के लिए इष्टतम डेक",
   "tournament.notEnoughData": "गणना के लिए पर्याप्त डेटा नहीं।",
-  "tournament.calculatedWithBans": "बैन को ध्यान में रखते हुए गणना",
+  "tournament.calculatedWithBans": "बैन को ध्यान में रखते हुए",
   "tournament.matchupMatrix": "मैचअप मैट्रिक्स",
   "tournament.youVsOpp": "आप ↓ / प्रतिद्वंद्वी →",
   "tournament.preBanMatrix": "बैन-पूर्व मैट्रिक्स:",
