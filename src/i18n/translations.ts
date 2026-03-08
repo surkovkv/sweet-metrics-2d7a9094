@@ -319,6 +319,7 @@ const ru: Record<string, string> = {
   "tournament.banHistoryProOnly": "История банов доступна на PRO",
   "tournament.trialsRemaining": "Осталось {n} из {max} бесплатных расчётов",
   "tournament.trialsExhausted": "Бесплатные расчёты исчерпаны",
+  "tournament.trialsExhaustedNote": "Бесплатные расчёты исчерпаны. Матрица матчапов остаётся доступной.",
   "tournament.banRecommendationTitle": "Рекомендация по бану",
   "tournament.banRecommendationLockedDesc": "ИИ подберёт оптимальный бан колоды противника. Доступно на PRO.",
 };
@@ -626,6 +627,7 @@ const en: Record<string, string> = {
   "tournament.banHistoryProOnly": "Ban history available on PRO",
   "tournament.trialsRemaining": "{n} of {max} free calculations remaining",
   "tournament.trialsExhausted": "Free calculations exhausted",
+  "tournament.trialsExhaustedNote": "Free calculations exhausted. The matchup matrix remains available.",
   "tournament.banRecommendationTitle": "Ban Recommendation",
   "tournament.banRecommendationLockedDesc": "AI will find the optimal opponent deck to ban. Available on PRO.",
 };
@@ -933,6 +935,7 @@ const es: Record<string, string> = {
   "tournament.banHistoryProOnly": "Historial de baneos disponible en PRO",
   "tournament.trialsRemaining": "{n} de {max} cálculos gratuitos restantes",
   "tournament.trialsExhausted": "Cálculos gratuitos agotados",
+  "tournament.trialsExhaustedNote": "Cálculos gratuitos agotados. La matriz de enfrentamientos sigue disponible.",
   "tournament.banRecommendationTitle": "Recomendación de baneo",
   "tournament.banRecommendationLockedDesc": "La IA encontrará el ban óptimo del oponente. Disponible en PRO.",
 };
@@ -1240,6 +1243,7 @@ const zh: Record<string, string> = {
   "tournament.banHistoryProOnly": "Ban历史记录仅限PRO",
   "tournament.trialsRemaining": "剩余 {n}/{max} 次免费计算",
   "tournament.trialsExhausted": "免费计算已用完",
+  "tournament.trialsExhaustedNote": "免费计算已用完。对阵矩阵仍然可用。",
   "tournament.banRecommendationTitle": "Ban位建议",
   "tournament.banRecommendationLockedDesc": "AI将为您找到最佳的对手ban位。PRO可用。",
 };
@@ -1547,6 +1551,7 @@ const fr: Record<string, string> = {
   "tournament.banHistoryProOnly": "Historique des bans disponible en PRO",
   "tournament.trialsRemaining": "{n} sur {max} calculs gratuits restants",
   "tournament.trialsExhausted": "Calculs gratuits épuisés",
+  "tournament.trialsExhaustedNote": "Calculs gratuits épuisés. La matrice des matchups reste disponible.",
   "tournament.banRecommendationTitle": "Recommandation de ban",
   "tournament.banRecommendationLockedDesc": "L'IA trouvera le ban optimal de l'adversaire. Disponible en PRO.",
 };
@@ -1855,6 +1860,7 @@ const pt: Record<string, string> = {
   "tournament.banHistoryProOnly": "Histórico de bans disponível no PRO",
   "tournament.trialsRemaining": "{n} de {max} cálculos gratuitos restantes",
   "tournament.trialsExhausted": "Cálculos gratuitos esgotados",
+  "tournament.trialsExhaustedNote": "Cálculos gratuitos esgotados. A matriz de matchups continua disponível.",
   "tournament.banRecommendationTitle": "Recomendação de ban",
   "tournament.banRecommendationLockedDesc": "A IA encontrará o ban ideal do oponente. Disponível no PRO.",
 };
@@ -2066,6 +2072,7 @@ const hi: Record<string, string> = {
   "tournament.banHistoryProOnly": "बैन इतिहास केवल PRO पर उपलब्ध",
   "tournament.trialsRemaining": "{max} में से {n} मुफ्त गणनाएं शेष",
   "tournament.trialsExhausted": "मुफ्त गणनाएं समाप्त",
+  "tournament.trialsExhaustedNote": "मुफ्त गणनाएं समाप्त। मैचअप मैट्रिक्स उपलब्ध रहता है।",
   "tournament.banRecommendationTitle": "बैन अनुशंसा",
   "tournament.banRecommendationLockedDesc": "AI प्रतिद्वंद्वी के इष्टतम बैन का पता लगाएगा। PRO पर उपलब्ध।",
 };
@@ -2277,6 +2284,7 @@ const ar: Record<string, string> = {
   "tournament.banHistoryProOnly": "سجل الحظر متاح في PRO",
   "tournament.trialsRemaining": "{n} من {max} حسابات مجانية متبقية",
   "tournament.trialsExhausted": "الحسابات المجانية استُنفدت",
+  "tournament.trialsExhaustedNote": "الحسابات المجانية استُنفدت. مصفوفة المواجهات لا تزال متاحة.",
   "tournament.banRecommendationTitle": "توصية الحظر",
   "tournament.banRecommendationLockedDesc": "سيجد الذكاء الاصطناعي الحظر الأمثل لمجموعة الخصم. متاح في PRO.",
 };
