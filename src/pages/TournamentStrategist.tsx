@@ -608,11 +608,23 @@ const TournamentStrategist = () => {
                           <div className="space-y-2">
                             <div className="flex items-center gap-3">
                               <span className="text-2xl font-bold text-primary">{optimalFirstDeck.archetype}</span>
-                              <span className={`text-lg font-bold ${getWinrateColor(optimalFirstDeck.avgWr)}`}>
-                                AVG WR {optimalFirstDeck.avgWr}%
-                              </span>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className={`text-lg font-bold ${getWinrateColor(optimalFirstDeck.avgWr)}`}>
+                                    AVG WR {optimalFirstDeck.avgWr}%
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">{t("tournament.avgWrFull")}</p>
+                                </TooltipContent>
+                              </Tooltip>
                             </div>
-                            <p className="text-sm text-muted-foreground">{optimalFirstDeck.reasoning}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {t("tournament.reasoningTemplate")
+                                .replace("{deck}", optimalFirstDeck.archetype)
+                                .replace("{wr}", String(optimalFirstDeck.avgWr))
+                                .replace("{opp}", optimalFirstDeck.topOpponent ?? "—")}
+                            </p>
                             {(effectiveBanIdx !== null || oppManualBanIndex !== null) && (
                               <div className="mt-2 p-2 bg-secondary/50 rounded text-xs text-muted-foreground flex items-center gap-2">
                                 <Info className="h-3 w-3" />
