@@ -614,13 +614,16 @@ const en: Record<string, string> = {
   "common.loading": "Loading...",
   "common.error": "Error",
   "common.cancel": "Cancel",
-  "tournament.manualBanProHint": "💡 Click a ban option to select it manually",
+  "tournament.manualBanProHint": "Click a ban option to select it manually",
   "tournament.banHistory": "Ban History",
   "tournament.noBanHistory": "No saved bans",
   "tournament.avgWrAfterBan": "Average winrate after ban",
   "tournament.restoreBan": "Restore",
-  "tournament.reasoningTemplate": "{deck} shows an Average Winrate (AVG WR) of {wr}% against the remaining opponent decks. Especially strong against {opp}.",
+  "tournament.reasoningTemplate": "{deck} shows an average winrate of {wr}% against the remaining opponent decks. Especially strong against {opp}.",
   "tournament.avgWrFull": "Average Winrate",
+  "tournament.banHistoryProOnly": "Ban history available on PRO",
+  "tournament.trialsRemaining": "{n} of {max} free calculations remaining",
+  "tournament.trialsExhausted": "Free calculations exhausted",
 };
 
 const es: Record<string, string> = {
