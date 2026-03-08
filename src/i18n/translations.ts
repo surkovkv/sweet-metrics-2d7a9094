@@ -500,7 +500,7 @@ const en: Record<string, string> = {
   "tournament.banned": "Banned",
   "tournament.games": "games",
   "tournament.lessGames": "< 500",
-  "tournament.matrixNote": "'—' — less than 500 games · Pop. = deck popularity in Legend meta",
+  "tournament.matrixNote": "'—' — less than 500 games",
   "tournament.minWinrate": "Min winrate:",
   "tournament.avgWinrate": "Average:",
   "tournament.signUpToView": "Sign up to view the matrix",
