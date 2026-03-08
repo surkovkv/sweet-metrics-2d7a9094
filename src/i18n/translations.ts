@@ -1673,7 +1673,7 @@ const pt: Record<string, string> = {
   "tournament.optimalFirstDeck": "Deck ideal para o primeiro jogo",
   "tournament.optimalFirstDeckProDesc": "Deck ideal para o primeiro jogo",
   "tournament.notEnoughData": "Dados insuficientes para cálculo.",
-  "tournament.calculatedWithBans": "Calculado considerando bans",
+  "tournament.calculatedWithBans": "Calculado considerando ban",
   "tournament.matchupMatrix": "Matriz de confrontos",
   "tournament.youVsOpp": "Você ↓ / Oponente →",
   "tournament.preBanMatrix": "Matriz pré-ban:",
