@@ -2176,7 +2176,7 @@ const ar: Record<string, string> = {
   "tournament.banned": "محظور",
   "tournament.games": "مباراة",
   "tournament.lessGames": "< 500",
-  "tournament.matrixNote": "'—' — أقل من 500 مباراة · Pop. = شعبية المجموعة في ميتا الأسطورة",
+  "tournament.matrixNote": "'—' — أقل من 500 مباراة",
   "tournament.minWinrate": "أدنى نسبة فوز:",
   "tournament.avgWinrate": "المتوسط:",
   "tournament.signUpToView": "سجّل لعرض المصفوفة",
