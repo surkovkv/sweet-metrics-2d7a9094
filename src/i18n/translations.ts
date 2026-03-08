@@ -616,6 +616,8 @@ const en: Record<string, string> = {
   "tournament.noBanHistory": "No saved bans",
   "tournament.avgWrAfterBan": "Average winrate after ban",
   "tournament.restoreBan": "Restore",
+  "tournament.reasoningTemplate": "{deck} shows an Average Winrate (AVG WR) of {wr}% against the remaining opponent decks. Especially strong against {opp}.",
+  "tournament.avgWrFull": "Average Winrate",
 };
 
 const es: Record<string, string> = {
