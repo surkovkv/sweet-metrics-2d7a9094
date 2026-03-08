@@ -1529,13 +1529,16 @@ const fr: Record<string, string> = {
   "common.loading": "Chargement...",
   "common.error": "Erreur",
   "common.cancel": "Annuler",
-  "tournament.manualBanProHint": "💡 Cliquez sur une option de ban pour la sélectionner manuellement",
+  "tournament.manualBanProHint": "Cliquez sur une option de ban pour la sélectionner manuellement",
   "tournament.banHistory": "Historique des bans",
   "tournament.noBanHistory": "Aucun ban sauvegardé",
   "tournament.avgWrAfterBan": "Winrate moyen après le ban",
   "tournament.restoreBan": "Restaurer",
-  "tournament.reasoningTemplate": "{deck} affiche un Winrate Moyen (AVG WR) de {wr}% contre les decks restants de l'adversaire. Particulièrement fort contre {opp}.",
+  "tournament.reasoningTemplate": "{deck} affiche un winrate moyen de {wr}% contre les decks restants de l'adversaire. Particulièrement fort contre {opp}.",
   "tournament.avgWrFull": "Winrate Moyen (Average Winrate)",
+  "tournament.banHistoryProOnly": "Historique des bans disponible en PRO",
+  "tournament.trialsRemaining": "{n} sur {max} calculs gratuits restants",
+  "tournament.trialsExhausted": "Calculs gratuits épuisés",
 };
 
 // For pt, hi, ar — using concise but natural translations
