@@ -1082,7 +1082,7 @@ const zh: Record<string, string> = {
   "tournament.optimalFirstDeck": "最优首选卡组",
   "tournament.optimalFirstDeckProDesc": "最优首选卡组",
   "tournament.notEnoughData": "数据不足，无法计算。",
-  "tournament.calculatedWithBans": "已考虑ban位计算",
+  "tournament.calculatedWithBans": "已考虑ban位",
   "tournament.matchupMatrix": "对阵矩阵",
   "tournament.youVsOpp": "你 ↓ / 对手 →",
   "tournament.preBanMatrix": "ban前矩阵：",
