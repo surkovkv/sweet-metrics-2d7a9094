@@ -1668,7 +1668,7 @@ const pt: Record<string, string> = {
   "landing.openStrategist": "Abrir estrategista",
   "landing.loginSignup": "Entrar / Cadastrar",
   "landing.strategistTitle": "Estrategista de torneios",
-  "landing.strategistDesc": "Formato Conquest: matriz de confrontos, ban ideal, melhor deck inicial, estratégia da série",
+  "landing.strategistDesc": "Calcule o ban e deck inicial ideais para Conquest. Análise de confrontos com IA e estratégia completa da série",
   "landing.metaTitle": "Meta Tracker ao vivo",
   "landing.metaDesc": "Popularidade e winrates nos ranks de Lenda — quem countera quem",
   "landing.newsTitle": "Notícias",
