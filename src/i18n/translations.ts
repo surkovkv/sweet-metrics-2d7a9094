@@ -314,6 +314,8 @@ const ru: Record<string, string> = {
   "tournament.noBanHistory": "Нет сохранённых банов",
   "tournament.avgWrAfterBan": "Средний винрейт после бана",
   "tournament.restoreBan": "Восстановить",
+  "tournament.reasoningTemplate": "{deck} показывает средний винрейт (AVG WR) {wr}% против оставшихся колод соперника. Особенно силён против {opp}.",
+  "tournament.avgWrFull": "средний винрейт (Average Winrate)",
 };
 
 const en: Record<string, string> = {
