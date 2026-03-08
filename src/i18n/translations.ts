@@ -171,7 +171,7 @@ const ru: Record<string, string> = {
   "tournament.duplicateWarning": "⚠️ Нельзя выбрать одну и ту же колоду дважды на одной стороне",
   "tournament.loginRequired": "Для использования стратега необходимо войти в аккаунт",
   "tournament.loginSignup": "Войти / Зарегистрироваться",
-  "tournament.calculateStrategy": "Рассчитать стратегию",
+  "tournament.calculateStrategy": "Рассчитать бан",
   "tournament.banRecommendation": "Рекомендация по бану",
   "tournament.resetManualBan": "Сбросить ручной бан",
   "tournament.manualBanProOnly": "🔒 Ручной выбор бана доступен только в PRO",
