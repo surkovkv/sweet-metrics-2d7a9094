@@ -1810,6 +1810,11 @@ const pt: Record<string, string> = {
   "common.loading": "Carregando...",
   "common.error": "Erro",
   "common.cancel": "Cancelar",
+  "tournament.manualBanProHint": "💡 Clique em uma opção de ban para selecioná-la manualmente",
+  "tournament.banHistory": "Histórico de bans",
+  "tournament.noBanHistory": "Nenhum ban salvo",
+  "tournament.avgWrAfterBan": "Winrate médio após o ban",
+  "tournament.restoreBan": "Restaurar",
 };
 
 // Hindi — concise natural translations
