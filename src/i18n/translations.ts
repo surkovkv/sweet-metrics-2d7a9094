@@ -609,6 +609,11 @@ const en: Record<string, string> = {
   "common.loading": "Loading...",
   "common.error": "Error",
   "common.cancel": "Cancel",
+  "tournament.manualBanProHint": "💡 Click a ban option to select it manually",
+  "tournament.banHistory": "Ban History",
+  "tournament.noBanHistory": "No saved bans",
+  "tournament.avgWrAfterBan": "Average winrate after ban",
+  "tournament.restoreBan": "Restore",
 };
 
 const es: Record<string, string> = {
