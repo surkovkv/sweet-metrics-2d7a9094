@@ -343,7 +343,7 @@ Deno.serve(async (req) => {
         date: today,
         matchupsCount: matchups.length,
         archetypesCount: archetypeStats.length,
-        archetypes: archetypeStats.map((a) => a.archetype),
+        archetypes: archetypeStats.map((a) => a.name),
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
