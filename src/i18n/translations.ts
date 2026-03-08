@@ -314,6 +314,8 @@ const ru: Record<string, string> = {
   "tournament.noBanHistory": "Нет сохранённых банов",
   "tournament.avgWrAfterBan": "Средний винрейт после бана",
   "tournament.restoreBan": "Восстановить",
+  "tournament.reasoningTemplate": "{deck} показывает средний винрейт (AVG WR) {wr}% против оставшихся колод соперника. Особенно силён против {opp}.",
+  "tournament.avgWrFull": "средний винрейт (Average Winrate)",
 };
 
 const en: Record<string, string> = {
@@ -614,6 +616,8 @@ const en: Record<string, string> = {
   "tournament.noBanHistory": "No saved bans",
   "tournament.avgWrAfterBan": "Average winrate after ban",
   "tournament.restoreBan": "Restore",
+  "tournament.reasoningTemplate": "{deck} shows an Average Winrate (AVG WR) of {wr}% against the remaining opponent decks. Especially strong against {opp}.",
+  "tournament.avgWrFull": "Average Winrate",
 };
 
 const es: Record<string, string> = {
@@ -914,6 +918,8 @@ const es: Record<string, string> = {
   "tournament.noBanHistory": "Sin baneos guardados",
   "tournament.avgWrAfterBan": "Winrate promedio tras el baneo",
   "tournament.restoreBan": "Restaurar",
+  "tournament.reasoningTemplate": "{deck} muestra un Winrate Promedio (AVG WR) de {wr}% contra los mazos restantes del oponente. Especialmente fuerte contra {opp}.",
+  "tournament.avgWrFull": "Winrate Promedio (Average Winrate)",
 };
 
 const zh: Record<string, string> = {
@@ -1214,6 +1220,8 @@ const zh: Record<string, string> = {
   "tournament.noBanHistory": "暂无保存的ban记录",
   "tournament.avgWrAfterBan": "ban后平均胜率",
   "tournament.restoreBan": "恢复",
+  "tournament.reasoningTemplate": "{deck} 对对手剩余卡组的平均胜率（AVG WR）为 {wr}%。对 {opp} 尤其强势。",
+  "tournament.avgWrFull": "平均胜率 (Average Winrate)",
 };
 
 const fr: Record<string, string> = {
@@ -1514,6 +1522,8 @@ const fr: Record<string, string> = {
   "tournament.noBanHistory": "Aucun ban sauvegardé",
   "tournament.avgWrAfterBan": "Winrate moyen après le ban",
   "tournament.restoreBan": "Restaurer",
+  "tournament.reasoningTemplate": "{deck} affiche un Winrate Moyen (AVG WR) de {wr}% contre les decks restants de l'adversaire. Particulièrement fort contre {opp}.",
+  "tournament.avgWrFull": "Winrate Moyen (Average Winrate)",
 };
 
 // For pt, hi, ar — using concise but natural translations
@@ -1815,6 +1825,8 @@ const pt: Record<string, string> = {
   "tournament.noBanHistory": "Nenhum ban salvo",
   "tournament.avgWrAfterBan": "Winrate médio após o ban",
   "tournament.restoreBan": "Restaurar",
+  "tournament.reasoningTemplate": "{deck} mostra um Winrate Médio (AVG WR) de {wr}% contra os decks restantes do oponente. Especialmente forte contra {opp}.",
+  "tournament.avgWrFull": "Winrate Médio (Average Winrate)",
 };
 
 // Hindi — concise natural translations
@@ -2019,6 +2031,8 @@ const hi: Record<string, string> = {
   "tournament.noBanHistory": "कोई सहेजा हुआ बैन नहीं",
   "tournament.avgWrAfterBan": "बैन के बाद औसत विनरेट",
   "tournament.restoreBan": "पुनर्स्थापित",
+  "tournament.reasoningTemplate": "{deck} शेष प्रतिद्वंद्वी डेक के खिलाफ औसत विनरेट (AVG WR) {wr}% दिखाता है। {opp} के खिलाफ विशेष रूप से मजबूत।",
+  "tournament.avgWrFull": "औसत विनरेट (Average Winrate)",
 };
 
 // Arabic — concise natural translations
@@ -2223,6 +2237,8 @@ const ar: Record<string, string> = {
   "tournament.noBanHistory": "لا يوجد حظر محفوظ",
   "tournament.avgWrAfterBan": "متوسط نسبة الفوز بعد الحظر",
   "tournament.restoreBan": "استعادة",
+  "tournament.reasoningTemplate": "{deck} يُظهر متوسط نسبة فوز (AVG WR) بنسبة {wr}% ضد مجموعات الخصم المتبقية. قوي بشكل خاص ضد {opp}.",
+  "tournament.avgWrFull": "متوسط نسبة الفوز (Average Winrate)",
 };
 
 const allTranslations: Record<string, Record<string, string>> = { en, ru, es, zh, hi, ar, pt, fr };

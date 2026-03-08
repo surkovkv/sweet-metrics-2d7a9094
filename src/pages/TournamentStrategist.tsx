@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Swords, Trophy, ShieldAlert, Target, Info, Gamepad2,
-  Eye, Lock, Crown, Ban, ArrowLeftRight, HelpCircle, Star, ChevronDown, ChevronUp, History, RotateCcw,
+  Lock, Crown, Ban, ArrowLeftRight, HelpCircle, Star, ChevronDown, ChevronUp, History, RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -241,21 +241,21 @@ const TournamentStrategist = () => {
                   exit={{ opacity: 0, height: 0 }}
                   className="mt-3 p-4 rounded-xl bg-secondary/60 border border-border text-sm text-muted-foreground space-y-2"
                 >
-                  <h3 className="font-semibold text-foreground mb-2">{t("tournament.conceptTitle")}</h3>
-                  <p>{t("tournament.conceptDesc")}</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
-                    {[
-                      { abbr: t("tournament.avgWr"), desc: t("tournament.avgWrDesc") },
-                      { abbr: t("tournament.minWrLabel"), desc: t("tournament.minWrDesc") },
-                      { abbr: t("tournament.banLabel"), desc: t("tournament.banDesc") },
-                    ].map((item) => (
-                      <div key={item.abbr} className="p-2 bg-background/50 rounded-lg border border-border">
-                        <p className="font-bold text-primary text-xs">{item.abbr}</p>
-                        <p className="text-xs mt-1">{item.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="mt-2 text-xs">{t("tournament.colors")} <span className="text-green-400">{t("tournament.colorGreen")}</span> · <span className="text-yellow-400">{t("tournament.colorYellow")}</span> · <span className="text-red-400">{t("tournament.colorRed")}</span></p>
+                   <h3 className="font-semibold text-foreground mb-2">{t("tournament.conceptTitle")}</h3>
+                   <p className="text-center">{t("tournament.conceptDesc")}</p>
+                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3 max-w-lg mx-auto">
+                     {[
+                       { abbr: t("tournament.avgWr"), desc: t("tournament.avgWrDesc") },
+                       { abbr: t("tournament.minWrLabel"), desc: t("tournament.minWrDesc") },
+                       { abbr: t("tournament.banLabel"), desc: t("tournament.banDesc") },
+                     ].map((item) => (
+                       <div key={item.abbr} className="p-2 bg-background/50 rounded-lg border border-border">
+                         <p className="font-bold text-primary text-xs">{item.abbr}</p>
+                         <p className="text-xs mt-1">{item.desc}</p>
+                       </div>
+                     ))}
+                   </div>
+                   <p className="mt-2 text-xs text-center">{t("tournament.colors")} <span className="text-green-400">{t("tournament.colorGreen")}</span> · <span className="text-yellow-400">{t("tournament.colorYellow")}</span> · <span className="text-red-400">{t("tournament.colorRed")}</span></p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -284,8 +284,8 @@ const TournamentStrategist = () => {
             )}
           </AnimatePresence>
 
-          {/* Deck Selection Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Deck Selection + History Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-6 mb-8">
             {/* My Decks */}
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
               <label className="block text-sm font-medium text-foreground mb-3">
@@ -304,26 +304,13 @@ const TournamentStrategist = () => {
               </div>
             </motion.div>
 
-            {/* Opponent Decks — no manual ban arrows */}
+            {/* Opponent Decks */}
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
               <div className="flex items-center gap-2 mb-3">
                 <label className="block text-sm font-medium text-foreground">
                   <Target className="inline h-4 w-4 mr-1.5 text-destructive" />
                   {t("tournament.oppDecks")}
                 </label>
-                {showResult && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button className="text-muted-foreground hover:text-foreground transition-colors">
-                        <Eye className="h-4 w-4" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-sm p-3">
-                      <p className="text-xs font-semibold mb-2">{t("tournament.preBanMatrix")}</p>
-                      <PreBanMiniMatrix myArchetypes={myArchetypes} oppArchetypes={oppArchetypes} getWinrate={getWinrate} />
-                    </TooltipContent>
-                  </Tooltip>
-                )}
               </div>
               <div className="space-y-3">
                 {oppArchetypes.map((arch, i) => {
@@ -350,7 +337,84 @@ const TournamentStrategist = () => {
                 })}
               </div>
             </motion.div>
+
+            {/* Ban History — compact sidebar */}
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}
+              className="hidden md:flex flex-col items-center gap-2 pt-8">
+              {IS_PRO ? (
+                currentHistory.length > 0 ? (
+                  currentHistory.map((entry, i) => (
+                    <Tooltip key={entry.timestamp}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => restoreFromHistory(entry)}
+                          className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110 ${
+                            i === 0
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border bg-secondary/50 text-muted-foreground hover:border-primary/50"
+                          }`}
+                        >
+                          {i === 0 ? <Star className="h-4 w-4" /> : <History className="h-3.5 w-3.5" />}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="left" className="max-w-xs">
+                        <p className="text-xs font-semibold">BAN: {entry.bannedDeck}</p>
+                        <p className={`text-xs font-bold ${getWinrateColor(entry.avgWr)}`}>{entry.avgWr}%</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{entry.myDecks.join(", ")} vs {entry.oppDecks.join(", ")}</p>
+                        <p className="text-[10px] text-primary mt-1">{t("tournament.restoreBan")}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground">
+                        <History className="h-3.5 w-3.5" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">
+                      <p className="text-xs">{t("tournament.noBanHistory")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-50">
+                      <Lock className="h-3.5 w-3.5" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">
+                    <p className="text-xs">{t("tournament.proOnly")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </motion.div>
           </div>
+
+          {/* Mobile Ban History */}
+          {IS_PRO && currentHistory.length > 0 && (
+            <div className="md:hidden flex gap-2 mb-4 justify-center">
+              {currentHistory.map((entry, i) => (
+                <Tooltip key={entry.timestamp}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => restoreFromHistory(entry)}
+                      className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all ${
+                        i === 0 ? "border-primary bg-primary/10 text-primary" : "border-border bg-secondary/50 text-muted-foreground"
+                      }`}
+                    >
+                      {i === 0 ? <Star className="h-4 w-4" /> : <History className="h-3.5 w-3.5" />}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs font-semibold">BAN: {entry.bannedDeck} ({entry.avgWr}%)</p>
+                    <p className="text-[10px] text-primary">{t("tournament.restoreBan")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          )}
 
           {/* Calculate Button */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mb-10">
@@ -453,14 +517,14 @@ const TournamentStrategist = () => {
                         <CardTitle className="font-display text-lg flex items-center gap-2">
                           <ArrowLeftRight className="h-5 w-5 text-primary" />
                           {t("tournament.oppBan")}
-                          <button
+                          <Button
                             onClick={() => setShowOpponentBan(!showOpponentBan)}
-                            className={`ml-auto text-xs px-3 py-1 rounded-md transition-colors ${showOpponentBan
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-secondary text-muted-foreground hover:text-foreground"
-                              }`}>
+                            variant={showOpponentBan ? "default" : "secondary"}
+                            size="default"
+                            className="ml-auto gap-1.5 font-semibold"
+                          >
                             {showOpponentBan ? t("tournament.hide") : t("tournament.show")}
-                          </button>
+                          </Button>
                         </CardTitle>
                       </CardHeader>
                       <AnimatePresence>
@@ -544,11 +608,23 @@ const TournamentStrategist = () => {
                           <div className="space-y-2">
                             <div className="flex items-center gap-3">
                               <span className="text-2xl font-bold text-primary">{optimalFirstDeck.archetype}</span>
-                              <span className={`text-lg font-bold ${getWinrateColor(optimalFirstDeck.avgWr)}`}>
-                                AVG WR {optimalFirstDeck.avgWr}%
-                              </span>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className={`text-lg font-bold ${getWinrateColor(optimalFirstDeck.avgWr)}`}>
+                                    AVG WR {optimalFirstDeck.avgWr}%
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">{t("tournament.avgWrFull")}</p>
+                                </TooltipContent>
+                              </Tooltip>
                             </div>
-                            <p className="text-sm text-muted-foreground">{optimalFirstDeck.reasoning}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {t("tournament.reasoningTemplate")
+                                .replace("{deck}", optimalFirstDeck.archetype)
+                                .replace("{wr}", String(optimalFirstDeck.avgWr))
+                                .replace("{opp}", optimalFirstDeck.topOpponent ?? "—")}
+                            </p>
                             {(effectiveBanIdx !== null || oppManualBanIndex !== null) && (
                               <div className="mt-2 p-2 bg-secondary/50 rounded text-xs text-muted-foreground flex items-center gap-2">
                                 <Info className="h-3 w-3" />
@@ -576,70 +652,6 @@ const TournamentStrategist = () => {
                             <Star className="h-5 w-5" /> {t("tournament.optimalFirstDeck")}
                           </p>
                           <div className="h-12 bg-secondary/50 rounded" />
-                        </div>
-                      </div>
-                    </Card>
-                  )}
-                </div>
-
-                {/* Ban History — PRO only */}
-                <div className="relative">
-                  {IS_PRO ? (
-                    <Card className="bg-card border-border">
-                      <CardHeader>
-                        <CardTitle className="font-display text-lg flex items-center gap-2">
-                          <History className="h-5 w-5 text-primary" />
-                          {t("tournament.banHistory")}
-                          <span className="text-xs font-normal text-muted-foreground ml-1">({mode} {t(mode === 3 ? "tournament.decks3" : "tournament.decks4")})</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {currentHistory.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">{t("tournament.noBanHistory")}</p>
-                        ) : (
-                          <div className="space-y-3">
-                            {currentHistory.map((entry, i) => (
-                              <div key={entry.timestamp}
-                                className="p-3 rounded-lg bg-secondary/50 border border-border flex items-center justify-between gap-3">
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 text-sm">
-                                    {i === 0 && <span className="text-primary">★</span>}
-                                    <span className="font-medium text-foreground">BAN: {entry.bannedDeck}</span>
-                                    <span className={`text-xs font-bold ${getWinrateColor(entry.avgWr)}`}>{entry.avgWr}%</span>
-                                  </div>
-                                  <div className="text-[10px] text-muted-foreground mt-1 truncate">
-                                    {entry.myDecks.join(", ")} vs {entry.oppDecks.join(", ")}
-                                  </div>
-                                </div>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => restoreFromHistory(entry)}
-                                  className="shrink-0 gap-1 text-xs"
-                                >
-                                  <RotateCcw className="h-3 w-3" />
-                                  {t("tournament.restoreBan")}
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <Card className="bg-card border-border overflow-hidden">
-                      <div className="relative p-6">
-                        <div className="absolute inset-0 backdrop-blur-xl bg-background/80 z-10 flex flex-col items-center justify-center gap-2">
-                          <Crown className="h-6 w-6 text-primary" />
-                          <p className="text-foreground font-medium text-sm">{t("tournament.proOnly")}</p>
-                          <p className="text-xs text-muted-foreground">{t("tournament.banHistory")}</p>
-                        </div>
-                        <div className="space-y-3 opacity-30 select-none" aria-hidden>
-                          <p className="font-display text-lg flex items-center gap-2">
-                            <History className="h-5 w-5" /> {t("tournament.banHistory")}
-                          </p>
-                          <div className="h-10 bg-secondary/50 rounded" />
-                          <div className="h-10 bg-secondary/50 rounded" />
                         </div>
                       </div>
                     </Card>

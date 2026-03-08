@@ -157,7 +157,7 @@ export function calculateOptimalFirstDeck(
   myBannedIndex: number | null = null,
   oppBannedIndex: number | null = null,
   getWinrate: GetWinrateFn = defaultGetWinrate
-): { archetype: string; avgWr: number; reasoning: string } | null {
+): { archetype: string; avgWr: number; reasoning: string; topOpponent: string | null } | null {
   const effectiveMyDecks = myArchetypes.filter((_, i) => i !== myBannedIndex);
   const effectiveOppDecks = oppArchetypes.filter((_, i) => i !== oppBannedIndex);
 
@@ -182,6 +182,7 @@ export function calculateOptimalFirstDeck(
 
   return {
     ...best,
-    reasoning: `${best.archetype} показывает AVG WR ${best.avgWr}% против оставшихся колод соперника. Особенно силён против ${topOpp?.opp ?? "большинства противников"}.`,
+    reasoning: "",
+    topOpponent: topOpp?.opp ?? null,
   };
 }
