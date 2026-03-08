@@ -787,7 +787,7 @@ const es: Record<string, string> = {
   "tournament.optimalFirstDeck": "Mazo óptimo para el primer juego",
   "tournament.optimalFirstDeckProDesc": "Mazo óptimo para el primer juego",
   "tournament.notEnoughData": "No hay suficientes datos.",
-  "tournament.calculatedWithBans": "Calculado considerando baneos",
+  "tournament.calculatedWithBans": "Calculado considerando baneo",
   "tournament.matchupMatrix": "Matriz de enfrentamientos",
   "tournament.youVsOpp": "Tú ↓ / Oponente →",
   "tournament.preBanMatrix": "Matriz pre-baneo:",
