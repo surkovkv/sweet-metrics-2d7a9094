@@ -1551,6 +1551,7 @@ const fr: Record<string, string> = {
   "tournament.banHistoryProOnly": "Historique des bans disponible en PRO",
   "tournament.trialsRemaining": "{n} sur {max} calculs gratuits restants",
   "tournament.trialsExhausted": "Calculs gratuits épuisés",
+  "tournament.trialsExhaustedNote": "Calculs gratuits épuisés. La matrice des matchups reste disponible.",
   "tournament.banRecommendationTitle": "Recommandation de ban",
   "tournament.banRecommendationLockedDesc": "L'IA trouvera le ban optimal de l'adversaire. Disponible en PRO.",
 };
