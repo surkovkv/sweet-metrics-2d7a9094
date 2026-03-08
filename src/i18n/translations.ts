@@ -1977,7 +1977,7 @@ const hi: Record<string, string> = {
   "tournament.banned": "बैन किया",
   "tournament.games": "खेल",
   "tournament.lessGames": "< 500",
-  "tournament.matrixNote": "'—' — 500 से कम खेल · Pop. = लीजेंड मेटा में डेक की लोकप्रियता",
+  "tournament.matrixNote": "'—' — 500 से कम खेल",
   "tournament.minWinrate": "न्यूनतम विनरेट:",
   "tournament.avgWinrate": "औसत:",
   "tournament.signUpToView": "मैट्रिक्स देखने के लिए रजिस्टर करें",
