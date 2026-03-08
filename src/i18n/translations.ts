@@ -1339,7 +1339,7 @@ const fr: Record<string, string> = {
   "landing.openStrategist": "Ouvrir le stratège",
   "landing.loginSignup": "Connexion / Inscription",
   "landing.strategistTitle": "Stratège de tournoi",
-  "landing.strategistDesc": "Format Conquest : matrice de matchups, ban optimal, meilleur deck initial, stratégie de série",
+  "landing.strategistDesc": "Calculez le ban et le deck initial optimaux pour le Conquest. Analyse IA des matchups et stratégie de série complète",
   "landing.metaTitle": "Meta Tracker en direct",
   "landing.metaDesc": "Popularité et winrates aux rangs Légende — qui countre qui, le top de la méta",
   "landing.newsTitle": "Actualités",
