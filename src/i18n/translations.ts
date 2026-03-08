@@ -1224,13 +1224,16 @@ const zh: Record<string, string> = {
   "common.loading": "加载中...",
   "common.error": "错误",
   "common.cancel": "取消",
-  "tournament.manualBanProHint": "💡 点击ban选项以手动选择",
+  "tournament.manualBanProHint": "点击ban选项以手动选择",
   "tournament.banHistory": "Ban历史记录",
   "tournament.noBanHistory": "暂无保存的ban记录",
   "tournament.avgWrAfterBan": "ban后平均胜率",
   "tournament.restoreBan": "恢复",
-  "tournament.reasoningTemplate": "{deck} 对对手剩余卡组的平均胜率（AVG WR）为 {wr}%。对 {opp} 尤其强势。",
+  "tournament.reasoningTemplate": "{deck} 对对手剩余卡组的平均胜率为 {wr}%。对 {opp} 尤其强势。",
   "tournament.avgWrFull": "平均胜率 (Average Winrate)",
+  "tournament.banHistoryProOnly": "Ban历史记录仅限PRO",
+  "tournament.trialsRemaining": "剩余 {n}/{max} 次免费计算",
+  "tournament.trialsExhausted": "免费计算已用完",
 };
 
 const fr: Record<string, string> = {
