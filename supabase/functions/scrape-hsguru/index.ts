@@ -88,9 +88,9 @@ function parseMatchupTable(html: string) {
   const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
   const matchups: Array<{
     archetype: string;
-    opponent_archetype: string;
+    opponent: string;
     winrate: number;
-    total_games: number | null;
+    estimated_games: number | null;
   }> = [];
   const archetypeStats: Array<{
     archetype: string;
