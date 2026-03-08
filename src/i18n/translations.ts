@@ -1835,13 +1835,16 @@ const pt: Record<string, string> = {
   "common.loading": "Carregando...",
   "common.error": "Erro",
   "common.cancel": "Cancelar",
-  "tournament.manualBanProHint": "💡 Clique em uma opção de ban para selecioná-la manualmente",
+  "tournament.manualBanProHint": "Clique em uma opção de ban para selecioná-la manualmente",
   "tournament.banHistory": "Histórico de bans",
   "tournament.noBanHistory": "Nenhum ban salvo",
   "tournament.avgWrAfterBan": "Winrate médio após o ban",
   "tournament.restoreBan": "Restaurar",
-  "tournament.reasoningTemplate": "{deck} mostra um Winrate Médio (AVG WR) de {wr}% contra os decks restantes do oponente. Especialmente forte contra {opp}.",
+  "tournament.reasoningTemplate": "{deck} mostra um winrate médio de {wr}% contra os decks restantes do oponente. Especialmente forte contra {opp}.",
   "tournament.avgWrFull": "Winrate Médio (Average Winrate)",
+  "tournament.banHistoryProOnly": "Histórico de bans disponível no PRO",
+  "tournament.trialsRemaining": "{n} de {max} cálculos gratuitos restantes",
+  "tournament.trialsExhausted": "Cálculos gratuitos esgotados",
 };
 
 // Hindi — concise natural translations
