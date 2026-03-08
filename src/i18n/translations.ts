@@ -1240,6 +1240,8 @@ const zh: Record<string, string> = {
   "tournament.banHistoryProOnly": "Ban历史记录仅限PRO",
   "tournament.trialsRemaining": "剩余 {n}/{max} 次免费计算",
   "tournament.trialsExhausted": "免费计算已用完",
+  "tournament.banRecommendationTitle": "Ban位建议",
+  "tournament.banRecommendationLockedDesc": "AI将为您找到最佳的对手ban位。PRO可用。",
 };
 
 const fr: Record<string, string> = {
