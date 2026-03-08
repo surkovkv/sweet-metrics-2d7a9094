@@ -440,14 +440,14 @@ const TournamentStrategist = () => {
                         <CardTitle className="font-display text-lg flex items-center gap-2">
                           <ArrowLeftRight className="h-5 w-5 text-primary" />
                           {t("tournament.oppBan")}
-                          <button
+                          <Button
                             onClick={() => setShowOpponentBan(!showOpponentBan)}
-                            className={`ml-auto text-xs px-3 py-1 rounded-md transition-colors ${showOpponentBan
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-secondary text-muted-foreground hover:text-foreground"
-                              }`}>
+                            variant={showOpponentBan ? "default" : "secondary"}
+                            size="default"
+                            className="ml-auto gap-1.5 font-semibold"
+                          >
                             {showOpponentBan ? t("tournament.hide") : t("tournament.show")}
-                          </button>
+                          </Button>
                         </CardTitle>
                       </CardHeader>
                       <AnimatePresence>
