@@ -1363,7 +1363,7 @@ const fr: Record<string, string> = {
   "tournament.duplicateWarning": "⚠️ Impossible de sélectionner le même deck deux fois du même côté",
   "tournament.loginRequired": "Connectez-vous pour utiliser le stratège",
   "tournament.loginSignup": "Connexion / Inscription",
-  "tournament.calculateStrategy": "Calculer la stratégie",
+  "tournament.calculateStrategy": "Calculer le ban",
   "tournament.banRecommendation": "Recommandation de ban",
   "tournament.resetManualBan": "Réinitialiser le ban manuel",
   "tournament.manualBanProOnly": "🔒 Ban manuel réservé au PRO",
