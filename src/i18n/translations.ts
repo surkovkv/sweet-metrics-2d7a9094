@@ -2229,7 +2229,7 @@ const ar: Record<string, string> = {
   "landing.openStrategist": "فتح الاستراتيجي",
   "landing.loginSignup": "تسجيل الدخول / إنشاء حساب",
   "landing.strategistTitle": "استراتيجي البطولات",
-  "landing.strategistDesc": "نظام Conquest: مصفوفة المواجهات، الحظر الأمثل، أفضل مجموعة أولى",
+  "landing.strategistDesc": "احسب الحظر والمجموعة الأولى المثالية لنظام Conquest. تحليل مواجهات بالذكاء الاصطناعي واستراتيجية سلسلة كاملة",
   "landing.metaTitle": "متتبع الميتا المباشر",
   "landing.metaDesc": "الشعبية ونسب الفوز في رتب الأسطورة — من يتفوق على من",
   "landing.newsTitle": "الأخبار",
