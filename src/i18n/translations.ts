@@ -1509,6 +1509,11 @@ const fr: Record<string, string> = {
   "common.loading": "Chargement...",
   "common.error": "Erreur",
   "common.cancel": "Annuler",
+  "tournament.manualBanProHint": "💡 Cliquez sur une option de ban pour la sélectionner manuellement",
+  "tournament.banHistory": "Historique des bans",
+  "tournament.noBanHistory": "Aucun ban sauvegardé",
+  "tournament.avgWrAfterBan": "Winrate moyen après le ban",
+  "tournament.restoreBan": "Restaurer",
 };
 
 // For pt, hi, ar — using concise but natural translations
