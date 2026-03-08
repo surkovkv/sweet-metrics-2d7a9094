@@ -1220,6 +1220,8 @@ const zh: Record<string, string> = {
   "tournament.noBanHistory": "暂无保存的ban记录",
   "tournament.avgWrAfterBan": "ban后平均胜率",
   "tournament.restoreBan": "恢复",
+  "tournament.reasoningTemplate": "{deck} 对对手剩余卡组的平均胜率（AVG WR）为 {wr}%。对 {opp} 尤其强势。",
+  "tournament.avgWrFull": "平均胜率 (Average Winrate)",
 };
 
 const fr: Record<string, string> = {
