@@ -2014,6 +2014,11 @@ const hi: Record<string, string> = {
   "common.loading": "लोड हो रहा है...",
   "common.error": "त्रुटि",
   "common.cancel": "रद्द करें",
+  "tournament.manualBanProHint": "💡 मैनुअल रूप से चुनने के लिए बैन विकल्प पर क्लिक करें",
+  "tournament.banHistory": "बैन इतिहास",
+  "tournament.noBanHistory": "कोई सहेजा हुआ बैन नहीं",
+  "tournament.avgWrAfterBan": "बैन के बाद औसत विनरेट",
+  "tournament.restoreBan": "पुनर्स्थापित",
 };
 
 // Arabic — concise natural translations
