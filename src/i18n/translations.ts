@@ -1090,7 +1090,7 @@ const zh: Record<string, string> = {
   "tournament.banned": "已被Ban",
   "tournament.games": "场",
   "tournament.lessGames": "< 500",
-  "tournament.matrixNote": "'—' — 少于500场 · Pop. = 传说Meta中的卡组流行度",
+  "tournament.matrixNote": "'—' — 少于500场",
   "tournament.minWinrate": "最低胜率：",
   "tournament.avgWinrate": "平均：",
   "tournament.signUpToView": "注册以查看矩阵",
