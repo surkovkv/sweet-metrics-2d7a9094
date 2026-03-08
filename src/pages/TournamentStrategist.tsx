@@ -498,7 +498,9 @@ const TournamentStrategist = () => {
                 {/* Trial counter for FREE users */}
                 {!IS_PRO && (
                   <p className="text-xs text-muted-foreground text-center mt-2">
-                    {t("tournament.trialsRemaining").replace("{n}", String(remaining)).replace("{max}", String(maxTrials))}
+                    {isExhausted
+                      ? t("tournament.trialsExhaustedNote")
+                      : t("tournament.trialsRemaining").replace("{n}", String(remaining)).replace("{max}", String(maxTrials))}
                   </p>
                 )}
               </>
