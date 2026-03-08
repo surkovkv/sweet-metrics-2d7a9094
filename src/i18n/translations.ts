@@ -2284,6 +2284,7 @@ const ar: Record<string, string> = {
   "tournament.banHistoryProOnly": "سجل الحظر متاح في PRO",
   "tournament.trialsRemaining": "{n} من {max} حسابات مجانية متبقية",
   "tournament.trialsExhausted": "الحسابات المجانية استُنفدت",
+  "tournament.trialsExhaustedNote": "الحسابات المجانية استُنفدت. مصفوفة المواجهات لا تزال متاحة.",
   "tournament.banRecommendationTitle": "توصية الحظر",
   "tournament.banRecommendationLockedDesc": "سيجد الذكاء الاصطناعي الحظر الأمثل لمجموعة الخصم. متاح في PRO.",
 };
