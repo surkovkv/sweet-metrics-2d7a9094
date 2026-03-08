@@ -193,7 +193,7 @@ const ru: Record<string, string> = {
   "tournament.banned": "Забанена",
   "tournament.games": "игр",
   "tournament.lessGames": "< 500",
-  "tournament.matrixNote": "«—» — менее 500 игр · Pop. = популярность колоды в мете Legend",
+  "tournament.matrixNote": "«—» — менее 500 игр",
   "tournament.minWinrate": "Минимальный винрейт:",
   "tournament.avgWinrate": "Средний:",
   "tournament.signUpToView": "Зарегистрируйтесь для просмотра таблицы",
