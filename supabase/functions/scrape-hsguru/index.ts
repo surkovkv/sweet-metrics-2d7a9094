@@ -192,7 +192,7 @@ function parseMatchupTable(html: string) {
   // Update popularity from header row if we have it
   if (popularityValues.length === opponentNames.length) {
     for (let i = 0; i < opponentNames.length; i++) {
-      const stat = archetypeStats.find((s) => s.archetype === opponentNames[i]);
+      const stat = archetypeStats.find((s) => s.name === opponentNames[i]);
       if (stat && stat.popularity === null) {
         stat.popularity = popularityValues[i];
       }
