@@ -584,8 +584,8 @@ const TournamentStrategist = () => {
                   {!IS_PRO && isExhausted && (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl backdrop-blur-xl bg-background/80">
                       <Crown className="h-6 w-6 text-primary mb-2" />
-                      <p className="text-foreground font-medium text-sm">{t("tournament.proOnly")}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{t("tournament.trialsExhausted")}</p>
+                      <p className="text-foreground font-medium text-sm">{t("tournament.banRecommendationTitle")}</p>
+                      <p className="text-xs text-muted-foreground mt-1 text-center max-w-[240px]">{t("tournament.banRecommendationLockedDesc")}</p>
                       <Link to="/upgrade"><Button size="sm" className="mt-3 gap-1.5"><Crown className="h-3.5 w-3.5" />{t("landing.tryPro")}</Button></Link>
                     </div>
                   )}
