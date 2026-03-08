@@ -1068,7 +1068,7 @@ const zh: Record<string, string> = {
   "tournament.duplicateWarning": "⚠️ 同一侧不能选择相同的卡组",
   "tournament.loginRequired": "请登录以使用策略师",
   "tournament.loginSignup": "登录 / 注册",
-  "tournament.calculateStrategy": "计算策略",
+  "tournament.calculateStrategy": "计算Ban位",
   "tournament.banRecommendation": "Ban位建议",
   "tournament.resetManualBan": "重置手动ban位",
   "tournament.manualBanProOnly": "🔒 手动ban位仅限PRO",
