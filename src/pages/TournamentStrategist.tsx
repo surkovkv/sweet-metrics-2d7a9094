@@ -311,19 +311,6 @@ const TournamentStrategist = () => {
                   <Target className="inline h-4 w-4 mr-1.5 text-destructive" />
                   {t("tournament.oppDecks")}
                 </label>
-                {showResult && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button className="text-muted-foreground hover:text-foreground transition-colors">
-                        <Eye className="h-4 w-4" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-sm p-3">
-                      <p className="text-xs font-semibold mb-2">{t("tournament.preBanMatrix")}</p>
-                      <PreBanMiniMatrix myArchetypes={myArchetypes} oppArchetypes={oppArchetypes} getWinrate={getWinrate} />
-                    </TooltipContent>
-                  </Tooltip>
-                )}
               </div>
               <div className="space-y-3">
                 {oppArchetypes.map((arch, i) => {
