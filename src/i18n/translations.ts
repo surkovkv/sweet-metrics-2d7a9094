@@ -355,7 +355,7 @@ const en: Record<string, string> = {
   "landing.openStrategist": "Open Strategist",
   "landing.loginSignup": "Login / Register",
   "landing.strategistTitle": "Tournament Strategist",
-  "landing.strategistDesc": "Conquest format: matchup matrix, optimal ban, best first deck, series strategy",
+  "landing.strategistDesc": "Calculate the optimal ban and first deck for Conquest. AI-powered matchup analysis and full series strategy",
   "landing.metaTitle": "Live Meta Tracker",
   "landing.metaDesc": "Popularity and winrates at Legend ranks — who counters whom, what's at the top of the meta",
   "landing.newsTitle": "News",
