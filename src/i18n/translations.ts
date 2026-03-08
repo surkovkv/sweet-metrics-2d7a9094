@@ -478,7 +478,7 @@ const en: Record<string, string> = {
   "tournament.duplicateWarning": "⚠️ Can't select the same deck twice on one side",
   "tournament.loginRequired": "Log in to use the strategist",
   "tournament.loginSignup": "Login / Register",
-  "tournament.calculateStrategy": "Calculate Strategy",
+  "tournament.calculateStrategy": "Calculate Ban",
   "tournament.banRecommendation": "Ban Recommendation",
   "tournament.resetManualBan": "Reset manual ban",
   "tournament.manualBanProOnly": "🔒 Manual ban is PRO only",
