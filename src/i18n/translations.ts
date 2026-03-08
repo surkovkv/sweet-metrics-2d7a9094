@@ -2168,7 +2168,7 @@ const ar: Record<string, string> = {
   "tournament.optimalFirstDeck": "المجموعة المثلى للمباراة الأولى",
   "tournament.optimalFirstDeckProDesc": "المجموعة المثلى للمباراة الأولى",
   "tournament.notEnoughData": "بيانات غير كافية للحساب.",
-  "tournament.calculatedWithBans": "تم الحساب مع مراعاة الحظر",
+  "tournament.calculatedWithBans": "تم الحساب مع مراعاة حظر",
   "tournament.matchupMatrix": "مصفوفة المواجهات",
   "tournament.youVsOpp": "أنت ↓ / الخصم →",
   "tournament.preBanMatrix": "مصفوفة ما قبل الحظر:",
