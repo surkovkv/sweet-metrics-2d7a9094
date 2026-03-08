@@ -2154,7 +2154,7 @@ const ar: Record<string, string> = {
   "tournament.duplicateWarning": "⚠️ لا يمكن اختيار نفس المجموعة مرتين في جانب واحد",
   "tournament.loginRequired": "سجّل الدخول لاستخدام الاستراتيجي",
   "tournament.loginSignup": "تسجيل الدخول / إنشاء حساب",
-  "tournament.calculateStrategy": "حساب الاستراتيجية",
+  "tournament.calculateStrategy": "حساب الحظر",
   "tournament.banRecommendation": "توصية الحظر",
   "tournament.resetManualBan": "إعادة تعيين الحظر اليدوي",
   "tournament.manualBanProOnly": "🔒 الحظر اليدوي لـ PRO فقط",
