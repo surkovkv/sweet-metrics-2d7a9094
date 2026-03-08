@@ -93,11 +93,9 @@ function parseMatchupTable(html: string) {
     estimated_games: number | null;
   }> = [];
   const archetypeStats: Array<{
-    archetype: string;
+    name: string;
     winrate: number | null;
     popularity: number | null;
-    total_games: number | null;
-    hs_class: string;
   }> = [];
 
   let rowMatch;
