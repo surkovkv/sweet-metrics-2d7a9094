@@ -185,7 +185,7 @@ const ru: Record<string, string> = {
   "tournament.optimalFirstDeck": "Оптимальная колода для первого матча",
   "tournament.optimalFirstDeckProDesc": "Оптимальная колода для первого матча",
   "tournament.notEnoughData": "Недостаточно данных для расчёта.",
-  "tournament.calculatedWithBans": "Рассчитано с учётом банов",
+  "tournament.calculatedWithBans": "Рассчитано с учётом бана",
   "tournament.matchupMatrix": "Матрица матчапов",
   "tournament.youVsOpp": "Ты ↓ / Противник →",
   "tournament.preBanMatrix": "Матрица до бана:",
