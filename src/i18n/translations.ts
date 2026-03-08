@@ -909,6 +909,11 @@ const es: Record<string, string> = {
   "common.loading": "Cargando...",
   "common.error": "Error",
   "common.cancel": "Cancelar",
+  "tournament.manualBanProHint": "💡 Haz clic en una opción de baneo para seleccionarla manualmente",
+  "tournament.banHistory": "Historial de baneos",
+  "tournament.noBanHistory": "Sin baneos guardados",
+  "tournament.avgWrAfterBan": "Winrate promedio tras el baneo",
+  "tournament.restoreBan": "Restaurar",
 };
 
 const zh: Record<string, string> = {
