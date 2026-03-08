@@ -2277,6 +2277,8 @@ const ar: Record<string, string> = {
   "tournament.banHistoryProOnly": "سجل الحظر متاح في PRO",
   "tournament.trialsRemaining": "{n} من {max} حسابات مجانية متبقية",
   "tournament.trialsExhausted": "الحسابات المجانية استُنفدت",
+  "tournament.banRecommendationTitle": "توصية الحظر",
+  "tournament.banRecommendationLockedDesc": "سيجد الذكاء الاصطناعي الحظر الأمثل لمجموعة الخصم. متاح في PRO.",
 };
 
 const allTranslations: Record<string, Record<string, string>> = { en, ru, es, zh, hi, ar, pt, fr };
