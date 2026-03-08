@@ -28,6 +28,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useMatchupData } from "@/hooks/useMatchupData";
 import { useT } from "@/i18n/useTranslation";
+import { useTrialCounter } from "@/hooks/useTrialCounter";
 
 type DeckMode = 3 | 4;
 type GetWinrateFn = (my: string, opp: string) => number | null;
@@ -68,6 +69,10 @@ const TournamentStrategist = () => {
   const IS_LOGGED_IN = !!user;
   const { archetypeList, matchupDB, date, isFromDB } = useMatchupData();
   const t = useT();
+  const { remaining, isExhausted, consumeTrial, maxTrials } = useTrialCounter();
+
+  // For FREE users: can they use PRO features via trial?
+  const canUseProFeatures = IS_PRO || (!IS_PRO && !isExhausted);
 
   const getWinrate = useCallback((my: string, opp: string): number | null => {
     return matchupDB[my]?.[opp] ?? null;
@@ -150,6 +155,10 @@ const TournamentStrategist = () => {
     if (hasDuplicates) {
       toast.error(t("tournament.duplicateWarning"));
       return;
+    }
+    // Consume trial for FREE users
+    if (!IS_PRO) {
+      consumeTrial();
     }
     setShowResult(true);
     setManualBanIndex(null);
@@ -341,30 +350,47 @@ const TournamentStrategist = () => {
             {/* Ban History — compact sidebar */}
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}
               className="hidden md:flex flex-col items-center gap-2 pt-8">
+              <p className="text-[10px] text-muted-foreground font-medium mb-1 text-center whitespace-nowrap">{t("tournament.banHistory")}</p>
               {IS_PRO ? (
                 currentHistory.length > 0 ? (
-                  currentHistory.map((entry, i) => (
-                    <Tooltip key={entry.timestamp}>
+                  <>
+                    {/* Current ban (star) */}
+                    <Tooltip>
                       <TooltipTrigger asChild>
                         <button
-                          onClick={() => restoreFromHistory(entry)}
-                          className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110 ${
-                            i === 0
-                              ? "border-primary bg-primary/10 text-primary"
-                              : "border-border bg-secondary/50 text-muted-foreground hover:border-primary/50"
-                          }`}
+                          onClick={() => currentHistory[0] && restoreFromHistory(currentHistory[0])}
+                          className="w-9 h-9 rounded-full border-2 border-primary bg-primary/10 text-primary flex items-center justify-center transition-all hover:scale-110"
                         >
-                          {i === 0 ? <Star className="h-4 w-4" /> : <History className="h-3.5 w-3.5" />}
+                          <Star className="h-4 w-4" />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="left" className="max-w-xs">
-                        <p className="text-xs font-semibold">BAN: {entry.bannedDeck}</p>
-                        <p className={`text-xs font-bold ${getWinrateColor(entry.avgWr)}`}>{entry.avgWr}%</p>
-                        <p className="text-[10px] text-muted-foreground mt-1">{entry.myDecks.join(", ")} vs {entry.oppDecks.join(", ")}</p>
+                        <p className="text-xs font-semibold">BAN: {currentHistory[0].bannedDeck}</p>
+                        <p className={`text-xs font-bold ${getWinrateColor(currentHistory[0].avgWr)}`}>{currentHistory[0].avgWr}%</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{currentHistory[0].myDecks.join(", ")} vs {currentHistory[0].oppDecks.join(", ")}</p>
                         <p className="text-[10px] text-primary mt-1">{t("tournament.restoreBan")}</p>
                       </TooltipContent>
                     </Tooltip>
-                  ))
+                    {/* Previous ban */}
+                    {currentHistory[1] && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => restoreFromHistory(currentHistory[1])}
+                            className="w-9 h-9 rounded-full border-2 border-border bg-secondary/50 text-muted-foreground flex items-center justify-center transition-all hover:scale-110 hover:border-primary/50"
+                          >
+                            <History className="h-3.5 w-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="left" className="max-w-xs">
+                          <p className="text-xs font-semibold">BAN: {currentHistory[1].bannedDeck}</p>
+                          <p className={`text-xs font-bold ${getWinrateColor(currentHistory[1].avgWr)}`}>{currentHistory[1].avgWr}%</p>
+                          <p className="text-[10px] text-muted-foreground mt-1">{currentHistory[1].myDecks.join(", ")} vs {currentHistory[1].oppDecks.join(", ")}</p>
+                          <p className="text-[10px] text-primary mt-1">{t("tournament.restoreBan")}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </>
                 ) : (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -380,12 +406,17 @@ const TournamentStrategist = () => {
               ) : (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-50">
-                      <Lock className="h-3.5 w-3.5" />
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-50 blur-[2px]">
+                        <Star className="h-4 w-4" />
+                      </div>
+                      <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-50 blur-[2px]">
+                        <History className="h-3.5 w-3.5" />
+                      </div>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="left">
-                    <p className="text-xs">{t("tournament.proOnly")}</p>
+                    <p className="text-xs">{t("tournament.banHistoryProOnly")}</p>
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -394,25 +425,58 @@ const TournamentStrategist = () => {
 
           {/* Mobile Ban History */}
           {IS_PRO && currentHistory.length > 0 && (
-            <div className="md:hidden flex gap-2 mb-4 justify-center">
-              {currentHistory.map((entry, i) => (
-                <Tooltip key={entry.timestamp}>
+            <div className="md:hidden flex gap-2 mb-4 justify-center items-center">
+              <span className="text-[10px] text-muted-foreground mr-1">{t("tournament.banHistory")}:</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => currentHistory[0] && restoreFromHistory(currentHistory[0])}
+                    className="w-9 h-9 rounded-full border-2 border-primary bg-primary/10 text-primary flex items-center justify-center transition-all"
+                  >
+                    <Star className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs font-semibold">BAN: {currentHistory[0].bannedDeck} ({currentHistory[0].avgWr}%)</p>
+                  <p className="text-[10px] text-primary">{t("tournament.restoreBan")}</p>
+                </TooltipContent>
+              </Tooltip>
+              {currentHistory[1] && (
+                <Tooltip>
                   <TooltipTrigger asChild>
                     <button
-                      onClick={() => restoreFromHistory(entry)}
-                      className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all ${
-                        i === 0 ? "border-primary bg-primary/10 text-primary" : "border-border bg-secondary/50 text-muted-foreground"
-                      }`}
+                      onClick={() => restoreFromHistory(currentHistory[1])}
+                      className="w-9 h-9 rounded-full border-2 border-border bg-secondary/50 text-muted-foreground flex items-center justify-center transition-all"
                     >
-                      {i === 0 ? <Star className="h-4 w-4" /> : <History className="h-3.5 w-3.5" />}
+                      <History className="h-3.5 w-3.5" />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p className="text-xs font-semibold">BAN: {entry.bannedDeck} ({entry.avgWr}%)</p>
+                    <p className="text-xs font-semibold">BAN: {currentHistory[1].bannedDeck} ({currentHistory[1].avgWr}%)</p>
                     <p className="text-[10px] text-primary">{t("tournament.restoreBan")}</p>
                   </TooltipContent>
                 </Tooltip>
-              ))}
+              )}
+            </div>
+          )}
+          {!IS_PRO && (
+            <div className="md:hidden flex gap-2 mb-4 justify-center items-center">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex gap-2 items-center opacity-50">
+                    <span className="text-[10px] text-muted-foreground mr-1">{t("tournament.banHistory")}:</span>
+                    <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground blur-[2px]">
+                      <Star className="h-4 w-4" />
+                    </div>
+                    <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground blur-[2px]">
+                      <History className="h-3.5 w-3.5" />
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">{t("tournament.banHistoryProOnly")}</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           )}
 
@@ -425,12 +489,20 @@ const TournamentStrategist = () => {
                 <Link to="/auth"><Button className="gap-2">{t("tournament.loginSignup")}</Button></Link>
               </div>
             ) : (
-              <Button onClick={handleCalculate}
-                disabled={!allFilled || hasDuplicates}
-                className="w-full gap-2 h-12 text-base font-semibold">
-                <Ban className="h-5 w-5" />
-                {t("tournament.calculateStrategy")}
-              </Button>
+              <>
+                <Button onClick={handleCalculate}
+                  disabled={!allFilled || hasDuplicates}
+                  className="w-full gap-2 h-12 text-base font-semibold">
+                  <Ban className="h-5 w-5" />
+                  {t("tournament.calculateStrategy")}
+                </Button>
+                {/* Trial counter for FREE users */}
+                {!IS_PRO && (
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    {t("tournament.trialsRemaining").replace("{n}", String(remaining)).replace("{max}", String(maxTrials))}
+                  </p>
+                )}
+              </>
             )}
           </motion.div>
 
@@ -464,50 +536,61 @@ const TournamentStrategist = () => {
                 </div>
 
                 {/* Ban Recommendation */}
-                <Card className="bg-card border-border border-l-4 border-l-destructive">
-                  <CardHeader>
-                    <CardTitle className="font-display text-lg flex items-center gap-2">
-                      <ShieldAlert className="h-5 w-5 text-destructive" />
-                      {t("tournament.banRecommendation")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* PRO hint about manual ban */}
-                    {IS_PRO && (
-                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary">
-                        <Crown className="h-4 w-4 shrink-0" />
-                        {t("tournament.manualBanProHint")}
-                      </div>
-                    )}
+                <div className="relative">
+                  <Card className="bg-card border-border border-l-4 border-l-destructive">
+                    <CardHeader>
+                      <CardTitle className="font-display text-lg flex items-center gap-2">
+                        <ShieldAlert className="h-5 w-5 text-destructive" />
+                        {t("tournament.banRecommendation")}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* PRO hint about manual ban */}
+                      {IS_PRO && (
+                        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary">
+                          <Crown className="h-4 w-4 shrink-0" />
+                          {t("tournament.manualBanProHint")}
+                        </div>
+                      )}
 
-                    {banOptions.map((option, i) => (
-                      <BanOptionCard key={i} option={option} index={i}
-                        isActive={effectiveBanIdx === option.bannedIndex}
-                        onManualBan={IS_PRO ? () => setManualBanIndex(option.bannedIndex) : undefined}
-                        t={t}
-                      />
-                    ))}
+                      {banOptions.map((option, i) => (
+                        <BanOptionCard key={i} option={option} index={i}
+                          isActive={effectiveBanIdx === option.bannedIndex}
+                          onManualBan={IS_PRO ? () => setManualBanIndex(option.bannedIndex) : undefined}
+                          t={t}
+                        />
+                      ))}
 
-                    {/* Reset manual ban — prominent button */}
-                    {manualBanIndex !== null && IS_PRO && (
-                      <Button
-                        onClick={() => setManualBanIndex(null)}
-                        variant="destructive"
-                        size="lg"
-                        className="w-full gap-2 mt-2"
-                      >
-                        <RotateCcw className="h-4 w-4" />
-                        {t("tournament.resetManualBan")}
-                      </Button>
-                    )}
+                      {/* Reset manual ban — prominent button */}
+                      {manualBanIndex !== null && IS_PRO && (
+                        <Button
+                          onClick={() => setManualBanIndex(null)}
+                          variant="destructive"
+                          size="lg"
+                          className="w-full gap-2 mt-2"
+                        >
+                          <RotateCcw className="h-4 w-4" />
+                          {t("tournament.resetManualBan")}
+                        </Button>
+                      )}
 
-                    {!IS_PRO && (
-                      <p className="text-xs text-muted-foreground text-center mt-2">
-                        {t("tournament.manualBanProOnly")}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+                      {!IS_PRO && (
+                        <p className="text-xs text-muted-foreground text-center mt-2">
+                          {t("tournament.manualBanProOnly")}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                  {/* Blur ban recommendation for FREE users when trials exhausted */}
+                  {!IS_PRO && isExhausted && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl backdrop-blur-xl bg-background/80">
+                      <Crown className="h-6 w-6 text-primary mb-2" />
+                      <p className="text-foreground font-medium text-sm">{t("tournament.proOnly")}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t("tournament.trialsExhausted")}</p>
+                      <Link to="/upgrade"><Button size="sm" className="mt-3 gap-1.5"><Crown className="h-3.5 w-3.5" />{t("landing.tryPro")}</Button></Link>
+                    </div>
+                  )}
+                </div>
 
                 {/* Opponent Ban Section — PRO only */}
                 <div className="relative">
@@ -611,7 +694,7 @@ const TournamentStrategist = () => {
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className={`text-lg font-bold ${getWinrateColor(optimalFirstDeck.avgWr)}`}>
-                                    AVG WR {optimalFirstDeck.avgWr}%
+                                    {optimalFirstDeck.avgWr}%
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -722,14 +805,14 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr>
-                <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs border border-border">
+                <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs border-2 border-border">
                   {t("tournament.youVsOpp")}
                 </th>
                 {oppArchetypes.map((opp, i) => {
                   const isBanned = bannedIndex === i;
                   const info = getArchetypeInfo(opp);
                   return (
-                    <th key={i} className={`text-center py-2 px-3 font-medium text-xs border border-border ${isBanned ? "text-destructive" : "text-muted-foreground"
+                    <th key={i} className={`text-center py-2 px-3 font-medium text-xs border-2 border-border ${isBanned ? "text-destructive" : "text-muted-foreground"
                       }`}>
                       {isBanned && (
                         <span className="bg-destructive text-destructive-foreground text-[9px] font-bold px-1.5 py-0.5 rounded mb-1 inline-block">
@@ -753,7 +836,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                 const info = getArchetypeInfo(my);
                 return (
                   <tr key={rowIdx} className={isMyBanned ? "opacity-40" : ""}>
-                    <td className="py-3 px-3 font-medium text-primary border border-border">
+                    <td className="py-3 px-3 font-medium text-primary border-2 border-border">
                       <div className={isMyBanned ? "line-through" : ""}>{my}</div>
                       {info && (
                         <div className="text-[10px] text-muted-foreground">
@@ -770,7 +853,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                       const isBanned = bannedIndex === colIdx;
                       return (
                         <td key={colIdx}
-                          className={`py-3 px-3 text-center border border-border ${isBanned ? "opacity-40" : ""
+                          className={`py-3 px-3 text-center border-2 border-border ${isBanned ? "opacity-40" : ""
                             } ${getWinrateBg(wr)}`}>
                           <div className={`font-bold ${getWinrateColor(wr)}`}>
                             {wr !== null ? `${wr}%` : "—"}
