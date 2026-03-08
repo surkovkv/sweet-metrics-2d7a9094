@@ -918,6 +918,8 @@ const es: Record<string, string> = {
   "tournament.noBanHistory": "Sin baneos guardados",
   "tournament.avgWrAfterBan": "Winrate promedio tras el baneo",
   "tournament.restoreBan": "Restaurar",
+  "tournament.reasoningTemplate": "{deck} muestra un Winrate Promedio (AVG WR) de {wr}% contra los mazos restantes del oponente. Especialmente fuerte contra {opp}.",
+  "tournament.avgWrFull": "Winrate Promedio (Average Winrate)",
 };
 
 const zh: Record<string, string> = {
