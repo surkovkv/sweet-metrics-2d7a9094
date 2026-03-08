@@ -1997,7 +1997,7 @@ const hi: Record<string, string> = {
   "landing.openStrategist": "रणनीतिकार खोलें",
   "landing.loginSignup": "लॉगिन / रजिस्टर",
   "landing.strategistTitle": "टूर्नामेंट रणनीतिकार",
-  "landing.strategistDesc": "कॉन्क्वेस्ट फॉर्मैट: मैचअप मैट्रिक्स, इष्टतम बैन, सर्वश्रेष्ठ पहला डेक",
+  "landing.strategistDesc": "Conquest के लिए इष्टतम बैन और पहला डेक कैलकुलेट करें। AI मैचअप विश्लेषण और पूरी सीरीज़ रणनीति",
   "landing.metaTitle": "लाइव मेटा ट्रैकर",
   "landing.metaDesc": "लीजेंड रैंक पर लोकप्रियता और विनरेट — कौन किसे काउंटर करता है",
   "landing.newsTitle": "समाचार",
