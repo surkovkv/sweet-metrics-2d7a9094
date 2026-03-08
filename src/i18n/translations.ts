@@ -1547,6 +1547,8 @@ const fr: Record<string, string> = {
   "tournament.banHistoryProOnly": "Historique des bans disponible en PRO",
   "tournament.trialsRemaining": "{n} sur {max} calculs gratuits restants",
   "tournament.trialsExhausted": "Calculs gratuits épuisés",
+  "tournament.banRecommendationTitle": "Recommandation de ban",
+  "tournament.banRecommendationLockedDesc": "L'IA trouvera le ban optimal de l'adversaire. Disponible en PRO.",
 };
 
 // For pt, hi, ar — using concise but natural translations
