@@ -319,6 +319,8 @@ const ru: Record<string, string> = {
   "tournament.banHistoryProOnly": "История банов доступна на PRO",
   "tournament.trialsRemaining": "Осталось {n} из {max} бесплатных расчётов",
   "tournament.trialsExhausted": "Бесплатные расчёты исчерпаны",
+  "tournament.banRecommendationTitle": "Рекомендация по бану",
+  "tournament.banRecommendationLockedDesc": "ИИ подберёт оптимальный бан колоды противника. Доступно на PRO.",
 };
 
 const en: Record<string, string> = {
