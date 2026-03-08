@@ -2072,6 +2072,7 @@ const hi: Record<string, string> = {
   "tournament.banHistoryProOnly": "बैन इतिहास केवल PRO पर उपलब्ध",
   "tournament.trialsRemaining": "{max} में से {n} मुफ्त गणनाएं शेष",
   "tournament.trialsExhausted": "मुफ्त गणनाएं समाप्त",
+  "tournament.trialsExhaustedNote": "मुफ्त गणनाएं समाप्त। मैचअप मैट्रिक्स उपलब्ध रहता है।",
   "tournament.banRecommendationTitle": "बैन अनुशंसा",
   "tournament.banRecommendationLockedDesc": "AI प्रतिद्वंद्वी के इष्टतम बैन का पता लगाएगा। PRO पर उपलब्ध।",
 };
