@@ -935,6 +935,7 @@ const es: Record<string, string> = {
   "tournament.banHistoryProOnly": "Historial de baneos disponible en PRO",
   "tournament.trialsRemaining": "{n} de {max} cálculos gratuitos restantes",
   "tournament.trialsExhausted": "Cálculos gratuitos agotados",
+  "tournament.trialsExhaustedNote": "Cálculos gratuitos agotados. La matriz de enfrentamientos sigue disponible.",
   "tournament.banRecommendationTitle": "Recomendación de baneo",
   "tournament.banRecommendationLockedDesc": "La IA encontrará el ban óptimo del oponente. Disponible en PRO.",
 };
