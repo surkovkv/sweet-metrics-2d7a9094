@@ -2188,6 +2188,11 @@ const ar: Record<string, string> = {
   "common.loading": "جارٍ التحميل...",
   "common.error": "خطأ",
   "common.cancel": "إلغاء",
+  "tournament.manualBanProHint": "💡 انقر على خيار الحظر لتحديده يدويًا",
+  "tournament.banHistory": "سجل الحظر",
+  "tournament.noBanHistory": "لا يوجد حظر محفوظ",
+  "tournament.avgWrAfterBan": "متوسط نسبة الفوز بعد الحظر",
+  "tournament.restoreBan": "استعادة",
 };
 
 const allTranslations: Record<string, Record<string, string>> = { en, ru, es, zh, hi, ar, pt, fr };
