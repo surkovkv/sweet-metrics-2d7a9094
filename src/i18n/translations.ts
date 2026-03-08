@@ -2044,13 +2044,16 @@ const hi: Record<string, string> = {
   "common.loading": "लोड हो रहा है...",
   "common.error": "त्रुटि",
   "common.cancel": "रद्द करें",
-  "tournament.manualBanProHint": "💡 मैनुअल रूप से चुनने के लिए बैन विकल्प पर क्लिक करें",
+  "tournament.manualBanProHint": "मैनुअल रूप से चुनने के लिए बैन विकल्प पर क्लिक करें",
   "tournament.banHistory": "बैन इतिहास",
   "tournament.noBanHistory": "कोई सहेजा हुआ बैन नहीं",
   "tournament.avgWrAfterBan": "बैन के बाद औसत विनरेट",
   "tournament.restoreBan": "पुनर्स्थापित",
-  "tournament.reasoningTemplate": "{deck} शेष प्रतिद्वंद्वी डेक के खिलाफ औसत विनरेट (AVG WR) {wr}% दिखाता है। {opp} के खिलाफ विशेष रूप से मजबूत।",
+  "tournament.reasoningTemplate": "{deck} शेष प्रतिद्वंद्वी डेक के खिलाफ औसत विनरेट {wr}% दिखाता है। {opp} के खिलाफ विशेष रूप से मजबूत।",
   "tournament.avgWrFull": "औसत विनरेट (Average Winrate)",
+  "tournament.banHistoryProOnly": "बैन इतिहास केवल PRO पर उपलब्ध",
+  "tournament.trialsRemaining": "{max} में से {n} मुफ्त गणनाएं शेष",
+  "tournament.trialsExhausted": "मुफ्त गणनाएं समाप्त",
 };
 
 // Arabic — concise natural translations
