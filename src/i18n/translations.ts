@@ -1955,7 +1955,7 @@ const hi: Record<string, string> = {
   "tournament.duplicateWarning": "⚠️ एक तरफ एक ही डेक दो बार नहीं चुन सकते",
   "tournament.loginRequired": "रणनीतिकार का उपयोग करने के लिए लॉगिन करें",
   "tournament.loginSignup": "लॉगिन / रजिस्टर",
-  "tournament.calculateStrategy": "रणनीति की गणना करें",
+  "tournament.calculateStrategy": "बैन की गणना करें",
   "tournament.banRecommendation": "बैन अनुशंसा",
   "tournament.resetManualBan": "मैनुअल बैन रीसेट करें",
   "tournament.manualBanProOnly": "🔒 मैनुअल बैन केवल PRO के लिए",
