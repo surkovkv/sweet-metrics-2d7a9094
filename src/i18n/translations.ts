@@ -773,7 +773,7 @@ const es: Record<string, string> = {
   "tournament.duplicateWarning": "⚠️ No puedes seleccionar el mismo mazo dos veces en un lado",
   "tournament.loginRequired": "Inicia sesión para usar el estratega",
   "tournament.loginSignup": "Iniciar sesión / Registrarse",
-  "tournament.calculateStrategy": "Calcular estrategia",
+  "tournament.calculateStrategy": "Calcular baneo",
   "tournament.banRecommendation": "Recomendación de baneo",
   "tournament.resetManualBan": "Restablecer baneo manual",
   "tournament.manualBanProOnly": "🔒 Baneo manual solo para PRO",
