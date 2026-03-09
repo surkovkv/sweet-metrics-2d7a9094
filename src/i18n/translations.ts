@@ -105,9 +105,9 @@ const ru: Record<string, string> = {
   // meta
   "meta.title": "Live",
   "meta.titleHighlight": "Meta-трекер",
-  "meta.subtitle": "Популярность и сила архетипов на Legend-рангах. Кликни на колоду — узнай, кто её контрит.",
-  "meta.bestChoice": "Лучший выбор для лестницы:",
-  "meta.beatsTop": "Бьёт большинство топ-колод",
+  "meta.subtitle": "Популярность и сила архетипов в текущей мете Hearthstone",
+  "meta.rank": "Ранг",
+  "meta.rankLegend": "Legend",
   "meta.allClasses": "Все классы",
   "meta.metaMap": "Мета-карта",
   "meta.tierList": "Тир-лист",
