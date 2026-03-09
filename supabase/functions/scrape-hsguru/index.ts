@@ -112,9 +112,25 @@ function parseMatchupTable(html: string) {
 
     if (cells.length < 3) continue;
 
-    // First cell: overall winrate (e.g., "51.5%")
-    const wrMatch = cells[0].match(/(\d+\.?\d*)%/);
-    const overallWinrate = wrMatch ? parseFloat(wrMatch[1]) : null;
+    // First cell: popularity percentage (e.g., "15.0%")
+    const popMatch = cells[0].match(/(\d+\.?\d*)%/);
+    const popularityPct = popMatch ? parseFloat(popMatch[1]) : null;
+    
+    // Calculate overall winrate from matchup cells (skip first 2 cells, they are pop% and name)
+    let totalWR = 0;
+    let wrCount = 0;
+    for (let i = 2; i < cells.length && i - 2 < opponentNames.length; i++) {
+      const cellText = cells[i].replace(/<[^>]*>/g, "").trim();
+      const cellWrMatch = cellText.match(/(\d+\.?\d*)%?/);
+      if (cellWrMatch) {
+        const wr = parseFloat(cellWrMatch[1]);
+        if (wr >= 0 && wr <= 100) {
+          totalWR += wr;
+          wrCount++;
+        }
+      }
+    }
+    const overallWinrate = wrCount > 0 ? Math.round((totalWR / wrCount) * 10) / 10 : null;
 
     // Second cell: archetype name and total games
     // Contains the archetype name as text, possibly with a link
