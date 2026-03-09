@@ -211,24 +211,35 @@ const TournamentStrategist = () => {
 
             {/* Opponent Decks */}
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-              <div className="flex items-center gap-2 mb-3">
-                <label className="block text-sm font-medium text-foreground">
-                  <Target className="inline h-4 w-4 mr-1.5 text-destructive" />
-                  Колоды противника
-                </label>
-                {showResult && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button className="text-muted-foreground hover:text-foreground transition-colors">
-                        <Eye className="h-4 w-4" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-sm p-3">
-                      <p className="text-xs font-semibold mb-2">Матрица до бана:</p>
-                      <PreBanMiniMatrix myArchetypes={myArchetypes} oppArchetypes={oppArchetypes} />
-                    </TooltipContent>
-                  </Tooltip>
-                )}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <label className="block text-sm font-medium text-foreground">
+                    <Target className="inline h-4 w-4 mr-1.5 text-destructive" />
+                    Колоды противника
+                  </label>
+                  {showResult && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button className="text-muted-foreground hover:text-foreground transition-colors ml-2">
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-sm p-3">
+                        <p className="text-xs font-semibold mb-2">Матрица до бана:</p>
+                        <PreBanMiniMatrix myArchetypes={myArchetypes} oppArchetypes={oppArchetypes} />
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
+                {/* Vertical PRO Badge above opponent decks */}
+                <div
+                  className="flex flex-col items-center justify-center bg-gradient-to-b from-primary/30 to-primary/10 text-primary rounded border border-primary/20 shadow-sm"
+                  style={{ padding: "2px 4px", lineHeight: "1.1" }}
+                >
+                  <span className="text-[10px] font-black uppercase">P</span>
+                  <span className="text-[10px] font-black uppercase">R</span>
+                  <span className="text-[10px] font-black uppercase">O</span>
+                </div>
               </div>
               <div className="space-y-3">
                 {oppArchetypes.map((arch, i) => {
@@ -338,82 +349,84 @@ const TournamentStrategist = () => {
                   </CardContent>
                 </Card>
 
-                {/* Opponent Ban Section — PRO only */}
-                <div className="relative">
-                  {IS_PRO ? (
-                    <Card className="bg-card border-border">
-                      <CardHeader>
-                        <CardTitle className="font-display text-lg flex items-center gap-2">
-                          <ArrowLeftRight className="h-5 w-5 text-primary" />
-                          Бан противника
-                          <button
-                            onClick={() => setShowOpponentBan(!showOpponentBan)}
-                            className={`ml-auto text-xs px-3 py-1 rounded-md transition-colors ${showOpponentBan
+                {/* Opponent Ban Section — PRO only (Hidden completely if unauthorized) */}
+                {IS_LOGGED_IN && (
+                  <div className="relative">
+                    {IS_PRO ? (
+                      <Card className="bg-card border-border">
+                        <CardHeader>
+                          <CardTitle className="font-display text-lg flex items-center gap-2">
+                            <ArrowLeftRight className="h-5 w-5 text-primary" />
+                            Бан противника
+                            <button
+                              onClick={() => setShowOpponentBan(!showOpponentBan)}
+                              className={`ml-auto text-xs px-3 py-1 rounded-md transition-colors ${showOpponentBan
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-secondary text-muted-foreground hover:text-foreground"
-                              }`}>
-                            {showOpponentBan ? "Скрыть" : "Показать"}
-                          </button>
-                        </CardTitle>
-                      </CardHeader>
-                      <AnimatePresence>
-                        {showOpponentBan && oppBanOptions.length > 0 && (
-                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}>
-                            <CardContent className="space-y-3 pt-0">
-                              <p className="text-xs text-muted-foreground mb-2">
-                                Какую из ваших колод, скорее всего, забанит противник:
-                              </p>
-                              {oppBanOptions.map((opt, i) => {
-                                const isOppBanned = oppManualBanIndex === opt.bannedIndex;
-                                return (
-                                  <div key={i}
-                                    onClick={() => setOppManualBanIndex(isOppBanned ? null : opt.bannedIndex)}
-                                    className={`p-3 rounded-lg cursor-pointer transition-all ${isOppBanned
+                                }`}>
+                              {showOpponentBan ? "Скрыть" : "Показать"}
+                            </button>
+                          </CardTitle>
+                        </CardHeader>
+                        <AnimatePresence>
+                          {showOpponentBan && oppBanOptions.length > 0 && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}>
+                              <CardContent className="space-y-3 pt-0">
+                                <p className="text-xs text-muted-foreground mb-2">
+                                  Какую из ваших колод, скорее всего, забанит противник:
+                                </p>
+                                {oppBanOptions.map((opt, i) => {
+                                  const isOppBanned = oppManualBanIndex === opt.bannedIndex;
+                                  return (
+                                    <div key={i}
+                                      onClick={() => setOppManualBanIndex(isOppBanned ? null : opt.bannedIndex)}
+                                      className={`p-3 rounded-lg cursor-pointer transition-all ${isOppBanned
                                         ? "bg-destructive/10 border border-destructive/30"
                                         : i === 0 ? "bg-destructive/10 border border-destructive/30" : "bg-secondary/50 hover:bg-secondary"
-                                      }`}>
-                                    <div className="flex items-center justify-between">
-                                      <span className={`font-medium text-sm ${i === 0 ? "text-destructive" : "text-muted-foreground"}`}>
-                                        {i === 0 ? "🔴 " : `#${i + 1} `}
-                                        {opt.bannedArchetype}
-                                      </span>
-                                      <span className="text-xs text-muted-foreground">
-                                        min {opt.minWinrate}% · avg {opt.avgWinrate}%
-                                      </span>
+                                        }`}>
+                                      <div className="flex items-center justify-between">
+                                        <span className={`font-medium text-sm ${i === 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                                          {i === 0 ? "🔴 " : `#${i + 1} `}
+                                          {opt.bannedArchetype}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                          min {opt.minWinrate}% · avg {opt.avgWinrate}%
+                                        </span>
+                                      </div>
+                                      {isOppBanned && (
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                          ✅ Отмечено как забаненное противником — учтено в оптимальной колоде
+                                        </p>
+                                      )}
                                     </div>
-                                    {isOppBanned && (
-                                      <p className="text-xs text-muted-foreground mt-1">
-                                        ✅ Отмечено как забаненное противником — учтено в оптимальной колоде
-                                      </p>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </CardContent>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </Card>
-                  ) : (
-                    <Card className="bg-card border-border overflow-hidden">
-                      <div className="relative p-6">
-                        <div className="absolute inset-0 backdrop-blur-xl bg-background/80 z-10 flex flex-col items-center justify-center gap-2">
-                          <Crown className="h-6 w-6 text-primary" />
-                          <p className="text-foreground font-medium text-sm">🔒 Доступно на PRO</p>
-                          <p className="text-xs text-muted-foreground">Прогноз бана противника</p>
+                                  );
+                                })}
+                              </CardContent>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </Card>
+                    ) : (
+                      <Card className="bg-card border-border overflow-hidden">
+                        <div className="relative p-6">
+                          <div className="absolute inset-0 backdrop-blur-xl bg-background/80 z-10 flex flex-col items-center justify-center gap-2">
+                            <Crown className="h-6 w-6 text-primary" />
+                            <p className="text-foreground font-medium text-sm">🔒 Доступно на PRO</p>
+                            <p className="text-xs text-muted-foreground">Прогноз бана противника</p>
+                          </div>
+                          <div className="space-y-3 opacity-30 select-none" aria-hidden>
+                            <p className="font-display text-lg flex items-center gap-2">
+                              <ArrowLeftRight className="h-5 w-5" /> Бан противника
+                            </p>
+                            <div className="h-10 bg-secondary/50 rounded" />
+                            <div className="h-10 bg-secondary/50 rounded" />
+                          </div>
                         </div>
-                        <div className="space-y-3 opacity-30 select-none" aria-hidden>
-                          <p className="font-display text-lg flex items-center gap-2">
-                            <ArrowLeftRight className="h-5 w-5" /> Бан противника
-                          </p>
-                          <div className="h-10 bg-secondary/50 rounded" />
-                          <div className="h-10 bg-secondary/50 rounded" />
-                        </div>
-                      </div>
-                    </Card>
-                  )}
-                </div>
+                      </Card>
+                    )}
+                  </div>
+                )}
 
                 {/* Optimal First Deck — PRO only */}
                 <div className="relative">
@@ -613,8 +626,8 @@ function BanOptionCard({ option, index, isActive, onManualBan }: {
 }) {
   return (
     <div className={`p-4 rounded-lg transition-all ${isActive
-        ? "bg-destructive/10 border border-destructive/30 ring-1 ring-destructive/20"
-        : "bg-secondary/50 hover:bg-secondary/70"
+      ? "bg-destructive/10 border border-destructive/30 ring-1 ring-destructive/20"
+      : "bg-secondary/50 hover:bg-secondary/70"
       } ${onManualBan && !isActive ? "cursor-pointer" : ""}`}
       onClick={!isActive && onManualBan ? onManualBan : undefined}
     >
@@ -662,17 +675,27 @@ function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [] }: {
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {archetypeList.map((arch) => (
-          <SelectItem key={arch.name} value={arch.name}
-            disabled={excludeValues.includes(arch.name)}>
-            <span className="flex items-center justify-between gap-3 w-full">
-              <span>{arch.name}</span>
-              <span className="text-xs text-muted-foreground ml-2">
-                AVG WR {arch.winrate}% · Pop. {arch.popularity}%
+        {archetypeList.map((arch) => {
+          // Fallback WR calculation
+          let safeWr = arch.winrate;
+          if (safeWr < 45 && safeWr > 0) {
+            const wrs = archetypeList.map(opp => getWinrate(arch.name, opp.name)).filter(w => w !== null) as number[];
+            if (wrs.length > 0) {
+              safeWr = wrs.reduce((sum, w) => sum + w, 0) / wrs.length;
+            }
+          }
+          return (
+            <SelectItem key={arch.name} value={arch.name}
+              disabled={excludeValues.includes(arch.name)}>
+              <span className="flex items-center justify-between gap-3 w-full">
+                <span>{arch.name}</span>
+                <span className="text-xs text-muted-foreground ml-2">
+                  AVG WR {safeWr.toFixed(1)}% · Pop. {arch.popularity}%
+                </span>
               </span>
-            </span>
-          </SelectItem>
-        ))}
+            </SelectItem>
+          )
+        })}
       </SelectContent>
     </Select>
   );

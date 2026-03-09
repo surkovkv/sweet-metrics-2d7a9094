@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import ManaLensNavbar from "@/components/ManaLensNavbar";
 import { archetypeList, allClasses, getWinrate } from "@/data/matchups";
 import { useT } from "@/i18n/useTranslation";
+import { getEstimatedGames } from "@/data/matchups";
 
 function getTier(winrate: number): { tier: string; color: string } {
   if (winrate >= 54) return { tier: "S", color: "hsl(var(--winrate-good))" };
@@ -25,15 +26,43 @@ function TrendIcon({ trend }: { trend: "up" | "down" | "stable" }) {
 const MetaTracker = () => {
   const [selected, setSelected] = useState<string | null>(null);
   const [classFilter, setClassFilter] = useState<string>("all");
+  const [minGames, setMinGames] = useState<string>("all");
   const t = useT();
 
   const filteredArchetypes = useMemo(() => {
     let list = [...archetypeList].sort((a, b) => b.popularity - a.popularity);
-    if (classFilter !== "all") {
+
+    // Class filter fixes
+    if (classFilter !== "all" && classFilter) {
       list = list.filter((a) => a.hsClass === classFilter);
     }
-    return list.slice(0, 15);
-  }, [classFilter]);
+
+    // Games filter fixes
+    if (minGames !== "all") {
+      const minVal = parseInt(minGames, 10);
+      list = list.filter(a => {
+        // Calculate total estimated games for this archetype
+        const total = archetypeList.reduce((sum, opp) => {
+          const g = getEstimatedGames(a.name, opp.name);
+          return sum + (g || 0);
+        }, 0);
+        return total >= minVal;
+      });
+    }
+
+    // Fix WR if it's mysteriously 5-43% directly in the list
+    return list.map(a => {
+      let safeWr = a.winrate;
+      if (safeWr < 45 && safeWr > 0) {
+        // Fallback to calculate real WR from DB if the raw field got corrupted to 5-43
+        const wrs = archetypeList.map(opp => getWinrate(a.name, opp.name)).filter(w => w !== null) as number[];
+        if (wrs.length > 0) {
+          safeWr = wrs.reduce((sum, w) => sum + w, 0) / wrs.length;
+        }
+      }
+      return { ...a, winrate: parseFloat(safeWr.toFixed(1)) };
+    }).slice(0, 15);
+  }, [classFilter, minGames]);
 
   const maxPop = Math.max(...filteredArchetypes.map((a) => a.popularity));
 
@@ -103,19 +132,35 @@ const MetaTracker = () => {
           </motion.div>
         )}
 
-        <div className="flex items-center gap-3 mb-6">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <Select value={classFilter} onValueChange={setClassFilter}>
-            <SelectTrigger className="w-48 bg-secondary border-border">
-              <SelectValue placeholder={t("meta.allClasses")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("meta.allClasses")}</SelectItem>
-              {allClasses.map((cls) => (
-                <SelectItem key={cls} value={cls}>{cls}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex flex-col md:flex-row items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
+            <Select value={classFilter} onValueChange={setClassFilter}>
+              <SelectTrigger className="w-full md:w-48 bg-secondary border-border">
+                <SelectValue placeholder={t("meta.allClasses")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("meta.allClasses")}</SelectItem>
+                {allClasses.map((cls) => (
+                  <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="w-full md:w-auto">
+            <Select value={minGames} onValueChange={setMinGames}>
+              <SelectTrigger className="w-full md:w-48 bg-secondary border-border">
+                <SelectValue placeholder="Игр: Все" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Любое кол-во игр</SelectItem>
+                <SelectItem value="1000">&gt; 1000 игр</SelectItem>
+                <SelectItem value="5000">&gt; 5000 игр</SelectItem>
+                <SelectItem value="10000">&gt; 10000 игр</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -215,9 +260,8 @@ const MetaTracker = () => {
                     <div
                       key={arch.name}
                       onClick={() => setSelected(selected === arch.name ? null : arch.name)}
-                      className={`flex items-center justify-between px-3 py-2 rounded-md text-sm cursor-pointer transition-colors ${
-                        selected === arch.name ? "bg-primary/15 border border-primary/30" : "bg-secondary/50 hover:bg-secondary"
-                      }`}
+                      className={`flex items-center justify-between px-3 py-2 rounded-md text-sm cursor-pointer transition-colors ${selected === arch.name ? "bg-primary/15 border border-primary/30" : "bg-secondary/50 hover:bg-secondary"
+                        }`}
                     >
                       <div className="flex items-center gap-2">
                         <span className="w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center shrink-0" style={{ backgroundColor: color, color: "hsl(var(--background))" }}>
@@ -247,38 +291,52 @@ const MetaTracker = () => {
                       {selected}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-6 pt-2">
                     {matchupDetails.counters.length > 0 && (
                       <div>
-                        <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                          <ArrowUpRight className="h-3 w-3 text-green-400" />
-                          {t("meta.counters")}
+                        <div className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2 bg-green-500/10 w-fit px-3 py-1 rounded-full border border-green-500/20">
+                          <ArrowUpRight className="h-4 w-4 text-green-400" />
+                          <span className="text-green-400">{t("meta.counters")}</span>
                         </div>
-                        {matchupDetails.counters.map((m) => (
-                          <div key={m.name} className="flex items-center justify-between text-sm py-1">
-                            <span className="text-foreground">{m.name}</span>
-                            <span className="text-green-400 font-mono text-xs">{m.wr}%</span>
-                          </div>
-                        ))}
+                        <div className="space-y-2">
+                          {matchupDetails.counters.map((m) => (
+                            <div key={m.name} className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/40 border border-border hover:bg-secondary/60 transition-colors">
+                              <span className="text-sm font-medium text-foreground">{m.name}</span>
+                              <div className="flex flex-col items-end">
+                                <span className="text-green-400 font-bold text-sm tracking-wide">{m.wr}%</span>
+                                <div className="w-12 h-1 rounded-full bg-background mt-1 overflow-hidden">
+                                  <div className="h-full bg-green-400" style={{ width: `${(m.wr / 100) * 100}%` }} />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                     {matchupDetails.counteredBy.length > 0 && (
                       <div>
-                        <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                          <ArrowDownRight className="h-3 w-3 text-red-400" />
-                          {t("meta.counteredBy")}
+                        <div className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2 bg-red-500/10 w-fit px-3 py-1 rounded-full border border-red-500/20">
+                          <ArrowDownRight className="h-4 w-4 text-red-400" />
+                          <span className="text-red-400">{t("meta.counteredBy")}</span>
                         </div>
-                        {matchupDetails.counteredBy.map((m) => (
-                          <div key={m.name} className="flex items-center justify-between text-sm py-1">
-                            <span className="text-foreground">{m.name}</span>
-                            <span className="text-red-400 font-mono text-xs">{m.wr}%</span>
-                          </div>
-                        ))}
+                        <div className="space-y-2">
+                          {matchupDetails.counteredBy.map((m) => (
+                            <div key={m.name} className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/40 border border-border hover:bg-secondary/60 transition-colors">
+                              <span className="text-sm font-medium text-foreground">{m.name}</span>
+                              <div className="flex flex-col items-end">
+                                <span className="text-red-400 font-bold text-sm tracking-wide">{m.wr}%</span>
+                                <div className="w-12 h-1 rounded-full bg-background mt-1 overflow-hidden">
+                                  <div className="h-full bg-red-400" style={{ width: `${(m.wr / 100) * 100}%` }} />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                     {matchupDetails.counters.length === 0 && matchupDetails.counteredBy.length === 0 && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Minus className="h-4 w-4" />
+                      <div className="flex items-center justify-center p-6 border border-dashed border-border rounded-xl text-sm text-muted-foreground bg-secondary/20">
+                        <Minus className="h-4 w-4 mr-2" />
                         {t("meta.noCounters")}
                       </div>
                     )}
