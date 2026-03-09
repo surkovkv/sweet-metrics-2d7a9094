@@ -86,14 +86,13 @@ export default function MetaAIInsights({ archetypes, matchupDB }: Props) {
         <CardTitle className="font-display text-base flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
           {t("meta.aiInsights")}
-          <span className="text-[10px] text-muted-foreground font-normal ml-auto">{t("meta.aiPowered")}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         {!analysis && !rawContent && !loading && !error && (
           <div className="text-center py-4">
             <p className="text-xs text-muted-foreground mb-3">
-              {t("meta.top5Ladder")}
+              {t("meta.top5Climb")}
             </p>
             <Button
               onClick={handleAnalyze}
