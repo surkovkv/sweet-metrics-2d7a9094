@@ -1,11 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Minus, Info, ArrowUpRight, ArrowDownRight, Filter, Trophy } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Info, ArrowUpRight, ArrowDownRight, Filter, Trophy, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
-import { archetypeList, allClasses, getWinrate } from "@/data/matchups";
+import { allClasses as staticAllClasses } from "@/data/matchups";
+import { useMatchupData } from "@/hooks/useMatchupData";
 import { useT } from "@/i18n/useTranslation";
 
 function getTier(winrate: number): { tier: string; color: string } {
@@ -26,6 +27,16 @@ const MetaTracker = () => {
   const [selected, setSelected] = useState<string | null>(null);
   const [classFilter, setClassFilter] = useState<string>("all");
   const t = useT();
+  const { archetypeList, matchupDB, loading, date, isFromDB } = useMatchupData();
+
+  const getWinrate = useCallback((my: string, opp: string): number | null => {
+    return matchupDB[my]?.[opp] ?? null;
+  }, [matchupDB]);
+
+  const allClasses = useMemo(() => {
+    const classes = [...new Set(archetypeList.map((a) => a.hsClass))].sort();
+    return classes.length > 0 ? classes : staticAllClasses;
+  }, [archetypeList]);
 
   const filteredArchetypes = useMemo(() => {
     let list = [...archetypeList].sort((a, b) => b.popularity - a.popularity);
@@ -81,7 +92,18 @@ const MetaTracker = () => {
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
             {t("meta.subtitle")}
           </p>
+          {date && isFromDB && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Данные из БД · обновлены {date}
+            </p>
+          )}
         </motion.div>
+
+        {loading && (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        )}
 
         {recommendation && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-6">

@@ -1,10 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { 
-  Shield, MessageSquare, Newspaper, Settings, Check, X, 
-  ToggleLeft, ToggleRight, Loader2, RefreshCcw, Users 
-} from "lucide-react";
+import { Shield, MessageSquare, Newspaper, Settings, Check, X, ToggleLeft, ToggleRight, Loader2, RefreshCcw, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,42 +9,22 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
-import NewsEditor from "@/components/NewsEditor";
 import { Contact } from "@/hooks/useContacts";
 import { NewsPost } from "@/hooks/useNewsPosts";
 
-interface UserProfile {
-  id: string;
-  user_id: string;
-  nickname: string;
-  role?: 'user' | 'admin';
-  is_pro: boolean;
-  created_at: string;
-}
+const sb = supabase as any;
 
 export default function Admin() {
-  const { user, profile, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
+    const { user, profile, loading: authLoading, isAdmin } = useAuth();
+    const navigate = useNavigate();
+    const { toast } = useToast();
 
-  // Логи для отладки
-  console.log("🔥 Admin page - profile:", profile);
-  console.log("🔥 Admin page - user:", user);
-  console.log("🔥 Admin page - role from profile:", profile?.role);
-  console.log("🔥 Admin page - isAdmin check:", profile?.role === "admin");
-  console.log("🔥 Admin page - authLoading:", authLoading);
-
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [news, setNews] = useState<NewsPost[]>([]);
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [loadingData, setLoadingData] = useState(false);
-
-  // 👇 ИСПРАВЛЕНО: ждем загрузку auth и наличие profile
-  const isAdmin = profile?.role === "admin";
-  const shouldRedirect = !authLoading && (!profile || !isAdmin);
-  
-  const [editingPost, setEditingPost] = useState<NewsPost | null>(null);
-  const [showNewEditor, setShowNewEditor] = useState(false);
+    const [contacts, setContacts] = useState<Contact[]>([]);
+    const [news, setNews] = useState<NewsPost[]>([]);
+    const [loadingData, setLoadingData] = useState(false);
+    const [syncLoading, setSyncLoading] = useState(false);
+    const [userStats, setUserStats] = useState<{ total: number; pro: number } | null>(null);
+    const [users, setUsers] = useState<any[]>([]);
 
   useEffect(() => {
     console.log("🔥 Auth effect - isAdmin:", isAdmin, "authLoading:", authLoading, "profile:", profile);
@@ -62,40 +39,28 @@ export default function Admin() {
   }, [isAdmin, authLoading, profile, navigate]);
 
   const fetchData = async () => {
-    if (!isAdmin) return;
-    setLoadingData(true);
+      if (!isAdmin) return;
+      setLoadingData(true);
 
-    // Fetch contacts
-    const { data: contactsData } = await supabase
-      .from("contacts")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (contactsData) setContacts(contactsData);
+      const [contactsRes, newsRes, statsRes, usersRes] = await Promise.all([
+        sb.from("contacts").select("*").order("created_at", { ascending: false }),
+        sb.from("news_posts").select("*").order("created_at", { ascending: false }),
+        sb.from("profiles").select("is_pro"),
+        sb.from("profiles").select("*").order("created_at", { ascending: false }), // 👈 добавить
+      ]);
 
-    // Fetch all news
-    const { data: newsData } = await supabase
-      .from("news_posts")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (newsData) setNews(newsData);
+      if (contactsRes.data) setContacts(contactsRes.data);
+      if (newsRes.data) setNews(newsRes.data);
+      if (usersRes.data) setUsers(usersRes.data); // 👈 добавить
+      if (statsRes.data) {
+        setUserStats({
+          total: statsRes.data.length,
+          pro: statsRes.data.filter((p: any) => p.is_pro).length,
+        });
+      }
 
-    // Fetch all users (profiles)
-    const { data: usersData } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
-    
-    if (usersData) {
-      console.log("🔥 Users data from Supabase:", usersData);
-      const usersWithRole = usersData.map(user => ({
-        ...user,
-        role: user.role || 'user'
-      }));
-      setUsers(usersWithRole);
-    }
-
-    setLoadingData(false);
-  };
+      setLoadingData(false);
+    };
 
   useEffect(() => {
     if (isAdmin && profile) {
@@ -104,69 +69,90 @@ export default function Admin() {
     }
   }, [isAdmin, profile]);
 
-  const publishNews = async (id: string, publish: boolean) => {
-    const { error } = await supabase.from("news_posts").update({ published: publish }).eq("id", id);
-    if (error) {
-      toast({ title: "Ошибка", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Успех", description: publish ? "Новость опубликована" : "Новость снята с публикации" });
-      fetchData();
-    }
-  };
+    const publishNews = async (id: string, publish: boolean) => {
+        const { error } = await sb.from("news_posts").update({ published: publish }).eq("id", id);
+        if (error) {
+            toast({ title: "Ошибка", description: error.message, variant: "destructive" });
+        } else {
+            toast({ title: "Успех", description: publish ? "Новость опубликована" : "Новость снята с публикации" });
+            fetchData();
+        }
+    };
 
-  const handleEditorSave = () => {
-    setEditingPost(null);
-    setShowNewEditor(false);
-    fetchData();
-  };
+    const toggleProStatus = async () => {
+        if (!user) return;
+        const newStatus = !profile?.is_pro;
+        const { error } = await sb.from("profiles").update({ is_pro: newStatus }).eq("user_id", user.id);
+        if (error) {
+            toast({ title: "Ошибка", description: error.message, variant: "destructive" });
+        } else {
+            toast({ title: "PRO Статус обновлен", description: `Теперь статус PRO: ${newStatus}` });
+            setTimeout(() => window.location.reload(), 1000);
+        }
+    };
 
-  const toggleProStatus = async () => {
-    if (!user) return;
-    const newStatus = !profile?.is_pro;
-    const { error } = await supabase.from("profiles").update({ is_pro: newStatus }).eq("user_id", user.id);
-    if (error) {
-      toast({ title: "Ошибка", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "PRO Статус обновлен", description: `Теперь статус PRO: ${newStatus}` });
-      setTimeout(() => window.location.reload(), 1000);
-    }
-  };
-
-  const changeUserRole = async (userId: string, newRole: 'user' | 'admin') => {
-  const { error } = await supabase
-    .from('profiles')
-    .update({ role: newRole })
-    .eq('user_id', userId);
-
-  if (error) {
-    toast({ 
-      title: "Ошибка", 
-      description: error.message, 
-      variant: "destructive" 
-    });
-  } else {
-    toast({ 
-      title: "Успех", 
-      description: `Роль пользователя изменена на ${newRole}` 
-    });
+    const changeUserRole = async (userId: string, newRole: 'user' | 'admin') => {
+      try {
+        console.log("🔥 Changing role for user:", userId, "to:", newRole);
     
-    // Принудительно перезагружаем список пользователей
-    await fetchData();
-    
-    // Показываем обновленные данные в консоли для проверки
-    console.log("Роль изменена, проверяем обновленные данные:");
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq('user_id', userId)
-      .single();
-    console.log("Обновленный профиль:", data);
-  }
-};
+        // Прямое обновление таблицы profiles
+        const { error } = await sb
+          .from('profiles')
+          .update({ role: newRole })
+          .eq('user_id', userId);
 
-  const triggerHsguruFetch = () => {
-    toast({ title: "Синхронизация", description: "Запрос к HSGuru отправлен (имитация)" });
-  };
+        if (error) throw error;
+
+        toast({
+          title: "Успех",
+          description: `Роль изменена на ${newRole === 'admin' ? 'администратора' : 'пользователя'}`,
+        });
+
+        // Обновить список пользователей
+        const { data: usersData } = await sb
+          .from("profiles")
+          .select("*")
+          .order("created_at", { ascending: false });
+    
+        if (usersData) setUsers(usersData);
+
+      } catch (error: any) {
+        console.error("🔥 Error changing role:", error);
+        toast({
+          title: "Ошибка",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
+    };
+
+    const triggerHsguruFetch = async () => {
+        setSyncLoading(true);
+        try {
+            const { data, error } = await supabase.functions.invoke("scrape-hsguru");
+            if (error) throw error;
+            if (data?.success) {
+                toast({
+                    title: "Синхронизация завершена",
+                    description: `Загружено ${data.matchupsCount} матчапов для ${data.archetypesCount} архетипов (${data.date})`,
+                });
+            } else {
+                toast({
+                    title: "Ошибка синхронизации",
+                    description: data?.error || "Неизвестная ошибка",
+                    variant: "destructive",
+                });
+            }
+        } catch (err: any) {
+            toast({
+                title: "Ошибка",
+                description: err.message || "Не удалось выполнить синхронизацию",
+                variant: "destructive",
+            });
+        } finally {
+            setSyncLoading(false);
+        }
+    };
 
   // 👇 ИСПРАВЛЕНО: показываем лоадер пока грузится auth ИЛИ пока нет profile
   if (authLoading || profile === null) {
@@ -193,21 +179,62 @@ export default function Admin() {
     <div className="min-h-screen bg-background">
       <ManaLensNavbar />
 
-      <main className="container mx-auto px-4 pt-28 pb-16 max-w-5xl">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 bg-primary/20 text-primary rounded-xl">
-              <Shield className="h-8 w-8" />
-            </div>
-            <div>
-              <h1 className="font-display text-3xl font-bold">Админ-панель</h1>
-              <p className="text-muted-foreground">Управление контентом и настройками</p>
-            </div>
-            <Button className="ml-auto" variant="outline" onClick={fetchData} disabled={loadingData}>
-              <RefreshCcw className={`h-4 w-4 mr-2 ${loadingData ? 'animate-spin' : ''}`} />
-              Обновить
-            </Button>
-          </div>
+            <main className="container mx-auto px-4 pt-28 pb-16 max-w-5xl">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="p-3 bg-primary/20 text-primary rounded-xl">
+                            <Shield className="h-8 w-8" />
+                        </div>
+                        <div>
+                            <h1 className="font-display text-3xl font-bold">Админ-панель</h1>
+                            <p className="text-muted-foreground">Управление контентом и настройками</p>
+                        </div>
+                        <Button className="ml-auto" variant="outline" onClick={fetchData} disabled={loadingData}>
+                            <RefreshCcw className={`h-4 w-4 mr-2 ${loadingData ? 'animate-spin' : ''}`} />
+                            Обновить
+                        </Button>
+                    </div>
+
+                    {userStats && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <Card className="bg-card border-border">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <Users className="h-5 w-5 text-primary" />
+                                    <div>
+                                        <p className="text-2xl font-bold text-foreground">{userStats.total}</p>
+                                        <p className="text-xs text-muted-foreground">Пользователей</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-card border-border">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <Shield className="h-5 w-5 text-primary" />
+                                    <div>
+                                        <p className="text-2xl font-bold text-foreground">{userStats.pro}</p>
+                                        <p className="text-xs text-muted-foreground">PRO</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-card border-border">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <MessageSquare className="h-5 w-5 text-primary" />
+                                    <div>
+                                        <p className="text-2xl font-bold text-foreground">{contacts.length}</p>
+                                        <p className="text-xs text-muted-foreground">Сообщений</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-card border-border">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <Newspaper className="h-5 w-5 text-primary" />
+                                    <div>
+                                        <p className="text-2xl font-bold text-foreground">{news.length}</p>
+                                        <p className="text-xs text-muted-foreground">Новостей</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
 
           <Tabs defaultValue="news" className="space-y-6">
             <TabsList className="bg-secondary">
@@ -369,38 +396,40 @@ export default function Admin() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="settings">
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle>Тестирование и инструменты</CardTitle>
-                  <CardDescription>Специальные функции для проверки работы платформы</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg border border-border">
-                    <div>
-                      <p className="font-semibold">Тарифный план (Тест)</p>
-                      <p className="text-sm text-muted-foreground">Переключить свой статус между FREE и PRO</p>
-                    </div>
-                    <Button variant={profile?.is_pro ? "default" : "outline"} onClick={toggleProStatus} className="gap-2">
-                      {profile?.is_pro ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
-                      {profile?.is_pro ? "PRO Активен" : "FREE Активен"}
-                    </Button>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg border border-border">
-                    <div>
-                      <p className="font-semibold">Tournament Strategist</p>
-                      <p className="text-sm text-muted-foreground">Принудительно загрузить свежие данные HSGuru</p>
-                    </div>
-                    <Button onClick={triggerHsguruFetch}>
-                      Синхронизировать
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </motion.div>
-      </main>
-    </div>
-  );
+                        <TabsContent value="settings">
+                            <Card className="bg-card border-border">
+                                <CardHeader>
+                                    <CardTitle>Тестирование и инструменты</CardTitle>
+                                    <CardDescription>Специальные функции для проверки работы платформы</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg border border-border">
+                                        <div>
+                                            <p className="font-semibold">Тарифный план (Тест)</p>
+                                            <p className="text-sm text-muted-foreground">Переключить свой статус между FREE и PRO</p>
+                                        </div>
+                                        <Button variant={profile?.is_pro ? "default" : "outline"} onClick={toggleProStatus} className="gap-2">
+                                            {profile?.is_pro ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                                            {profile?.is_pro ? "PRO Активен" : "FREE Активен"}
+                                        </Button>
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg border border-border">
+                                        <div>
+                                            <p className="font-semibold">Tournament Strategist</p>
+                                            <p className="text-sm text-muted-foreground">Принудительно загрузить свежие данные HSGuru</p>
+                                        </div>
+                                        <Button onClick={triggerHsguruFetch} disabled={syncLoading}>
+                                            {syncLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                                            {syncLoading ? "Синхронизация..." : "Синхронизировать"}
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                    </Tabs>
+                </motion.div>
+            </main>
+        </div>
+    );
 }

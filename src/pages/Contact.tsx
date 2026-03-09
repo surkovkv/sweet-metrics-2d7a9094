@@ -45,7 +45,6 @@ const Contact = () => {
             name: nameToSubmit,
             email: emailToSubmit,
             message: message.trim(),
-            user_id: user.id,
         });
         setLoading(false);
 
