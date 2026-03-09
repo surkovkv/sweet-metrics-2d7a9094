@@ -69,9 +69,15 @@ const MetaTracker = () => {
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
             {t("meta.title")} <span className="text-primary">{t("meta.titleHighlight")}</span>
           </h1>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto mb-2">
             {t("meta.subtitle")}
           </p>
+          <div className="flex items-center justify-center gap-2 text-sm">
+            <span className="text-muted-foreground">{t("meta.rank")}:</span>
+            <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold border border-primary/20">
+              {t("meta.rankLegend")}
+            </span>
+          </div>
           {date && isFromDB && (
             <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-muted-foreground">
               <Calendar className="h-3 w-3" />
