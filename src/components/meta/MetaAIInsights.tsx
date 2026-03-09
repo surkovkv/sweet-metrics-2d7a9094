@@ -131,7 +131,7 @@ export default function MetaAIInsights({ archetypes, matchupDB }: Props) {
               <div>
                 <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
                   <Trophy className="h-3 w-3 text-primary" />
-                  {t("meta.top5Ladder")}
+                  {t("meta.top5Climb")}
                 </div>
                 <div className="space-y-2">
                   {analysis.top5.map((deck, i) => {
