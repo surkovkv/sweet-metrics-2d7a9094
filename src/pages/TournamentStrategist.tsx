@@ -827,7 +827,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                       <div className={isBanned ? "line-through decoration-destructive decoration-[3px]" : ""}>{opp}</div>
                       {info && (
                         <div className="text-[10px] opacity-60 space-y-0.5">
-                          <div>AVG WR {info.winrate}%</div>
+                          <div>AVG WR {Number(info.winrate).toFixed(1)}%</div>
                         </div>
                       )}
                     </th>
