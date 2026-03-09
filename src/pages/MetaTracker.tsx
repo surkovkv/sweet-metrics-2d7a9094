@@ -165,8 +165,12 @@ const MetaTracker = () => {
               </Card>
             </div>
 
-            {/* Right sidebar - AI Insights */}
+            {/* Right sidebar - AI Insights + Deck Comparison */}
             <div className="space-y-6">
+              <DeckComparison
+                archetypes={filteredArchetypes}
+                matchupDB={matchupDB}
+              />
               <MetaAIInsights
                 archetypes={filteredArchetypes}
                 matchupDB={matchupDB}

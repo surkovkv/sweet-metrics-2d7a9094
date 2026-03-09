@@ -100,15 +100,15 @@ export default function DeckComparison({ archetypes, matchupDB }: Props) {
                 {/* Summary */}
                 <div className="pt-2 border-t border-border text-center">
                   {matchup1vs2 > 52 ? (
-                    <span className="text-sm text-green-500 font-medium">
+                    <span className="text-sm text-emerald-500 font-medium">
                       {deck1} {t("meta.favorable").toLowerCase()}
                     </span>
                   ) : matchup1vs2 < 48 ? (
-                    <span className="text-sm text-red-500 font-medium">
+                    <span className="text-sm text-rose-500 font-medium">
                       {deck2} {t("meta.favorable").toLowerCase()}
                     </span>
                   ) : (
-                    <span className="text-sm text-yellow-500 font-medium">
+                    <span className="text-sm text-amber-500 font-medium">
                       ~50/50
                     </span>
                   )}
