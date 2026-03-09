@@ -668,6 +668,7 @@ const en: Record<string, string> = {
   "tournament.banHistoryProOnly": "Ban history available on PRO",
   "tournament.trialsRemaining": "{n} of {max} free calculations remaining",
   "tournament.trialsExhausted": "Free calculations exhausted",
+  "tournament.matrixStillAvailable": "The matchup matrix remains available.",
   "tournament.trialsExhaustedNote": "Free calculations exhausted. The matchup matrix remains available.",
   "tournament.banRecommendationTitle": "Ban Recommendation",
   "tournament.banRecommendationLockedDesc": "AI will find the optimal opponent deck to ban. Available on PRO.",
