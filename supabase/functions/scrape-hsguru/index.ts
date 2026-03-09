@@ -112,11 +112,12 @@ function parseMatchupTable(html: string) {
 
     if (cells.length < 3) continue;
 
-    // First cell: popularity percentage (e.g., "15.0%")
-    const popMatch = cells[0].match(/(\d+\.?\d*)%/);
-    const popularityPct = popMatch ? parseFloat(popMatch[1]) : null;
-    
-    // Calculate overall winrate from matchup cells (skip first 2 cells, they are pop% and name)
+    // First cell: Matchup overall winrate (e.g., "51.7")
+    const cell0Text = cells[0].replace(/<[^>]*>/g, "").trim();
+    const providedWrMatch = cell0Text.match(/(\d+\.?\d*)/);
+    const providedWinrate = providedWrMatch ? parseFloat(providedWrMatch[1]) : null;
+
+    // Calculate overall winrate from matchup cells just in case
     let totalWR = 0;
     let wrCount = 0;
     for (let i = 2; i < cells.length && i - 2 < opponentNames.length; i++) {
@@ -130,7 +131,8 @@ function parseMatchupTable(html: string) {
         }
       }
     }
-    const overallWinrate = wrCount > 0 ? Math.round((totalWR / wrCount) * 10) / 10 : null;
+
+    const overallWinrate = providedWinrate !== null ? providedWinrate : (wrCount > 0 ? Math.round((totalWR / wrCount) * 10) / 10 : null);
 
     // Second cell: archetype name and total games
     // Contains the archetype name as text, possibly with a link
@@ -174,10 +176,10 @@ function parseMatchupTable(html: string) {
     // Determine HS class from the archetype class map
     const hsClass = archetypeClassMap[archetypeName] || "Unknown";
 
-    // Use popularity from first cell if available, otherwise calculate from total games
-    let popularity = popularityPct;
-    if (popularity === null && totalGames !== null) {
-      const totalGamesAll = 676578; // From the page "Seed Weights" button
+    // We don't have popularity per deck in the cell, we will set it to null and it will be updated by header row later
+    let popularity = null;
+    if (totalGames !== null) {
+      const totalGamesAll = 676578; // Fallback
       popularity = Math.round((totalGames / totalGamesAll) * 1000) / 10;
     }
 

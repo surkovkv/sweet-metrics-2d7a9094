@@ -49,10 +49,16 @@ const MetaTracker = () => {
     const minG = parseInt(minGames);
     if (minG > 0) {
       list = list.filter(a => {
+        // Since HSGuru scraper doesn't provide gamesDB anymore, we estimate using popularity
         const games = gamesDB[a.name];
-        if (!games) return false;
-        const total = Object.values(games).reduce((sum, g) => sum + g, 0);
-        return total >= minG;
+        if (games && Object.keys(games).length > 0) {
+          const total = Object.values(games).reduce((sum, g) => sum + g, 0);
+          return total >= minG;
+        } else {
+          // Estimate games: ~675k total games, popularity is a percentage
+          const estimatedGamesFromPop = Math.round(676578 * (a.popularity / 100));
+          return estimatedGamesFromPop >= minG;
+        }
       });
     }
 
@@ -60,7 +66,7 @@ const MetaTracker = () => {
     return list.map(a => {
       let safeWr = a.winrate;
       if (safeWr < 45 && safeWr > 0) {
-        // Fallback to calculate real WR from DB if the raw field got corrupted to 5-43
+        // Fallback to calculate real WR from DB if the raw field got corrupted
         const wrs = archetypeList.map(opp => matchupDB[a.name]?.[opp.name]).filter(w => w != null) as number[];
         if (wrs.length > 0) {
           safeWr = wrs.reduce((sum, w) => sum + w, 0) / wrs.length;
