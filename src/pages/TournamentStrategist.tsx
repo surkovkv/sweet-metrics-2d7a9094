@@ -403,22 +403,25 @@ const TournamentStrategist = () => {
                   </Tooltip>
                 )
               ) : (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex flex-col items-center gap-2 p-2 rounded-lg border-2 border-dashed border-border relative">
-                      <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
-                        <Star className="h-4 w-4" />
-                      </div>
-                      <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
-                        <History className="h-3.5 w-3.5" />
-                      </div>
-                      <HelpCircle className="h-4 w-4 text-yellow-500 absolute -top-2 -right-2 bg-background rounded-full" />
+                <div className="flex items-start gap-2">
+                  <div className="flex flex-col items-center gap-2 p-2 rounded-lg border-2 border-dashed border-border relative">
+                    <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
+                      <Star className="h-4 w-4" />
                     </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="left">
-                    <p className="text-xs">{t("tournament.banHistoryProOnly")}</p>
-                  </TooltipContent>
-                </Tooltip>
+                    <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
+                      <History className="h-3.5 w-3.5" />
+                    </div>
+                    <span className="absolute inset-0 flex items-center justify-center text-yellow-500 font-bold text-xs [writing-mode:vertical-lr] tracking-widest z-10">PRO</span>
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-6 w-6 text-yellow-500 cursor-help mt-1 shrink-0" />
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p className="text-xs">{t("tournament.banHistoryProOnly")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               )}
             </motion.div>
           </div>
