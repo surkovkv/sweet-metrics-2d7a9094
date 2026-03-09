@@ -403,22 +403,25 @@ const TournamentStrategist = () => {
                   </Tooltip>
                 )
               ) : (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex flex-col items-center gap-2 p-2 rounded-lg border-2 border-dashed border-border relative">
-                      <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
-                        <Star className="h-4 w-4" />
-                      </div>
-                      <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
-                        <History className="h-3.5 w-3.5" />
-                      </div>
-                      <HelpCircle className="h-4 w-4 text-yellow-500 absolute -top-2 -right-2 bg-background rounded-full" />
+                <div className="flex items-start gap-2">
+                  <div className="flex flex-col items-center gap-2 p-2 rounded-lg border-2 border-dashed border-border relative">
+                    <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
+                      <Star className="h-4 w-4" />
                     </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="left">
-                    <p className="text-xs">{t("tournament.banHistoryProOnly")}</p>
-                  </TooltipContent>
-                </Tooltip>
+                    <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
+                      <History className="h-3.5 w-3.5" />
+                    </div>
+                    <span className="absolute inset-0 flex items-center justify-center text-yellow-500 font-bold text-xs [writing-mode:vertical-lr] tracking-widest z-10">PRO</span>
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-6 w-6 text-yellow-500 cursor-help mt-1 shrink-0" />
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p className="text-xs">{t("tournament.banHistoryProOnly")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               )}
             </motion.div>
           </div>
@@ -460,17 +463,18 @@ const TournamentStrategist = () => {
           )}
           {!IS_PRO && (
             <div className="md:hidden flex gap-2 mb-4 justify-center items-center">
+              <div className="flex gap-2 items-center p-2 rounded-lg border-2 border-dashed border-border relative">
+                <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
+                  <Star className="h-4 w-4" />
+                </div>
+                <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
+                  <History className="h-3.5 w-3.5" />
+                </div>
+                <span className="absolute inset-0 flex items-center justify-center text-yellow-500 font-bold text-sm z-10">PRO</span>
+              </div>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="flex gap-2 items-center p-2 rounded-lg border-2 border-dashed border-border relative">
-                    <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
-                      <Star className="h-4 w-4" />
-                    </div>
-                    <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
-                      <History className="h-3.5 w-3.5" />
-                    </div>
-                    <HelpCircle className="h-4 w-4 text-yellow-500 absolute -top-2 -right-2 bg-background rounded-full" />
-                  </div>
+                  <HelpCircle className="h-6 w-6 text-yellow-500 cursor-help shrink-0" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="text-xs">{t("tournament.banHistoryProOnly")}</p>
@@ -499,7 +503,7 @@ const TournamentStrategist = () => {
                 {!IS_PRO && (
                   <p className="text-xs text-muted-foreground text-center mt-2">
                     {isExhausted
-                      ? t("tournament.trialsExhaustedNote")
+                      ? <>{t("tournament.trialsExhausted")}. <span className="text-primary font-semibold">{t("tournament.matrixStillAvailable")}</span></>
                       : t("tournament.trialsRemaining").replace("{n}", String(remaining)).replace("{max}", String(maxTrials))}
                   </p>
                 )}
@@ -823,7 +827,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                       <div className={isBanned ? "line-through decoration-destructive decoration-[3px]" : ""}>{opp}</div>
                       {info && (
                         <div className="text-[10px] opacity-60 space-y-0.5">
-                          <div>AVG WR {info.winrate}%</div>
+                          <div>AVG WR {Number(info.winrate).toFixed(1)}%</div>
                         </div>
                       )}
                     </th>
@@ -841,7 +845,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                       <div className={isMyBanned ? "line-through" : ""}>{my}</div>
                       {info && (
                         <div className="text-[10px] text-muted-foreground">
-                          <span>AVG WR {info.winrate}%</span>
+                          <span>AVG WR {Number(info.winrate).toFixed(1)}%</span>
                         </div>
                       )}
                       {isMyBanned && (
@@ -942,7 +946,7 @@ function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [], arc
             <span className="flex items-center justify-between gap-3 w-full">
               <span>{arch.name}</span>
               <span className="text-xs text-muted-foreground ml-2">
-                AVG WR {arch.winrate}%
+                AVG WR {Number(arch.winrate).toFixed(1)}%
               </span>
             </span>
           </SelectItem>
