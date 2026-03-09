@@ -845,7 +845,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                       <div className={isMyBanned ? "line-through" : ""}>{my}</div>
                       {info && (
                         <div className="text-[10px] text-muted-foreground">
-                          <span>AVG WR {info.winrate}%</span>
+                          <span>AVG WR {Number(info.winrate).toFixed(1)}%</span>
                         </div>
                       )}
                       {isMyBanned && (
