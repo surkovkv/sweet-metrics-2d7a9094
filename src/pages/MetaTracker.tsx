@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Filter, Loader2, Trophy, Calendar } from "lucide-react";
+import { Filter, Loader2, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
@@ -10,6 +10,7 @@ import { useT } from "@/i18n/useTranslation";
 import MetaChart from "@/components/meta/MetaChart";
 import MetaTierList from "@/components/meta/MetaTierList";
 import MetaAIInsights from "@/components/meta/MetaAIInsights";
+import DeckComparison from "@/components/meta/DeckComparison";
 
 const MIN_GAMES_OPTIONS = [
   { value: "0", label: "All" },
@@ -58,24 +59,7 @@ const MetaTracker = () => {
     return list;
   }, [archetypeList, classFilter, minGames, gamesDB]);
 
-  // Recommendation: best deck that beats top meta
-  const recommendation = useMemo(() => {
-    if (archetypeList.length === 0) return null;
-    const top3 = [...archetypeList].sort((a, b) => b.popularity - a.popularity).slice(0, 3);
-    let best: typeof archetypeList[0] | null = null;
-    let bestScore = -1;
-    for (const arch of archetypeList) {
-      let wins = 0;
-      for (const tt of top3) {
-        if (arch.name === tt.name) continue;
-        const wr = matchupDB[arch.name]?.[tt.name];
-        if (wr && wr > 50) wins++;
-      }
-      const score = wins * 100 + arch.winrate;
-      if (score > bestScore) { bestScore = score; best = arch; }
-    }
-    return best;
-  }, [archetypeList, matchupDB]);
+  // Removed: recommendation banner (no longer needed per user request)
 
   return (
     <div className="min-h-screen bg-background">
@@ -86,9 +70,15 @@ const MetaTracker = () => {
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
             {t("meta.title")} <span className="text-primary">{t("meta.titleHighlight")}</span>
           </h1>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto mb-2">
             {t("meta.subtitle")}
           </p>
+          <div className="flex items-center justify-center gap-2 text-sm">
+            <span className="text-muted-foreground">{t("meta.rank")}:</span>
+            <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold border border-primary/20">
+              {t("meta.rankLegend")}
+            </span>
+          </div>
           {date && isFromDB && (
             <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-muted-foreground">
               <Calendar className="h-3 w-3" />
@@ -103,26 +93,7 @@ const MetaTracker = () => {
           </div>
         )}
 
-        {/* Recommendation banner */}
-        {recommendation && !loading && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-6">
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="py-4 px-5 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
-                  <Trophy className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-foreground">
-                    {t("meta.bestChoice")} <span className="text-primary">{recommendation.name}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {recommendation.winrate}% WR · {recommendation.popularity}% pop · {t("meta.beatsTop")}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+        {/* Removed recommendation banner - per user request */}
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
@@ -194,8 +165,12 @@ const MetaTracker = () => {
               </Card>
             </div>
 
-            {/* Right sidebar - AI Insights */}
+            {/* Right sidebar - AI Insights + Deck Comparison */}
             <div className="space-y-6">
+              <DeckComparison
+                archetypes={filteredArchetypes}
+                matchupDB={matchupDB}
+              />
               <MetaAIInsights
                 archetypes={filteredArchetypes}
                 matchupDB={matchupDB}
