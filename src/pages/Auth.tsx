@@ -227,9 +227,6 @@ const Auth = () => {
                   className={`pl-10 bg-secondary border-border ${email && !validateEmail() ? "border-destructive" : ""}`}
                   required
                 />
-                {email && !validateEmail() && (
-                  <p className="text-xs text-destructive mt-1">{t("auth.emailError")}</p>
-                )}
               </div>
 
               {/* Password */}

@@ -946,7 +946,7 @@ function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [], arc
             <span className="flex items-center justify-between gap-3 w-full">
               <span>{arch.name}</span>
               <span className="text-xs text-muted-foreground ml-2">
-                AVG WR {arch.winrate}%
+                AVG WR {Number(arch.winrate).toFixed(1)}%
               </span>
             </span>
           </SelectItem>
