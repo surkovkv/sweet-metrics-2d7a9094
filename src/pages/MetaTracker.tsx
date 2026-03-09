@@ -92,26 +92,7 @@ const MetaTracker = () => {
           </div>
         )}
 
-        {/* Recommendation banner */}
-        {recommendation && !loading && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-6">
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="py-4 px-5 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
-                  <Trophy className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-foreground">
-                    {t("meta.bestChoice")} <span className="text-primary">{recommendation.name}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {recommendation.winrate}% WR · {recommendation.popularity}% pop · {t("meta.beatsTop")}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+        {/* Removed recommendation banner - per user request */}
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
