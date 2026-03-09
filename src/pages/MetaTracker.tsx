@@ -10,6 +10,7 @@ import { useT } from "@/i18n/useTranslation";
 import MetaChart from "@/components/meta/MetaChart";
 import MetaTierList from "@/components/meta/MetaTierList";
 import MetaAIInsights from "@/components/meta/MetaAIInsights";
+import DeckComparison from "@/components/meta/DeckComparison";
 
 const MIN_GAMES_OPTIONS = [
   { value: "0", label: "All" },
