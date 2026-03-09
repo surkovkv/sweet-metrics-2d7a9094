@@ -1,52 +1,58 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Minus, Info, ArrowUpRight, ArrowDownRight, Filter, Trophy } from "lucide-react";
+import { Filter, Loader2, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
-import { archetypeList, allClasses, getWinrate } from "@/data/matchups";
+import { allClasses as staticAllClasses } from "@/data/matchups";
+import { useMatchupData } from "@/hooks/useMatchupData";
 import { useT } from "@/i18n/useTranslation";
-import { getEstimatedGames } from "@/data/matchups";
+import MetaChart from "@/components/meta/MetaChart";
+import MetaTierList from "@/components/meta/MetaTierList";
+import MetaAIInsights from "@/components/meta/MetaAIInsights";
+import DeckComparison from "@/components/meta/DeckComparison";
 
-function getTier(winrate: number): { tier: string; color: string } {
-  if (winrate >= 54) return { tier: "S", color: "hsl(var(--winrate-good))" };
-  if (winrate >= 52) return { tier: "A", color: "hsl(142 71% 55%)" };
-  if (winrate >= 50) return { tier: "B", color: "hsl(var(--winrate-neutral))" };
-  if (winrate >= 48) return { tier: "C", color: "hsl(25 95% 53%)" };
-  return { tier: "D", color: "hsl(var(--winrate-bad))" };
-}
-
-function TrendIcon({ trend }: { trend: "up" | "down" | "stable" }) {
-  if (trend === "up") return <TrendingUp className="h-3.5 w-3.5 text-green-400" />;
-  if (trend === "down") return <TrendingDown className="h-3.5 w-3.5 text-red-400" />;
-  return <Minus className="h-3.5 w-3.5 text-muted-foreground" />;
-}
+const MIN_GAMES_OPTIONS = [
+  { value: "0", label: "All" },
+  { value: "250", label: "250+" },
+  { value: "500", label: "500+" },
+  { value: "1000", label: "1K+" },
+  { value: "2500", label: "2.5K+" },
+  { value: "5000", label: "5K+" },
+  { value: "10000", label: "10K+" },
+  { value: "25000", label: "25K+" },
+  { value: "50000", label: "50K+" },
+];
 
 const MetaTracker = () => {
   const [selected, setSelected] = useState<string | null>(null);
-  const [classFilter, setClassFilter] = useState<string>("all");
-  const [minGames, setMinGames] = useState<string>("all");
+  const [activeTier, setActiveTier] = useState<string | null>(null);
+  const [classFilter, setClassFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<"winrate" | "popularity">("popularity");
+  const [minGames, setMinGames] = useState("0");
   const t = useT();
+  const { archetypeList, matchupDB, gamesDB, loading, date, isFromDB } = useMatchupData();
 
+  const allClasses = useMemo(() => {
+    const classes = [...new Set(archetypeList.map(a => a.hsClass))].filter(c => c !== "Unknown").sort();
+    return classes.length > 0 ? classes : staticAllClasses;
+  }, [archetypeList]);
+
+  // Filter archetypes by class and min games
   const filteredArchetypes = useMemo(() => {
-    let list = [...archetypeList].sort((a, b) => b.popularity - a.popularity);
+    let list = [...archetypeList];
 
-    // Class filter fixes
-    if (classFilter !== "all" && classFilter) {
-      list = list.filter((a) => a.hsClass === classFilter);
+    if (classFilter !== "all") {
+      list = list.filter(a => a.hsClass === classFilter);
     }
 
-    // Games filter fixes
-    if (minGames !== "all") {
-      const minVal = parseInt(minGames, 10);
+    const minG = parseInt(minGames);
+    if (minG > 0) {
       list = list.filter(a => {
-        // Calculate total estimated games for this archetype
-        const total = archetypeList.reduce((sum, opp) => {
-          const g = getEstimatedGames(a.name, opp.name);
-          return sum + (g || 0);
-        }, 0);
-        return total >= minVal;
+        const games = gamesDB[a.name];
+        if (!games) return false;
+        const total = Object.values(games).reduce((sum, g) => sum + g, 0);
+        return total >= minG;
       });
     }
 
@@ -55,297 +61,134 @@ const MetaTracker = () => {
       let safeWr = a.winrate;
       if (safeWr < 45 && safeWr > 0) {
         // Fallback to calculate real WR from DB if the raw field got corrupted to 5-43
-        const wrs = archetypeList.map(opp => getWinrate(a.name, opp.name)).filter(w => w !== null) as number[];
+        const wrs = archetypeList.map(opp => matchupDB[a.name]?.[opp.name]).filter(w => w != null) as number[];
         if (wrs.length > 0) {
           safeWr = wrs.reduce((sum, w) => sum + w, 0) / wrs.length;
         }
       }
       return { ...a, winrate: parseFloat(safeWr.toFixed(1)) };
-    }).slice(0, 15);
-  }, [classFilter, minGames]);
+    });
+  }, [archetypeList, classFilter, minGames, gamesDB, matchupDB]);
 
-  const maxPop = Math.max(...filteredArchetypes.map((a) => a.popularity));
-
-  const recommendation = useMemo(() => {
-    const top3 = [...archetypeList].sort((a, b) => b.popularity - a.popularity).slice(0, 3);
-    let best: typeof archetypeList[0] | null = null;
-    let bestScore = -1;
-    for (const arch of archetypeList) {
-      let wins = 0;
-      for (const tt of top3) {
-        if (arch.name === tt.name) continue;
-        const wr = getWinrate(arch.name, tt.name);
-        if (wr && wr > 50) wins++;
-      }
-      const score = wins * 100 + arch.winrate;
-      if (score > bestScore) { bestScore = score; best = arch; }
-    }
-    return best;
-  }, []);
-
-  const matchupDetails = useMemo(() => {
-    if (!selected) return null;
-    const counters: { name: string; wr: number }[] = [];
-    const counteredBy: { name: string; wr: number }[] = [];
-    for (const arch of archetypeList) {
-      if (arch.name === selected) continue;
-      const wr = getWinrate(selected, arch.name);
-      if (wr === null) continue;
-      if (wr >= 55) counters.push({ name: arch.name, wr });
-      if (wr <= 45) counteredBy.push({ name: arch.name, wr });
-    }
-    counters.sort((a, b) => b.wr - a.wr);
-    counteredBy.sort((a, b) => a.wr - b.wr);
-    return { counters, counteredBy };
-  }, [selected]);
+  // Removed: recommendation banner (no longer needed per user request)
 
   return (
     <div className="min-h-screen bg-background">
       <ManaLensNavbar />
-      <main className="container mx-auto px-4 pt-24 pb-12 max-w-6xl">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
+      <main className="container mx-auto px-4 pt-24 pb-12 max-w-7xl">
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
             {t("meta.title")} <span className="text-primary">{t("meta.titleHighlight")}</span>
           </h1>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto mb-2">
             {t("meta.subtitle")}
           </p>
+          <div className="flex items-center justify-center gap-2 text-sm">
+            <span className="text-muted-foreground">{t("meta.rank")}:</span>
+            <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold border border-primary/20">
+              {t("meta.rankLegend")}
+            </span>
+          </div>
+          {date && isFromDB && (
+            <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-muted-foreground">
+              <Calendar className="h-3 w-3" />
+              <span>Updated {date}</span>
+            </div>
+          )}
         </motion.div>
 
-        {recommendation && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-6">
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="py-4 px-5 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
-                  <Trophy className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-foreground">
-                    {t("meta.bestChoice")} <span className="text-primary">{recommendation.name}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {recommendation.winrate}% WR · {recommendation.popularity}% pop · {t("meta.beatsTop")}
-                  </div>
-                </div>
+        {loading && (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        )}
+
+        {/* Removed recommendation banner - per user request */}
+
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-3 mb-6">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Select value={classFilter} onValueChange={setClassFilter}>
+            <SelectTrigger className="w-44 bg-secondary border-border h-9 text-sm">
+              <SelectValue placeholder={t("meta.allClasses")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("meta.allClasses")}</SelectItem>
+              {allClasses.map(cls => (
+                <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={minGames} onValueChange={setMinGames}>
+            <SelectTrigger className="w-36 bg-secondary border-border h-9 text-sm">
+              <SelectValue placeholder={t("meta.minGames")} />
+            </SelectTrigger>
+            <SelectContent>
+              {MIN_GAMES_OPTIONS.map(opt => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.value === "0" ? t("meta.gamesAll") : opt.label} {opt.value !== "0" ? t("meta.gamesLabel") : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Meta Chart - full width */}
+        {!loading && filteredArchetypes.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+            <Card className="bg-card border-border mb-6">
+              <CardHeader className="pb-2">
+                <CardTitle className="font-display text-lg">{t("meta.metaMap")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <MetaChart
+                  archetypes={filteredArchetypes}
+                  selected={selected}
+                  onSelect={setSelected}
+                  activeTier={activeTier}
+                  onTierClick={setActiveTier}
+                />
               </CardContent>
             </Card>
           </motion.div>
         )}
 
-        <div className="flex flex-col md:flex-row items-center gap-3 mb-6">
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-            <Select value={classFilter} onValueChange={setClassFilter}>
-              <SelectTrigger className="w-full md:w-48 bg-secondary border-border">
-                <SelectValue placeholder={t("meta.allClasses")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("meta.allClasses")}</SelectItem>
-                {allClasses.map((cls) => (
-                  <SelectItem key={cls} value={cls}>{cls}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Grid: Tier List + AI Insights */}
+        {!loading && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Tier List - 2/3 width */}
+            <div className="lg:col-span-2">
+              <Card className="bg-card border-border">
+                <CardHeader className="pb-3">
+                  <CardTitle className="font-display text-lg">{t("meta.tierList")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <MetaTierList
+                    archetypes={filteredArchetypes}
+                    matchupDB={matchupDB}
+                    selected={selected}
+                    onSelect={setSelected}
+                    sortBy={sortBy}
+                    onSortChange={setSortBy}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right sidebar - AI Insights + Deck Comparison */}
+            <div className="space-y-6">
+              <DeckComparison
+                archetypes={filteredArchetypes}
+                matchupDB={matchupDB}
+              />
+              <MetaAIInsights
+                archetypes={filteredArchetypes}
+                matchupDB={matchupDB}
+              />
+            </div>
           </div>
-
-          <div className="w-full md:w-auto">
-            <Select value={minGames} onValueChange={setMinGames}>
-              <SelectTrigger className="w-full md:w-48 bg-secondary border-border">
-                <SelectValue placeholder="Игр: Все" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Любое кол-во игр</SelectItem>
-                <SelectItem value="1000">&gt; 1000 игр</SelectItem>
-                <SelectItem value="5000">&gt; 5000 игр</SelectItem>
-                <SelectItem value="10000">&gt; 10000 игр</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 bg-card border-border">
-            <CardHeader>
-              <CardTitle className="font-display text-lg flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                {t("meta.metaMap")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="relative w-full" style={{ minHeight: 420 }}>
-                <div className="absolute -left-2 top-1/2 -translate-y-1/2 -rotate-90 text-[10px] text-muted-foreground tracking-wider uppercase">
-                  {t("meta.winrateAxis")}
-                </div>
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground tracking-wider uppercase">
-                  {t("meta.popularityAxis")}
-                </div>
-
-                <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>
-                  {[44, 48, 50, 52, 56].map((wr) => {
-                    const yPct = 90 - ((wr - 36) / (58 - 36)) * 80;
-                    return (
-                      <g key={wr}>
-                        <line x1="10%" x2="95%" y1={`${yPct}%`} y2={`${yPct}%`} stroke="hsl(var(--border))" strokeDasharray={wr === 50 ? "none" : "4 4"} strokeOpacity={wr === 50 ? 0.6 : 0.3} />
-                        <text x="7%" y={`${yPct}%`} fill="hsl(var(--muted-foreground))" fontSize="9" dominantBaseline="middle" textAnchor="end">{wr}%</text>
-                      </g>
-                    );
-                  })}
-                  <g transform="translate(20, 15)">
-                    <circle cx="0" cy="0" r="4" fill="hsl(var(--winrate-good))" opacity="0.8" />
-                    <text x="8" y="1" fill="hsl(var(--muted-foreground))" fontSize="8" dominantBaseline="middle">S-Tier</text>
-                    <circle cx="50" cy="0" r="4" fill="hsl(142 71% 55%)" opacity="0.8" />
-                    <text x="58" y="1" fill="hsl(var(--muted-foreground))" fontSize="8" dominantBaseline="middle">A-Tier</text>
-                    <circle cx="100" cy="0" r="4" fill="hsl(var(--winrate-neutral))" opacity="0.8" />
-                    <text x="108" y="1" fill="hsl(var(--muted-foreground))" fontSize="8" dominantBaseline="middle">B-Tier</text>
-                    <circle cx="150" cy="0" r="4" fill="hsl(25 95% 53%)" opacity="0.8" />
-                    <text x="158" y="1" fill="hsl(var(--muted-foreground))" fontSize="8" dominantBaseline="middle">C/D</text>
-                  </g>
-                </svg>
-
-                {filteredArchetypes.map((arch) => {
-                  const { tier, color } = getTier(arch.winrate);
-                  const size = 28 + (arch.popularity / maxPop) * 52;
-                  const xPct = 10 + (arch.popularity / maxPop) * 80;
-                  const yPct = 90 - ((arch.winrate - 36) / (58 - 36)) * 80;
-                  const isSelected = selected === arch.name;
-
-                  return (
-                    <Tooltip key={arch.name}>
-                      <TooltipTrigger asChild>
-                        <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ delay: Math.random() * 0.3, type: "spring", stiffness: 200 }}
-                          onClick={() => setSelected(isSelected ? null : arch.name)}
-                          className="absolute cursor-pointer flex items-center justify-center rounded-full transition-all duration-200"
-                          style={{
-                            width: size, height: size,
-                            left: `${xPct}%`, top: `${yPct}%`,
-                            transform: "translate(-50%, -50%)",
-                            backgroundColor: color,
-                            opacity: isSelected ? 1 : selected ? 0.35 : 0.75,
-                            border: isSelected ? "2px solid hsl(var(--foreground))" : "1px solid transparent",
-                            zIndex: isSelected ? 10 : 1,
-                          }}
-                        >
-                          <span className="text-[9px] font-bold text-background leading-none text-center px-1 select-none">
-                            {arch.name.length > 10 ? arch.name.split(" ")[0] : arch.name}
-                          </span>
-                        </motion.div>
-                      </TooltipTrigger>
-                      <TooltipContent className="bg-card border-border">
-                        <div className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                          {arch.name} <TrendIcon trend={arch.trend} />
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          WR: {arch.winrate}% · Pop: {arch.popularity}% · Tier {tier} · {arch.hsClass}
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-3">
-                <CardTitle className="font-display text-base">{t("meta.tierList")}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1.5">
-                {filteredArchetypes.map((arch) => {
-                  const { tier, color } = getTier(arch.winrate);
-                  return (
-                    <div
-                      key={arch.name}
-                      onClick={() => setSelected(selected === arch.name ? null : arch.name)}
-                      className={`flex items-center justify-between px-3 py-2 rounded-md text-sm cursor-pointer transition-colors ${selected === arch.name ? "bg-primary/15 border border-primary/30" : "bg-secondary/50 hover:bg-secondary"
-                        }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center shrink-0" style={{ backgroundColor: color, color: "hsl(var(--background))" }}>
-                          {tier}
-                        </span>
-                        <span className="text-foreground truncate">{arch.name}</span>
-                        <TrendIcon trend={arch.trend} />
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{arch.winrate}%</span>
-                        <div className="w-16 h-1.5 rounded-full bg-secondary overflow-hidden">
-                          <div className="h-full rounded-full" style={{ width: `${(arch.winrate / 60) * 100}%`, backgroundColor: color }} />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-
-            {selected && matchupDetails && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                <Card className="bg-card border-border">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="font-display text-base flex items-center gap-2">
-                      <Info className="h-4 w-4 text-primary" />
-                      {selected}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6 pt-2">
-                    {matchupDetails.counters.length > 0 && (
-                      <div>
-                        <div className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2 bg-green-500/10 w-fit px-3 py-1 rounded-full border border-green-500/20">
-                          <ArrowUpRight className="h-4 w-4 text-green-400" />
-                          <span className="text-green-400">{t("meta.counters")}</span>
-                        </div>
-                        <div className="space-y-2">
-                          {matchupDetails.counters.map((m) => (
-                            <div key={m.name} className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/40 border border-border hover:bg-secondary/60 transition-colors">
-                              <span className="text-sm font-medium text-foreground">{m.name}</span>
-                              <div className="flex flex-col items-end">
-                                <span className="text-green-400 font-bold text-sm tracking-wide">{m.wr}%</span>
-                                <div className="w-12 h-1 rounded-full bg-background mt-1 overflow-hidden">
-                                  <div className="h-full bg-green-400" style={{ width: `${(m.wr / 100) * 100}%` }} />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {matchupDetails.counteredBy.length > 0 && (
-                      <div>
-                        <div className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2 bg-red-500/10 w-fit px-3 py-1 rounded-full border border-red-500/20">
-                          <ArrowDownRight className="h-4 w-4 text-red-400" />
-                          <span className="text-red-400">{t("meta.counteredBy")}</span>
-                        </div>
-                        <div className="space-y-2">
-                          {matchupDetails.counteredBy.map((m) => (
-                            <div key={m.name} className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/40 border border-border hover:bg-secondary/60 transition-colors">
-                              <span className="text-sm font-medium text-foreground">{m.name}</span>
-                              <div className="flex flex-col items-end">
-                                <span className="text-red-400 font-bold text-sm tracking-wide">{m.wr}%</span>
-                                <div className="w-12 h-1 rounded-full bg-background mt-1 overflow-hidden">
-                                  <div className="h-full bg-red-400" style={{ width: `${(m.wr / 100) * 100}%` }} />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {matchupDetails.counters.length === 0 && matchupDetails.counteredBy.length === 0 && (
-                      <div className="flex items-center justify-center p-6 border border-dashed border-border rounded-xl text-sm text-muted-foreground bg-secondary/20">
-                        <Minus className="h-4 w-4 mr-2" />
-                        {t("meta.noCounters")}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-          </div>
-        </div>
+        )}
       </main>
     </div>
   );

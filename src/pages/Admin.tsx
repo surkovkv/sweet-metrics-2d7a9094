@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, MessageSquare, Newspaper, Settings, Check, X, ToggleLeft, ToggleRight, Loader2, RefreshCcw } from "lucide-react";
+import { Shield, MessageSquare, Newspaper, Settings, Check, X, ToggleLeft, ToggleRight, Loader2, RefreshCcw, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,22 +9,23 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
-import NewsEditor from "@/components/NewsEditor";
 import { Contact } from "@/hooks/useContacts";
 import { NewsPost } from "@/hooks/useNewsPosts";
 
+const sb = supabase as any;
+
 export default function Admin() {
-    const { user, profile, loading: authLoading } = useAuth();
+    const { user, profile, loading: authLoading, isAdmin } = useAuth();
     const navigate = useNavigate();
     const { toast } = useToast();
 
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [news, setNews] = useState<NewsPost[]>([]);
     const [loadingData, setLoadingData] = useState(false);
-
-    const isAdmin = profile?.nickname === "admin";
     const [editingPost, setEditingPost] = useState<NewsPost | null>(null);
     const [showNewEditor, setShowNewEditor] = useState(false);
+    const [syncLoading, setSyncLoading] = useState(false);
+    const [userStats, setUserStats] = useState<{ total: number; pro: number } | null>(null);
 
     useEffect(() => {
         if (!authLoading && !isAdmin) {
@@ -36,19 +37,20 @@ export default function Admin() {
         if (!isAdmin) return;
         setLoadingData(true);
 
-        // Fetch contacts
-        const { data: contactsData } = await supabase
-            .from("contacts")
-            .select("*")
-            .order("created_at", { ascending: false });
-        if (contactsData) setContacts(contactsData);
+        const [contactsRes, newsRes, statsRes] = await Promise.all([
+            sb.from("contacts").select("*").order("created_at", { ascending: false }),
+            sb.from("news_posts").select("*").order("created_at", { ascending: false }),
+            sb.from("profiles").select("is_pro"),
+        ]);
 
-        // Fetch all news
-        const { data: newsData } = await supabase
-            .from("news_posts")
-            .select("*")
-            .order("created_at", { ascending: false });
-        if (newsData) setNews(newsData);
+        if (contactsRes.data) setContacts(contactsRes.data);
+        if (newsRes.data) setNews(newsRes.data);
+        if (statsRes.data) {
+            setUserStats({
+                total: statsRes.data.length,
+                pro: statsRes.data.filter((p: any) => p.is_pro).length,
+            });
+        }
 
         setLoadingData(false);
     };
@@ -58,7 +60,7 @@ export default function Admin() {
     }, [isAdmin]);
 
     const publishNews = async (id: string, publish: boolean) => {
-        const { error } = await supabase.from("news_posts").update({ published: publish }).eq("id", id);
+        const { error } = await sb.from("news_posts").update({ published: publish }).eq("id", id);
         if (error) {
             toast({ title: "Ошибка", description: error.message, variant: "destructive" });
         } else {
@@ -67,28 +69,44 @@ export default function Admin() {
         }
     };
 
-    const handleEditorSave = () => {
-        setEditingPost(null);
-        setShowNewEditor(false);
-        fetchData();
-    };
-
     const toggleProStatus = async () => {
         if (!user) return;
         const newStatus = !profile?.is_pro;
-        const { error } = await supabase.from("profiles").update({ is_pro: newStatus }).eq("user_id", user.id);
+        const { error } = await sb.from("profiles").update({ is_pro: newStatus }).eq("user_id", user.id);
         if (error) {
             toast({ title: "Ошибка", description: error.message, variant: "destructive" });
         } else {
             toast({ title: "PRO Статус обновлен", description: `Теперь статус PRO: ${newStatus}` });
-            // Require refresh or useAuth reload to take effect immediately in other tabs
             setTimeout(() => window.location.reload(), 1000);
         }
     };
 
-    const triggerHsguruFetch = () => {
-        // Mock function for now, until backend is ready
-        toast({ title: "Синхронизация", description: "Запрос к HSGuru отправлен (имитация)" });
+    const triggerHsguruFetch = async () => {
+        setSyncLoading(true);
+        try {
+            const { data, error } = await supabase.functions.invoke("scrape-hsguru");
+            if (error) throw error;
+            if (data?.success) {
+                toast({
+                    title: "Синхронизация завершена",
+                    description: `Загружено ${data.matchupsCount} матчапов для ${data.archetypesCount} архетипов (${data.date})`,
+                });
+            } else {
+                toast({
+                    title: "Ошибка синхронизации",
+                    description: data?.error || "Неизвестная ошибка",
+                    variant: "destructive",
+                });
+            }
+        } catch (err: any) {
+            toast({
+                title: "Ошибка",
+                description: err.message || "Не удалось выполнить синхронизацию",
+                variant: "destructive",
+            });
+        } finally {
+            setSyncLoading(false);
+        }
     };
 
     if (authLoading || !isAdmin) {
@@ -118,6 +136,47 @@ export default function Admin() {
                             Обновить
                         </Button>
                     </div>
+
+                    {userStats && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <Card className="bg-card border-border">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <Users className="h-5 w-5 text-primary" />
+                                    <div>
+                                        <p className="text-2xl font-bold text-foreground">{userStats.total}</p>
+                                        <p className="text-xs text-muted-foreground">Пользователей</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-card border-border">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <Shield className="h-5 w-5 text-primary" />
+                                    <div>
+                                        <p className="text-2xl font-bold text-foreground">{userStats.pro}</p>
+                                        <p className="text-xs text-muted-foreground">PRO</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-card border-border">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <MessageSquare className="h-5 w-5 text-primary" />
+                                    <div>
+                                        <p className="text-2xl font-bold text-foreground">{contacts.length}</p>
+                                        <p className="text-xs text-muted-foreground">Сообщений</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-card border-border">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <Newspaper className="h-5 w-5 text-primary" />
+                                    <div>
+                                        <p className="text-2xl font-bold text-foreground">{news.length}</p>
+                                        <p className="text-xs text-muted-foreground">Новостей</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
 
                     <Tabs defaultValue="news" className="space-y-6">
                         <TabsList className="bg-secondary">
@@ -220,8 +279,9 @@ export default function Admin() {
                                             <p className="font-semibold">Tournament Strategist</p>
                                             <p className="text-sm text-muted-foreground">Принудительно загрузить свежие данные HSGuru</p>
                                         </div>
-                                        <Button onClick={triggerHsguruFetch}>
-                                            Синхронизировать
+                                        <Button onClick={triggerHsguruFetch} disabled={syncLoading}>
+                                            {syncLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                                            {syncLoading ? "Синхронизация..." : "Синхронизировать"}
                                         </Button>
                                     </div>
                                 </CardContent>

@@ -137,7 +137,7 @@ const Profile = () => {
                             disabled={savingNickname || nicknameEdit === profile?.nickname || !nicknameEdit.trim()}
                             onClick={async () => {
                               setSavingNickname(true);
-                              const { error } = await supabase
+                              const { error } = await (supabase as any)
                                 .from("profiles")
                                 .update({ nickname: nicknameEdit.trim() })
                                 .eq("user_id", user.id);

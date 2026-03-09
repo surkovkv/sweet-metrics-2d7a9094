@@ -1,10 +1,25 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 
-export type NewsPost = Tables<"news_posts">;
-export type NewsPostInsert = TablesInsert<"news_posts">;
-export type NewsPostUpdate = TablesUpdate<"news_posts">;
+export type NewsPost = {
+    id: string;
+    title: string;
+    slug: string;
+    summary: string;
+    content: string;
+    tags: string[];
+    cover_image: string | null;
+    published: boolean;
+    author_id: string;
+    author_name: string;
+    created_at: string;
+    updated_at: string;
+};
+
+export type NewsPostInsert = Omit<NewsPost, "id" | "created_at" | "updated_at">;
+export type NewsPostUpdate = Partial<Omit<NewsPost, "id" | "created_at" | "updated_at">>;
+
+const sb = supabase as any;
 
 /** Загрузка всех опубликованных постов */
 export function useNewsPosts() {
@@ -14,7 +29,7 @@ export function useNewsPosts() {
 
     const fetch = useCallback(async () => {
         setLoading(true);
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from("news_posts")
             .select("*")
             .eq("published", true)
@@ -38,12 +53,12 @@ export function useNewsPost(slug: string) {
     useEffect(() => {
         if (!slug) return;
         setLoading(true);
-        supabase
+        sb
             .from("news_posts")
             .select("*")
             .eq("slug", slug)
             .single()
-            .then(({ data, error }) => {
+            .then(({ data, error }: any) => {
                 if (error) setError(error.message);
                 else setPost(data);
                 setLoading(false);
@@ -61,7 +76,7 @@ export function useMyNewsPosts(userId: string | undefined) {
     const fetch = useCallback(async () => {
         if (!userId) return;
         setLoading(true);
-        const { data } = await supabase
+        const { data } = await sb
             .from("news_posts")
             .select("*")
             .eq("author_id", userId)
@@ -77,17 +92,17 @@ export function useMyNewsPosts(userId: string | undefined) {
 
 /** Создание поста */
 export async function createNewsPost(post: NewsPostInsert) {
-    return supabase.from("news_posts").insert(post).select().single();
+    return sb.from("news_posts").insert(post).select().single();
 }
 
 /** Обновление поста */
 export async function updateNewsPost(id: string, post: NewsPostUpdate) {
-    return supabase.from("news_posts").update(post).eq("id", id).select().single();
+    return sb.from("news_posts").update(post).eq("id", id).select().single();
 }
 
 /** Удаление поста */
 export async function deleteNewsPost(id: string) {
-    return supabase.from("news_posts").delete().eq("id", id);
+    return sb.from("news_posts").delete().eq("id", id);
 }
 
 /** Генерация slug из заголовка */

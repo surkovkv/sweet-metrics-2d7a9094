@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const UserMenu = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const t = useT();
 
@@ -51,7 +51,7 @@ const UserMenu = () => {
             {t("userMenu.profile")}
           </Link>
         </DropdownMenuItem>
-        {profile?.nickname === "admin" && (
+        {isAdmin && (
           <DropdownMenuItem className="cursor-pointer gap-2 text-primary focus:text-primary" asChild>
             <Link to="/admin">
               <Shield className="h-4 w-4" />
