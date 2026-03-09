@@ -12,10 +12,10 @@ interface Props {
 }
 
 function getWinrateColor(wr: number): string {
-  if (wr >= 55) return "text-green-500";
-  if (wr >= 50) return "text-yellow-500";
+  if (wr >= 55) return "text-emerald-500";
+  if (wr >= 50) return "text-amber-500";
   if (wr >= 45) return "text-orange-500";
-  return "text-red-500";
+  return "text-rose-500";
 }
 
 export default function DeckComparison({ archetypes, matchupDB }: Props) {
