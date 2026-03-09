@@ -3,15 +3,17 @@ import { Link, useLocation } from "react-router-dom";
 import { Swords, Newspaper, MessageCircle, TrendingUp } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useT } from "@/i18n/useTranslation";
 
 const ManaLensNavbar = () => {
   const location = useLocation();
+  const t = useT();
 
   const links = [
-    { to: "/tournament", label: "Турнирный стратег", icon: Swords },
-    { to: "/meta", label: "Мета", icon: TrendingUp },
-    { to: "/news", label: "Новости", icon: Newspaper },
-    { to: "/contact", label: "Связаться", icon: MessageCircle },
+    { to: "/tournament", label: t("nav.strategist"), icon: Swords },
+    { to: "/meta", label: t("nav.meta"), icon: TrendingUp },
+    { to: "/news", label: t("nav.news"), icon: Newspaper },
+    { to: "/contact", label: t("nav.contact"), icon: MessageCircle },
   ];
 
   return (

@@ -55,8 +55,7 @@ export default function LanguageSwitcher() {
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors border border-transparent hover:border-border"
             >
                 <Globe className="h-4 w-4" />
-                <span className="hidden sm:inline">{current.flag} {current.code.toUpperCase()}</span>
-                <span className="sm:hidden">{current.flag}</span>
+                <span>{current.flag}</span>
                 <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
             </button>
 
