@@ -463,17 +463,18 @@ const TournamentStrategist = () => {
           )}
           {!IS_PRO && (
             <div className="md:hidden flex gap-2 mb-4 justify-center items-center">
+              <div className="flex gap-2 items-center p-2 rounded-lg border-2 border-dashed border-border relative">
+                <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
+                  <Star className="h-4 w-4" />
+                </div>
+                <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
+                  <History className="h-3.5 w-3.5" />
+                </div>
+                <span className="absolute inset-0 flex items-center justify-center text-yellow-500 font-bold text-sm z-10">PRO</span>
+              </div>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="flex gap-2 items-center p-2 rounded-lg border-2 border-dashed border-border relative">
-                    <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
-                      <Star className="h-4 w-4" />
-                    </div>
-                    <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground opacity-40 blur-[2px]">
-                      <History className="h-3.5 w-3.5" />
-                    </div>
-                    <HelpCircle className="h-4 w-4 text-yellow-500 absolute -top-2 -right-2 bg-background rounded-full" />
-                  </div>
+                  <HelpCircle className="h-6 w-6 text-yellow-500 cursor-help shrink-0" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="text-xs">{t("tournament.banHistoryProOnly")}</p>
