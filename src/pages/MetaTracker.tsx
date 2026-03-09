@@ -58,24 +58,7 @@ const MetaTracker = () => {
     return list;
   }, [archetypeList, classFilter, minGames, gamesDB]);
 
-  // Recommendation: best deck that beats top meta
-  const recommendation = useMemo(() => {
-    if (archetypeList.length === 0) return null;
-    const top3 = [...archetypeList].sort((a, b) => b.popularity - a.popularity).slice(0, 3);
-    let best: typeof archetypeList[0] | null = null;
-    let bestScore = -1;
-    for (const arch of archetypeList) {
-      let wins = 0;
-      for (const tt of top3) {
-        if (arch.name === tt.name) continue;
-        const wr = matchupDB[arch.name]?.[tt.name];
-        if (wr && wr > 50) wins++;
-      }
-      const score = wins * 100 + arch.winrate;
-      if (score > bestScore) { bestScore = score; best = arch; }
-    }
-    return best;
-  }, [archetypeList, matchupDB]);
+  // Removed: recommendation banner (no longer needed per user request)
 
   return (
     <div className="min-h-screen bg-background">
