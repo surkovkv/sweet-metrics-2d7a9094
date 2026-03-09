@@ -174,12 +174,12 @@ function parseMatchupTable(html: string) {
     // Determine HS class from the archetype class map
     const hsClass = archetypeClassMap[archetypeName] || "Unknown";
 
-    // Calculate popularity from total games
-    const totalGamesAll = 676578; // From the page "Seed Weights" button
-    const popularity =
-      totalGames !== null
-        ? Math.round((totalGames / totalGamesAll) * 1000) / 10
-        : null;
+    // Use popularity from first cell if available, otherwise calculate from total games
+    let popularity = popularityPct;
+    if (popularity === null && totalGames !== null) {
+      const totalGamesAll = 676578; // From the page "Seed Weights" button
+      popularity = Math.round((totalGames / totalGamesAll) * 1000) / 10;
+    }
 
     archetypeStats.push({
       name: archetypeName,
