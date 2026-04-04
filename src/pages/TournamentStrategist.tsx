@@ -98,13 +98,8 @@ const TournamentStrategist = () => {
   }, [archetypeList]);
 
   const getEstimatedGames = useCallback((arch1: string, arch2: string): number | null => {
-    if (getWinrate(arch1, arch2) === null) return null;
-    const info1 = getArchetypeInfo(arch1);
-    const info2 = getArchetypeInfo(arch2);
-    if (!info1 || !info2) return null;
-    const est = Math.round(200000 * (info1.popularity / 100) * (info2.popularity / 100));
-    return Math.max(est, 500);
-  }, [getWinrate, getArchetypeInfo]);
+    return gamesDB[arch1]?.[arch2] ?? gamesDB[arch2]?.[arch1] ?? null;
+  }, [gamesDB]);
 
   const DATA_UPDATED = date || "2026-03-03";
 
@@ -358,6 +353,7 @@ const TournamentStrategist = () => {
                     excludeValues={[...myArchetypes.filter((_, j) => j !== i).filter(Boolean)]}
                     archetypeList={filteredArchetypes}
                     getWinrate={getWinrate}
+                    archetypeGames={archetypeGames}
                   />
                 ))}
               </div>
@@ -393,6 +389,7 @@ const TournamentStrategist = () => {
                         excludeValues={[...oppArchetypes.filter((_, j) => j !== i).filter(Boolean)]}
                         archetypeList={filteredArchetypes}
                         getWinrate={getWinrate}
+                        archetypeGames={archetypeGames}
                       />
                       {isBanned && (
                         <div className="absolute inset-0 flex items-center pointer-events-none">
@@ -591,6 +588,7 @@ const TournamentStrategist = () => {
                     getWinrate={getWinrate}
                     getArchetypeInfo={getArchetypeInfo}
                     getEstimatedGames={getEstimatedGames}
+                    minMatchupGames={minMatchupGames}
                     t={t}
                   />
                   {!IS_LOGGED_IN && (
@@ -856,9 +854,10 @@ function PreBanMiniMatrix({ myArchetypes, oppArchetypes, getWinrate }: {
   );
 }
 
-function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedIndex, getWinrate, getArchetypeInfo, getEstimatedGames, t }: {
+function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedIndex, getWinrate, getArchetypeInfo, getEstimatedGames, minMatchupGames, t }: {
   myArchetypes: string[]; oppArchetypes: string[]; bannedIndex: number | null; oppBannedIndex: number | null;
   getWinrate: GetWinrateFn; getArchetypeInfo: GetArchetypeInfoFn; getEstimatedGames: GetEstimatedGamesFn;
+  minMatchupGames: number;
   t: (key: string) => string;
 }) {
   return (
@@ -928,7 +927,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                             {wr !== null ? `${wr}%` : "—"}
                           </div>
                           <div className="text-[10px] text-muted-foreground mt-0.5">
-                            {games !== null ? `~${games} ${t("tournament.games")}` : t("tournament.lessGames")}
+                            {games !== null ? (games >= minMatchupGames ? `${games} ${t("tournament.games")}` : `< ${minMatchupGames} игр`) : t("tournament.lessGames")}
                           </div>
                         </td>
                       );
@@ -994,9 +993,10 @@ function BanOptionCard({ option, index, isActive, onManualBan, t }: {
   );
 }
 
-function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [], archetypeList, getWinrate }: {
+function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [], archetypeList, getWinrate, archetypeGames }: {
   value: string; onChange: (val: string) => void; placeholder: string;
   excludeValues?: string[]; archetypeList: ArchetypeInfo[]; getWinrate: GetWinrateFn;
+  archetypeGames: Record<string, number>;
 }) {
   return (
     <Select value={value} onValueChange={onChange}>
