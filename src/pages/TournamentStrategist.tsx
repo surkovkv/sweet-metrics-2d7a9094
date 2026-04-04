@@ -67,16 +67,30 @@ const TournamentStrategist = () => {
   const { user, profile } = useAuth();
   const IS_PRO = profile?.is_pro ?? false;
   const IS_LOGGED_IN = !!user;
-  const { archetypeList, matchupDB, date, isFromDB } = useMatchupData();
+  const { archetypeList, matchupDB, gamesDB, archetypeGames, date } = useMatchupData();
   const t = useT();
   const { remaining, isExhausted, consumeTrial, maxTrials } = useTrialCounter();
 
   // For FREE users: can they use PRO features via trial?
   const canUseProFeatures = IS_PRO || (!IS_PRO && !isExhausted);
 
+  // Filters State
+  const [minMatchupGames, setMinMatchupGames] = useState<number>(500);
+  const [minArchetypeGames, setMinArchetypeGames] = useState<number>(500);
+
+  const filteredArchetypes = useMemo(() => {
+    return archetypeList.filter((a) => {
+      const g = archetypeGames?.[a.name];
+      if (g !== undefined) return g >= minArchetypeGames;
+      return true; // Fallback
+    });
+  }, [archetypeList, archetypeGames, minArchetypeGames]);
+
   const getWinrate = useCallback((my: string, opp: string): number | null => {
+    const games = gamesDB[my]?.[opp] ?? gamesDB[opp]?.[my] ?? null;
+    if (games !== null && games < minMatchupGames) return null;
     return matchupDB[my]?.[opp] ?? null;
-  }, [matchupDB]);
+  }, [matchupDB, gamesDB, minMatchupGames]);
 
   const getArchetypeInfo = useCallback((name: string) => {
     const found = archetypeList.find((a) => a.name === name);
@@ -270,8 +284,43 @@ const TournamentStrategist = () => {
             </AnimatePresence>
           </motion.div>
 
+          {/* Filters */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+            className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap uppercase tracking-wider">
+                Min Matchup Games
+              </label>
+              <Select value={String(minMatchupGames)} onValueChange={(v) => { setMinMatchupGames(Number(v)); setShowResult(false); }}>
+                <SelectTrigger className="w-[80px] h-8 bg-secondary/70 border-none font-bold text-xs ring-offset-background focus:ring-1 focus:ring-primary">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[50, 100, 250, 500, 1000, 2500, 5000].map(val => (
+                    <SelectItem key={val} value={String(val)} className="text-xs font-medium">{val === 5000 ? "5000+" : val}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap uppercase tracking-wider">
+                Min Archetype Games
+              </label>
+              <Select value={String(minArchetypeGames)} onValueChange={(v) => { setMinArchetypeGames(Number(v)); setShowResult(false); }}>
+                <SelectTrigger className="w-[80px] h-8 bg-secondary/70 border-none font-bold text-xs ring-offset-background focus:ring-1 focus:ring-primary">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[50, 100, 250, 500, 1000, 2500, 5000].map(val => (
+                    <SelectItem key={val} value={String(val)} className="text-xs font-medium">{val === 5000 ? "5000+" : val}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </motion.div>
+
           {/* Mode Toggle */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
             className="flex justify-center gap-3 mb-8">
             {([3, 4] as DeckMode[]).map((m) => (
               <button key={m} onClick={() => handleModeChange(m)}
@@ -307,7 +356,7 @@ const TournamentStrategist = () => {
                     onChange={(val) => updateMyArchetype(i, val)}
                     placeholder={`${t("tournament.deck")} ${i + 1}...`}
                     excludeValues={[...myArchetypes.filter((_, j) => j !== i).filter(Boolean)]}
-                    archetypeList={archetypeList}
+                    archetypeList={filteredArchetypes}
                     getWinrate={getWinrate}
                   />
                 ))}
@@ -342,7 +391,7 @@ const TournamentStrategist = () => {
                         onChange={(val) => updateOppArchetype(i, val)}
                         placeholder={`${t("tournament.oppDeck")} ${i + 1}...`}
                         excludeValues={[...oppArchetypes.filter((_, j) => j !== i).filter(Boolean)]}
-                        archetypeList={archetypeList}
+                        archetypeList={filteredArchetypes}
                         getWinrate={getWinrate}
                       />
                       {isBanned && (

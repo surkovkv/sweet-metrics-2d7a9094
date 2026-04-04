@@ -10,6 +10,7 @@ interface MatchupData {
   archetypeList: ArchetypeInfo[];
   matchupDB: Record<string, Record<string, number>>;
   gamesDB: Record<string, Record<string, number>>;
+  archetypeGames: Record<string, number>;
   date: string | null;
   loading: boolean;
   error: string | null;
@@ -26,6 +27,7 @@ export function useMatchupData(): MatchupData {
     archetypeList: staticArchetypeList,
     matchupDB: staticMatchupDB,
     gamesDB: {},
+    archetypeGames: {},
     date: null,
     loading: true,
     error: null,
@@ -74,10 +76,17 @@ export function useMatchupData(): MatchupData {
 
       list.sort((a, b) => b.popularity - a.popularity);
 
+      const archetypeGames: Record<string, number> = {};
+      for (const item of list) {
+        // Using 676,578 as the reference total Legend games across all archetypes from typical stats
+        archetypeGames[item.name] = Math.round((item.popularity / 100) * 676578);
+      }
+
       setData({
         archetypeList: list.length > 0 ? list : staticArchetypeList,
         matchupDB: Object.keys(db).length > 0 ? db : staticMatchupDB,
         gamesDB: gdb,
+        archetypeGames,
         date: response.date,
         loading: false,
         error: null,

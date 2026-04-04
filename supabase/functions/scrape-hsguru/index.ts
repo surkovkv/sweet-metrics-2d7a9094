@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const HSGURU_URL =
-  "https://www.hsguru.com/matchups?min_archetype_sample=500&min_matchup_sample=500&rank=legend";
+  "https://www.hsguru.com/matchups?min_archetype_sample=50&min_matchup_sample=50&rank=legend";
 
 // Map of class CSS classes to Hearthstone class names
 const CLASS_MAP: Record<string, string> = {
@@ -192,17 +192,34 @@ function parseMatchupTable(html: string) {
     // Remaining cells are matchup winrates, one per opponent
     for (let i = 2; i < cells.length && i - 2 < opponentNames.length; i++) {
       const cellText = cells[i].replace(/<[^>]*>/g, "").trim();
-      const cellWrMatch = cellText.match(/(\d+\.?\d*)%?/);
-      if (cellWrMatch) {
-        const wr = parseFloat(cellWrMatch[1]);
-        if (wr >= 0 && wr <= 100) {
-          matchups.push({
-            archetype: archetypeName,
-            opponent: opponentNames[i - 2],
-            winrate: wr,
-            estimated_games: null,
-          });
+
+      // Parse winrate and optionally the number of games below it in the same cell.
+      // E.g., cellText could be "55.0% \n 1,234" or "55.0\n1,234"
+      let wr: number | null = null;
+      let estGames: number | null = null;
+
+      // Look for the percentage, e.g. "55.0%" or "55.0" at the start
+      const wrMatch = cellText.match(/^(\d+\.?\d*)%?/);
+      if (wrMatch) {
+        wr = parseFloat(wrMatch[1]);
+
+        // Extract games from the remaining string by finding the next number with optional commas
+        const remainingText = cellText.slice(wrMatch[0].length).trim();
+        if (remainingText) {
+          const gamesMatch = remainingText.match(/(\d[\d,]*)/);
+          if (gamesMatch) {
+            estGames = parseInt(gamesMatch[1].replace(/,/g, ""));
+          }
         }
+      }
+
+      if (wr !== null && wr >= 0 && wr <= 100) {
+        matchups.push({
+          archetype: archetypeName,
+          opponent: opponentNames[i - 2],
+          winrate: Math.round(wr * 10) / 10,
+          estimated_games: estGames,
+        });
       }
     }
   }
