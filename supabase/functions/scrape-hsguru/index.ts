@@ -96,6 +96,7 @@ function parseMatchupTable(html: string) {
     name: string;
     winrate: number | null;
     popularity: number | null;
+    total_games: number | null;
   }> = [];
 
   let rowMatch;
@@ -176,17 +177,12 @@ function parseMatchupTable(html: string) {
     // Determine HS class from the archetype class map
     const hsClass = archetypeClassMap[archetypeName] || "Unknown";
 
-    // We don't have popularity per deck in the cell, we will set it to null and it will be updated by header row later
-    // Save total games for summing up later
-    let popularity = null;
-    if (totalGames !== null) {
-      popularity = totalGames; // We temporary store totalGames here to use it for later popularity calculations or metadata.
-    }
-
+    // popularity will be filled from the header row later; total_games stored directly
     archetypeStats.push({
       name: archetypeName,
       winrate: overallWinrate,
-      popularity,
+      popularity: null, // filled from header row below
+      total_games: totalGames,
     });
 
     // Remaining cells are matchup winrates, one per opponent
@@ -224,47 +220,18 @@ function parseMatchupTable(html: string) {
     }
   }
 
-  // Update popularity from header row if we have it
-  // Actually, header row has true popularity.
-  let sumDeckGames = 0;
-  for (const s of archetypeStats) {
-    if (s.popularity !== null && s.popularity > 100) {
-      sumDeckGames += s.popularity; // This was temporarily storing totalGames 
-    }
-  }
-  // The true total matches is sumDeckGames, since each match has 2 decks playing, 
-  // actually on HSGuru popularity = deckGames / totalMatches, and total matches = sumDeckGames / 2?
-  // Let's just find totalMatches directly.
-  let totalMatches = sumDeckGames > 0 ? Math.round(sumDeckGames / 2) : 676578;
-
+  // Fill popularity % from the header row
   if (popularityValues.length === opponentNames.length) {
     for (let i = 0; i < opponentNames.length; i++) {
       const stat = archetypeStats.find((s) => s.name === opponentNames[i]);
       if (stat) {
-        // If we didn't extract games accurately but have popularity, we could back-calculate, 
-        // but now we'll prioritize actual extracted games and re-calc true popularity if needed, 
-        // or just accept header popularity.
-        if (stat.popularity !== null && stat.popularity > 100) {
-          // Keep exactly true totalMatches scaled.
-          // On HSGuru, Popularity % = deckGames / totalMatches.
-          // If totalmatches isn't accurate, let's reverse engineer from a valid header popularity:
-          if (popularityValues[i] > 0) {
-            totalMatches = Math.round((stat.popularity / popularityValues[i]) * 100);
-          }
-        }
         stat.popularity = popularityValues[i];
       }
     }
   }
 
-  archetypeStats.push({
-    name: "TOTAL_GAMES_METADATA",
-    winrate: null,
-    popularity: totalMatches
-  });
-
   console.log(
-    `Parsed ${archetypeStats.length - 1} archetypes and ${matchups.length} matchups. Total Matches Estimated: ${totalMatches}`
+    `Parsed ${archetypeStats.length} archetypes and ${matchups.length} matchups.`
   );
   return { matchups, archetypeStats };
 }

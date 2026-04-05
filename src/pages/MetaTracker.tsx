@@ -99,7 +99,7 @@ const MetaTracker = () => {
           {date && isFromDB && (
             <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-muted-foreground">
               <Calendar className="h-3 w-3" />
-              <span>Updated {date}</span>
+              <span>Updated {date} · {t("tournament.legendData")} (patch 35.0.3)</span>
             </div>
           )}
         </motion.div>

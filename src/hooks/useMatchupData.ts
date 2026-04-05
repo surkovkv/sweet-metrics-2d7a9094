@@ -66,21 +66,41 @@ export function useMatchupData(): MatchupData {
 
       // Build archetypeList from stats
       // DB columns: name, winrate, popularity (no hs_class)
-      const list: ArchetypeInfo[] = (stats || []).map((s: any) => ({
+      // Note: scraper stores raw totalGames in 'popularity' field for row archetypes
+      // and stores true % for column archetypes from header row.
+      // TOTAL_GAMES_METADATA is a sentinel entry — filter it out.
+      const allStats = (stats || []) as Array<{ name: string; winrate: number | null; popularity: number | null; total_games: number | null }>;
+      const totalGamesMeta = allStats.find((s) => s.name === "TOTAL_GAMES_METADATA");
+      const totalMatchesFromDB = totalGamesMeta?.popularity ?? null;
+
+      const filteredStats = allStats.filter((s) => s.name !== "TOTAL_GAMES_METADATA");
+
+      const archetypeGames: Record<string, number> = {};
+      const totalRef = totalMatchesFromDB ?? 676578;
+
+      for (const s of filteredStats) {
+        if (s.total_games) {
+          archetypeGames[s.name] = s.total_games;
+        } else if (s.popularity !== null) {
+          if (s.popularity > 100) {
+            archetypeGames[s.name] = s.popularity;
+          } else if (s.popularity > 0) {
+            archetypeGames[s.name] = Math.round((s.popularity / 100) * totalRef);
+          } else {
+            archetypeGames[s.name] = 0;
+          }
+        }
+      }
+
+      const list: ArchetypeInfo[] = filteredStats.map((s) => ({
         name: s.name,
         winrate: s.winrate ?? 50,
-        popularity: s.popularity ?? 0,
+        popularity: s.popularity !== null && s.popularity <= 100 ? s.popularity : (archetypeGames[s.name] ? Math.round((archetypeGames[s.name] / totalRef) * 100) : 0),
         trend: "stable" as const,
         hsClass: staticClassMap[s.name] || "Unknown",
       }));
 
       list.sort((a, b) => b.popularity - a.popularity);
-
-      const archetypeGames: Record<string, number> = {};
-      for (const item of list) {
-        // Using 676,578 as the reference total Legend games across all archetypes from typical stats
-        archetypeGames[item.name] = Math.round((item.popularity / 100) * 676578);
-      }
 
       setData({
         archetypeList: list.length > 0 ? list : staticArchetypeList,
