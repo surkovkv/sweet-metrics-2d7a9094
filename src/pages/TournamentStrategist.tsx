@@ -67,7 +67,8 @@ const TournamentStrategist = () => {
   const { user, profile } = useAuth();
   const IS_PRO = profile?.is_pro ?? false;
   const IS_LOGGED_IN = !!user;
-  const { archetypeList, matchupDB, gamesDB, archetypeGames, date } = useMatchupData();
+  const [rank, setRank] = useState<"all" | "legend" | "top_1k">("all");
+  const { archetypeList, matchupDB, gamesDB, archetypeGames, date } = useMatchupData(rank);
   const t = useT();
   const { remaining, isExhausted, consumeTrial, maxTrials } = useTrialCounter();
 
