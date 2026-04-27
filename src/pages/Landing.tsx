@@ -85,19 +85,19 @@ const Landing = () => {
             </div>
           </Link>
 
-          <Link to="/meta" className="group">
+          <Link to="/matchups" className="group">
             <div className="h-full p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 rounded-xl bg-secondary">
-                  <TrendingUp className="h-6 w-6 text-primary" />
+                  <BarChart2 className="h-6 w-6 text-primary" />
                 </div>
                 <ChevronRight className="h-5 w-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               <h3 className="font-display text-lg font-bold text-foreground mb-2">
-                {t("landing.metaTitle")}
+                {t("landing.matchupsTitle")}
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                {t("landing.metaDesc")}
+                {t("landing.matchupsDesc")}
               </p>
             </div>
           </Link>

@@ -6,10 +6,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const HSGURU_URL =
-  "https://www.hsguru.com/matchups?min_archetype_sample=50&min_matchup_sample=50&rank=legend&patch=last";
+// Current patch period used on hsguru — change when a new patch drops
+const DEFAULT_PERIOD = "patch_35.0.3";
 
-// Map of class CSS classes to Hearthstone class names
 const CLASS_MAP: Record<string, string> = {
   deathknight: "Death Knight",
   demonhunter: "Demon Hunter",
@@ -25,28 +24,35 @@ const CLASS_MAP: Record<string, string> = {
   unknown: "Unknown",
 };
 
-function extractClassFromTh(thHtml: string): string {
-  const match = thHtml.match(/class-background\s+(\w+)/);
-  return match ? CLASS_MAP[match[1]] || "Unknown" : "Unknown";
+// rank values stored in DB and expected by client filters
+// "all" | "legend" | "top_1k"  (top_1k = hsguru "top_legend")
+const RANKS: Array<{ db: string; hsguru: string }> = [
+  { db: "all", hsguru: "all" },
+  { db: "legend", hsguru: "legend" },
+  { db: "top_1k", hsguru: "top_legend" },
+];
+
+function buildUrl(rankHsguru: string, period: string) {
+  const params = new URLSearchParams({
+    min_archetype_sample: "1",
+    min_matchup_sample: "1",
+    rank: rankHsguru,
+    period,
+  });
+  return `https://www.hsguru.com/matchups?${params.toString()}`;
 }
 
 function parseMatchupTable(html: string) {
-  // Extract column headers (opponent archetype names) from first header row
-  // Pattern: phx-value-sort_by="opponent_XXX"
-  const headerRegex =
-    /phx-value-sort_by="opponent_([^"]+)"/g;
+  // Opponent archetype names from header buttons
+  const headerRegex = /phx-value-sort_by="opponent_([^"]+)"/g;
   const opponentNames: string[] = [];
   let match;
   while ((match = headerRegex.exec(html)) !== null) {
     const name = match[1].trim();
-    if (!opponentNames.includes(name)) {
-      opponentNames.push(name);
-    }
+    if (!opponentNames.includes(name)) opponentNames.push(name);
   }
 
-  console.log(`Found ${opponentNames.length} opponent archetypes in headers`);
-
-  // Extract class info from headers
+  // Map archetype -> hsClass
   const headerClassRegex =
     /<th[^>]*class-background\s+(\w+)[^>]*>\s*<button[^>]*phx-value-sort_by="opponent_([^"]+)"[^>]*>/g;
   const archetypeClassMap: Record<string, string> = {};
@@ -56,18 +62,14 @@ function parseMatchupTable(html: string) {
     archetypeClassMap[archName] = CLASS_MAP[cssClass] || "Unknown";
   }
 
-  // Extract popularity percentages from 3rd header row
-  // These are in the 3rd <tr> of <thead>, containing spans with "X.X%"
+  // Popularity values from 3rd header row
   const popularityValues: number[] = [];
   const theadMatch = html.match(/<thead[^>]*>([\s\S]*?)<\/thead>/);
   if (theadMatch) {
-    const theadHtml = theadMatch[1];
-    // Find the 3rd <tr> which contains popularity percentages
-    const trMatches = theadHtml.match(/<tr[^>]*>([\s\S]*?)<\/tr>/g);
+    const trMatches = theadMatch[1].match(/<tr[^>]*>([\s\S]*?)<\/tr>/g);
     if (trMatches && trMatches.length >= 3) {
-      const popRow = trMatches[2]; // 3rd row (0-indexed)
-      const popRegex =
-        /<span[^>]*>(\d+\.?\d*)%<\/span>/g;
+      const popRow = trMatches[2];
+      const popRegex = /<span[^>]*>(\d+\.?\d*)%<\/span>/g;
       let popMatch;
       while ((popMatch = popRegex.exec(popRow)) !== null) {
         popularityValues.push(parseFloat(popMatch[1]));
@@ -75,16 +77,9 @@ function parseMatchupTable(html: string) {
     }
   }
 
-  console.log(`Found ${popularityValues.length} popularity values`);
-
-  // Extract tbody rows
   const tbodyMatch = html.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/);
-  if (!tbodyMatch) {
-    console.error("No tbody found in HTML");
-    return { matchups: [], archetypeStats: [] };
-  }
+  if (!tbodyMatch) return { matchups: [], archetypeStats: [] };
 
-  const tbodyHtml = tbodyMatch[1];
   const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
   const matchups: Array<{
     archetype: string;
@@ -97,118 +92,90 @@ function parseMatchupTable(html: string) {
     winrate: number | null;
     popularity: number | null;
     total_games: number | null;
+    hs_class: string | null;
   }> = [];
 
   let rowMatch;
+  const tbodyHtml = tbodyMatch[1];
   while ((rowMatch = rowRegex.exec(tbodyHtml)) !== null) {
     const rowHtml = rowMatch[1];
-
-    // Extract all <td> cells
     const tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/g;
     const cells: string[] = [];
     let tdMatch;
-    while ((tdMatch = tdRegex.exec(rowHtml)) !== null) {
-      cells.push(tdMatch[1]);
-    }
-
+    while ((tdMatch = tdRegex.exec(rowHtml)) !== null) cells.push(tdMatch[1]);
     if (cells.length < 3) continue;
 
-    // First cell: Matchup overall winrate (e.g., "51.7")
+    // Cell 0: overall winrate
     const cell0Text = cells[0].replace(/<[^>]*>/g, "").trim();
     const providedWrMatch = cell0Text.match(/(\d+\.?\d*)/);
     const providedWinrate = providedWrMatch ? parseFloat(providedWrMatch[1]) : null;
 
-    // Calculate overall winrate from matchup cells just in case
+    // Compute avg from row if provided is missing
     let totalWR = 0;
     let wrCount = 0;
     for (let i = 2; i < cells.length && i - 2 < opponentNames.length; i++) {
-      const cellText = cells[i].replace(/<[^>]*>/g, "").trim();
-      const cellWrMatch = cellText.match(/(\d+\.?\d*)%?/);
-      if (cellWrMatch) {
-        const wr = parseFloat(cellWrMatch[1]);
+      const t = cells[i].replace(/<[^>]*>/g, "").trim();
+      const m = t.match(/(\d+\.?\d*)%?/);
+      if (m) {
+        const wr = parseFloat(m[1]);
         if (wr >= 0 && wr <= 100) {
           totalWR += wr;
           wrCount++;
         }
       }
     }
+    const overallWinrate =
+      providedWinrate !== null
+        ? providedWinrate
+        : wrCount > 0
+        ? Math.round((totalWR / wrCount) * 10) / 10
+        : null;
 
-    const overallWinrate = providedWinrate !== null ? providedWinrate : (wrCount > 0 ? Math.round((totalWR / wrCount) * 10) / 10 : null);
-
-    // Second cell: archetype name and total games
-    // Contains the archetype name as text, possibly with a link
-    const nameMatch = cells[1].match(
-      /(?:<a[^>]*>)?\s*([^<]+?)\s*(?:<\/a>)?(?:.*?(\d[\d,]*))?/
-    );
+    // Cell 1: archetype name + total games
     let archetypeName = "";
     let totalGames: number | null = null;
-
-    // Try to extract archetype name more robustly
     const linkMatch = cells[1].match(/<a[^>]*>\s*([^<]+)\s*<\/a>/);
-    if (linkMatch) {
-      archetypeName = linkMatch[1].trim();
-    } else {
-      // Try plain text
-      const plainMatch = cells[1].replace(/<[^>]*>/g, "").trim();
-      if (plainMatch) {
-        // The cell might have "ArchetypeName\n12345" format
-        const parts = plainMatch.split(/\s+/);
-        // Find where the number starts
-        const numIdx = parts.findIndex((p) => /^\d[\d,]*$/.test(p));
-        if (numIdx > 0) {
-          archetypeName = parts.slice(0, numIdx).join(" ");
-          totalGames = parseInt(parts[numIdx].replace(/,/g, ""));
-        } else {
-          archetypeName = plainMatch;
-        }
-      }
+    if (linkMatch) archetypeName = linkMatch[1].trim();
+    else {
+      const plain = cells[1].replace(/<[^>]*>/g, "").trim();
+      const parts = plain.split(/\s+/);
+      const numIdx = parts.findIndex((p) => /^\d[\d,]*$/.test(p));
+      if (numIdx > 0) {
+        archetypeName = parts.slice(0, numIdx).join(" ");
+        totalGames = parseInt(parts[numIdx].replace(/,/g, ""));
+      } else archetypeName = plain;
     }
-
-    // Try to extract total games from the cell
-    const gamesMatch = cells[1].match(/(\d[\d,]+)/g);
-    if (gamesMatch && gamesMatch.length > 0) {
-      const lastNum = gamesMatch[gamesMatch.length - 1].replace(/,/g, "");
-      const parsed = parseInt(lastNum);
-      if (parsed > 100) totalGames = parsed;
+    const allNums = cells[1].match(/(\d[\d,]+)/g);
+    if (allNums && allNums.length > 0) {
+      const last = parseInt(allNums[allNums.length - 1].replace(/,/g, ""));
+      if (last > 50) totalGames = last;
     }
-
     if (!archetypeName) continue;
 
-    // Determine HS class from the archetype class map
     const hsClass = archetypeClassMap[archetypeName] || "Unknown";
 
-    // popularity will be filled from the header row later; total_games stored directly
     archetypeStats.push({
       name: archetypeName,
       winrate: overallWinrate,
-      popularity: null, // filled from header row below
+      popularity: null,
       total_games: totalGames,
+      hs_class: hsClass,
     });
 
-    // Remaining cells are matchup winrates, one per opponent
+    // Matchup cells
     for (let i = 2; i < cells.length && i - 2 < opponentNames.length; i++) {
       const cellText = cells[i].replace(/<[^>]*>/g, "").trim();
-
-      // Parse winrate and optionally the number of games below it in the same cell.
-      // E.g., cellText could be "55.0% \n 1,234" or "55.0\n1,234"
       let wr: number | null = null;
       let estGames: number | null = null;
-
-      // Look for the percentage, e.g. "55.0%" or "55.0" at the start
       const wrMatch = cellText.match(/^(\d+\.?\d*)%?/);
       if (wrMatch) {
         wr = parseFloat(wrMatch[1]);
-
-        // Extract games from the remaining string by finding the next number with optional commas
-        const remainingText = cellText.slice(wrMatch[0].length).trim();
-        if (remainingText) {
-          const gamesMatch = remainingText.match(/(\d[\d,]*)/);
-          if (gamesMatch) {
-            estGames = parseInt(gamesMatch[1].replace(/,/g, ""));
-          }
+        const remaining = cellText.slice(wrMatch[0].length).trim();
+        if (remaining) {
+          const gm = remaining.match(/(\d[\d,]*)/);
+          if (gm) estGames = parseInt(gm[1].replace(/,/g, ""));
         }
       }
-
       if (wr !== null && wr >= 0 && wr <= 100) {
         matchups.push({
           archetype: archetypeName,
@@ -220,177 +187,131 @@ function parseMatchupTable(html: string) {
     }
   }
 
-  // Fill popularity % from the header row
   if (popularityValues.length === opponentNames.length) {
     for (let i = 0; i < opponentNames.length; i++) {
       const stat = archetypeStats.find((s) => s.name === opponentNames[i]);
-      if (stat) {
-        stat.popularity = popularityValues[i];
-      }
+      if (stat) stat.popularity = popularityValues[i];
     }
   }
 
-  console.log(
-    `Parsed ${archetypeStats.length} archetypes and ${matchups.length} matchups.`
-  );
   return { matchups, archetypeStats };
 }
 
+async function scrapeOneRank(
+  apiKey: string,
+  rankHsguru: string,
+  period: string,
+) {
+  const url = buildUrl(rankHsguru, period);
+  console.log(`Scraping ${url}`);
+  const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      url,
+      formats: ["html"],
+      waitFor: 8000,
+      onlyMainContent: false,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Firecrawl: ${data.error || res.status}`);
+  const html = data.data?.html || data.html;
+  if (!html) throw new Error("Firecrawl returned no HTML");
+  return parseMatchupTable(html);
+}
+
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const apiKey = Deno.env.get("FIRECRAWL_API_KEY");
     if (!apiKey) {
       return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Firecrawl connector not configured",
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ success: false, error: "Firecrawl not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    console.log("Scraping HSGuru matchups page via Firecrawl...");
-
-    // Use Firecrawl to render the page (Phoenix LiveView needs JS execution)
-    const firecrawlResponse = await fetch(
-      "https://api.firecrawl.dev/v1/scrape",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: HSGURU_URL,
-          formats: ["html"],
-          waitFor: 8000, // Wait 8s for LiveView to render the table
-          onlyMainContent: false,
-        }),
-      }
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const firecrawlData = await firecrawlResponse.json();
-
-    if (!firecrawlResponse.ok) {
-      console.error("Firecrawl error:", firecrawlData);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: `Firecrawl error: ${firecrawlData.error || firecrawlResponse.status}`,
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Get HTML from response (handle nested data structure)
-    const html = firecrawlData.data?.html || firecrawlData.html;
-    if (!html) {
-      console.error("No HTML in Firecrawl response:", Object.keys(firecrawlData));
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Firecrawl returned no HTML content",
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    console.log(`Got ${html.length} chars of HTML`);
-
-    // Parse the matchup table
-    const { matchups, archetypeStats } = parseMatchupTable(html);
-
-    if (matchups.length === 0) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error:
-            "No matchup data found in HTML. The page might not have loaded fully.",
-          htmlLength: html.length,
-          hasTbody: html.includes("<tbody"),
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
+    let body: { period?: string } = {};
+    try {
+      if (req.method === "POST") body = await req.json();
+    } catch { /* ignore */ }
+    const period = body.period || DEFAULT_PERIOD;
     const today = new Date().toISOString().split("T")[0];
 
-    // Delete old data for today
-    await supabase.from("matchups").delete().eq("date", today);
-    await supabase.from("archetype_stats").delete().eq("date", today);
+    // Clear today's rows for this period so we re-insert fresh data
+    await supabase.from("matchups").delete().eq("date", today).eq("period", period);
+    await supabase.from("archetype_stats").delete().eq("date", today).eq("period", period);
 
-    // Insert matchups in batches of 500
-    const matchupsWithDate = matchups.map((m) => ({ ...m, date: today }));
-    for (let i = 0; i < matchupsWithDate.length; i += 500) {
-      const batch = matchupsWithDate.slice(i, i + 500);
-      const { error } = await supabase.from("matchups").insert(batch);
-      if (error) {
-        console.error("Matchup insert error:", error);
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: `DB insert error: ${error.message}`,
-          }),
-          {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
+    const summary: Array<{ rank: string; archetypes: number; matchups: number }> = [];
+
+    for (const { db: rankDb, hsguru: rankHs } of RANKS) {
+      try {
+        const { matchups, archetypeStats } = await scrapeOneRank(apiKey, rankHs, period);
+
+        if (matchups.length === 0) {
+          console.warn(`No matchups for rank=${rankDb}`);
+          summary.push({ rank: rankDb, archetypes: 0, matchups: 0 });
+          continue;
+        }
+
+        const mRows = matchups.map((m) => ({
+          ...m,
+          date: today,
+          rank: rankDb,
+          period,
+        }));
+        for (let i = 0; i < mRows.length; i += 500) {
+          const batch = mRows.slice(i, i + 500);
+          const { error } = await supabase.from("matchups").insert(batch);
+          if (error) throw new Error(`matchups insert [${rankDb}]: ${error.message}`);
+        }
+
+        const sRows = archetypeStats.map((s) => ({
+          ...s,
+          date: today,
+          rank: rankDb,
+          period,
+        }));
+        const { error: sErr } = await supabase.from("archetype_stats").insert(sRows);
+        if (sErr) throw new Error(`stats insert [${rankDb}]: ${sErr.message}`);
+
+        summary.push({
+          rank: rankDb,
+          archetypes: archetypeStats.length,
+          matchups: matchups.length,
+        });
+      } catch (err) {
+        console.error(`rank=${rankDb} failed:`, err);
+        summary.push({
+          rank: rankDb,
+          archetypes: 0,
+          matchups: 0,
+        });
       }
-    }
-
-    // Insert archetype stats
-    const statsWithDate = archetypeStats.map((s) => ({ ...s, date: today }));
-    const { error: statsError } = await supabase
-      .from("archetype_stats")
-      .insert(statsWithDate);
-    if (statsError) {
-      console.error("Stats insert error:", statsError);
     }
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        date: today,
-        matchupsCount: matchups.length,
-        archetypesCount: archetypeStats.length,
-        archetypes: archetypeStats.map((a) => a.name),
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ success: true, date: today, period, summary }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
     console.error("Error:", error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : "Unknown",
       }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });

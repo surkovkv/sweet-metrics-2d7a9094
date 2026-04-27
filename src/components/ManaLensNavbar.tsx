@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
-import { Swords, Newspaper, MessageCircle, TrendingUp } from "lucide-react";
+import { Swords, Newspaper, MessageCircle, Grid3x3 } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useT } from "@/i18n/useTranslation";
@@ -11,7 +11,7 @@ const ManaLensNavbar = () => {
 
   const links = [
     { to: "/tournament", label: t("nav.strategist"), icon: Swords },
-    { to: "/meta", label: t("nav.meta"), icon: TrendingUp },
+    { to: "/matchups", label: t("nav.matchups"), icon: Grid3x3 },
     { to: "/news", label: t("nav.news"), icon: Newspaper },
     { to: "/contact", label: t("nav.contact"), icon: MessageCircle },
   ];

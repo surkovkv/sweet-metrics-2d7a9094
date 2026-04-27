@@ -67,7 +67,8 @@ const TournamentStrategist = () => {
   const { user, profile } = useAuth();
   const IS_PRO = profile?.is_pro ?? false;
   const IS_LOGGED_IN = !!user;
-  const { archetypeList, matchupDB, gamesDB, archetypeGames, date } = useMatchupData();
+  const [rank, setRank] = useState<"all" | "legend" | "top_1k">("all");
+  const { archetypeList, matchupDB, gamesDB, archetypeGames, date } = useMatchupData(rank);
   const t = useT();
   const { remaining, isExhausted, consumeTrial, maxTrials } = useTrialCounter();
 
@@ -75,8 +76,8 @@ const TournamentStrategist = () => {
   const canUseProFeatures = IS_PRO || (!IS_PRO && !isExhausted);
 
   // Filters State
-  const [minMatchupGames, setMinMatchupGames] = useState<number>(500);
-  const [minArchetypeGames, setMinArchetypeGames] = useState<number>(500);
+  const [minMatchupGames, setMinMatchupGames] = useState<number>(100);
+  const [minArchetypeGames, setMinArchetypeGames] = useState<number>(100);
 
   const filteredArchetypes = useMemo(() => {
     return archetypeList.filter((a) => {
@@ -307,19 +308,19 @@ const TournamentStrategist = () => {
 
           {/* Filters */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-            className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
+            className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 mb-6">
             <div className="flex items-center gap-2">
               <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap uppercase tracking-wider">
-                Min Matchup Games
+                {t("tournament.rank")}
               </label>
-              <Select value={String(minMatchupGames)} onValueChange={(v) => { setMinMatchupGames(Number(v)); setShowResult(false); }}>
-                <SelectTrigger className="w-[80px] h-8 bg-secondary/70 border-none font-bold text-xs ring-offset-background focus:ring-1 focus:ring-primary">
+              <Select value={rank} onValueChange={(v) => { setRank(v as typeof rank); setShowResult(false); }}>
+                <SelectTrigger className="w-[110px] h-8 bg-secondary/70 border-none font-bold text-xs ring-offset-background focus:ring-1 focus:ring-primary">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {[50, 100, 250, 500, 1000, 2500, 5000].map(val => (
-                    <SelectItem key={val} value={String(val)} className="text-xs font-medium">{val === 5000 ? "5000+" : val}</SelectItem>
-                  ))}
+                  <SelectItem value="all" className="text-xs font-medium">{t("matchups.rankAll")}</SelectItem>
+                  <SelectItem value="legend" className="text-xs font-medium">{t("matchups.rankLegend")}</SelectItem>
+                  <SelectItem value="top_1k" className="text-xs font-medium">{t("matchups.rankTop1k")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -328,12 +329,27 @@ const TournamentStrategist = () => {
                 Min Archetype Games
               </label>
               <Select value={String(minArchetypeGames)} onValueChange={(v) => { setMinArchetypeGames(Number(v)); setShowResult(false); }}>
-                <SelectTrigger className="w-[80px] h-8 bg-secondary/70 border-none font-bold text-xs ring-offset-background focus:ring-1 focus:ring-primary">
+                <SelectTrigger className="w-[90px] h-8 bg-secondary/70 border-none font-bold text-xs ring-offset-background focus:ring-1 focus:ring-primary">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {[50, 100, 250, 500, 1000, 2500, 5000].map(val => (
-                    <SelectItem key={val} value={String(val)} className="text-xs font-medium">{val === 5000 ? "5000+" : val}</SelectItem>
+                  {[1, 50, 100, 250, 500, 1000, 2500, 5000, 10000].map(val => (
+                    <SelectItem key={val} value={String(val)} className="text-xs font-medium">{val === 1 ? t("matchups.any") : val.toLocaleString()}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap uppercase tracking-wider">
+                Min Matchup Games
+              </label>
+              <Select value={String(minMatchupGames)} onValueChange={(v) => { setMinMatchupGames(Number(v)); setShowResult(false); }}>
+                <SelectTrigger className="w-[90px] h-8 bg-secondary/70 border-none font-bold text-xs ring-offset-background focus:ring-1 focus:ring-primary">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 50, 100, 250, 500, 1000, 2500, 5000, 10000].map(val => (
+                    <SelectItem key={val} value={String(val)} className="text-xs font-medium">{val === 1 ? t("matchups.any") : val.toLocaleString()}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

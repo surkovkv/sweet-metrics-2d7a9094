@@ -18,25 +18,37 @@ export type Database = {
         Row: {
           created_at: string
           date: string
+          hs_class: string | null
           id: string
           name: string
+          period: string
           popularity: number | null
+          rank: string
+          total_games: number | null
           winrate: number | null
         }
         Insert: {
           created_at?: string
           date: string
+          hs_class?: string | null
           id?: string
           name: string
+          period?: string
           popularity?: number | null
+          rank?: string
+          total_games?: number | null
           winrate?: number | null
         }
         Update: {
           created_at?: string
           date?: string
+          hs_class?: string | null
           id?: string
           name?: string
+          period?: string
           popularity?: number | null
+          rank?: string
+          total_games?: number | null
           winrate?: number | null
         }
         Relationships: []
@@ -76,6 +88,8 @@ export type Database = {
           estimated_games: number | null
           id: string
           opponent: string
+          period: string
+          rank: string
           winrate: number
         }
         Insert: {
@@ -85,6 +99,8 @@ export type Database = {
           estimated_games?: number | null
           id?: string
           opponent: string
+          period?: string
+          rank?: string
           winrate: number
         }
         Update: {
@@ -94,6 +110,8 @@ export type Database = {
           estimated_games?: number | null
           id?: string
           opponent?: string
+          period?: string
+          rank?: string
           winrate?: number
         }
         Relationships: []

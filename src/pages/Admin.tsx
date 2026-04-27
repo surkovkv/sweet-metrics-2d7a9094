@@ -87,9 +87,13 @@ export default function Admin() {
             const { data, error } = await supabase.functions.invoke("scrape-hsguru");
             if (error) throw error;
             if (data?.success) {
+                const summary = (data.summary || []) as Array<{ rank: string; archetypes: number; matchups: number }>;
+                const desc = summary
+                    .map((s) => `${s.rank}: ${s.archetypes} архетипов, ${s.matchups} матчапов`)
+                    .join(" · ") || `date=${data.date}`;
                 toast({
                     title: "Синхронизация завершена",
-                    description: `Загружено ${data.matchupsCount} матчапов для ${data.archetypesCount} архетипов (${data.date})`,
+                    description: `${desc} (${data.date}, ${data.period})`,
                 });
             } else {
                 toast({
