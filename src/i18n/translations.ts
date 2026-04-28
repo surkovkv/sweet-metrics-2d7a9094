@@ -1131,6 +1131,7 @@ const zh: Record<string, string> = {
   "tournament.colorGreen": "绿色 ≥55%",
   "tournament.colorYellow": "黄色 45–55%",
   "tournament.colorRed": "红色 <45%",
+  "tournament.decks2": "2副卡组",
   "tournament.decks3": "3副卡组",
   "tournament.decks4": "4副卡组",
   "tournament.yourDecks": "你的卡组",
