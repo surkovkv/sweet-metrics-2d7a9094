@@ -2337,6 +2337,7 @@ const ar: Record<string, string> = {
   "tournament.colorGreen": "أخضر ≥55%",
   "tournament.colorYellow": "أصفر 45–55%",
   "tournament.colorRed": "أحمر <45%",
+  "tournament.decks2": "2 مجموعات",
   "tournament.decks3": "3 مجموعات",
   "tournament.decks4": "4 مجموعات",
   "tournament.yourDecks": "مجموعاتك",
