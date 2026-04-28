@@ -275,12 +275,9 @@ const TournamentStrategist = () => {
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
               {t("tournament.title")} <span className="text-primary">{t("tournament.titleHighlight")}</span>
             </h1>
-            <p className="text-muted-foreground text-sm">
-              {t("tournament.updated")} {DATA_UPDATED} · {t("tournament.legendData")} (patch 35.0.3)
-            </p>
           </motion.div>
 
-          {/* Info / Help Box */}
+          {/* Info / Help Box — "Принцип работы" */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="mb-6">
             <button
               onClick={() => setShowInfoBox(!showInfoBox)}
@@ -296,86 +293,78 @@ const TournamentStrategist = () => {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mt-3 p-4 rounded-xl bg-secondary/60 border border-border text-sm text-muted-foreground space-y-2"
+                  className="mt-3 p-5 rounded-xl bg-secondary/60 border border-border text-sm text-muted-foreground"
                 >
-                  <h3 className="font-semibold text-foreground mb-2">{t("tournament.conceptTitle")}</h3>
-                  <p className="text-center">{t("tournament.conceptDesc")}</p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3 max-w-lg mx-auto">
-                    {[
-                      { abbr: t("tournament.avgWr"), desc: t("tournament.avgWrDesc") },
-                      { abbr: t("tournament.minWrLabel"), desc: t("tournament.minWrDesc") },
-                      { abbr: t("tournament.banLabel"), desc: t("tournament.banDesc") },
-                    ].map((item) => (
-                      <div key={item.abbr} className="p-2 bg-background/50 rounded-lg border border-border">
-                        <p className="font-bold text-primary text-xs">{item.abbr}</p>
-                        <p className="text-xs mt-1">{item.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="mt-2 text-xs text-center">{t("tournament.colors")} <span className="text-green-400">{t("tournament.colorGreen")}</span> · <span className="text-yellow-400">{t("tournament.colorYellow")}</span> · <span className="text-red-400">{t("tournament.colorRed")}</span></p>
+                  <h3 className="font-semibold text-foreground mb-3 text-center">{t("tournament.conceptTitle")}</h3>
+                  <p className="whitespace-pre-line leading-relaxed">{t("tournament.conceptDesc")}</p>
                 </motion.div>
               )}
             </AnimatePresence>
           </motion.div>
 
-          {/* Filters */}
+          {/* Filters — grouped card */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-            className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap uppercase tracking-wider">
-                {t("tournament.rank")}
-              </label>
-              <Select value={rank} onValueChange={(v) => { setRank(v as typeof rank); setShowResult(false); }}>
-                <SelectTrigger className="w-[110px] h-8 bg-secondary/70 border-none font-bold text-xs ring-offset-background focus:ring-1 focus:ring-primary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all" className="text-xs font-medium">{t("matchups.rankAll")}</SelectItem>
-                  <SelectItem value="legend" className="text-xs font-medium">{t("matchups.rankLegend")}</SelectItem>
-                  <SelectItem value="top_1k" className="text-xs font-medium">{t("matchups.rankTop1k")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap uppercase tracking-wider">
-                Min Archetype Games
-              </label>
-              <Select value={String(minArchetypeGames)} onValueChange={(v) => { setMinArchetypeGames(Number(v)); setShowResult(false); }}>
-                <SelectTrigger className="w-[90px] h-8 bg-secondary/70 border-none font-bold text-xs ring-offset-background focus:ring-1 focus:ring-primary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[1, 50, 100, 250, 500, 1000, 2500, 5000, 10000].map(val => (
-                    <SelectItem key={val} value={String(val)} className="text-xs font-medium">{val === 1 ? t("matchups.any") : val.toLocaleString()}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap uppercase tracking-wider">
-                Min Matchup Games
-              </label>
-              <Select value={String(minMatchupGames)} onValueChange={(v) => { setMinMatchupGames(Number(v)); setShowResult(false); }}>
-                <SelectTrigger className="w-[90px] h-8 bg-secondary/70 border-none font-bold text-xs ring-offset-background focus:ring-1 focus:ring-primary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[1, 50, 100, 250, 500, 1000, 2500, 5000, 10000].map(val => (
-                    <SelectItem key={val} value={String(val)} className="text-xs font-medium">{val === 1 ? t("matchups.any") : val.toLocaleString()}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            className="mb-6">
+            <div className="rounded-2xl bg-secondary/40 border border-border p-4 flex flex-col sm:flex-row sm:items-end justify-center gap-4 sm:gap-6">
+              {/* Rank */}
+              <div className="flex flex-col gap-1.5 min-w-[140px]">
+                <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <Trophy className="h-3.5 w-3.5 text-primary" /> {t("tournament.rank")}
+                </label>
+                <Select value={rank} onValueChange={(v) => { setRank(v as typeof rank); setShowResult(false); }}>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("matchups.rankAll")}</SelectItem>
+                    <SelectItem value="legend">{t("matchups.rankLegend")}</SelectItem>
+                    <SelectItem value="top_1k">{t("matchups.rankTop1k")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Min Archetype Games */}
+              <div className="flex flex-col gap-1.5 min-w-[140px]">
+                <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <Layers className="h-3.5 w-3.5 text-primary" /> Min Archetype Games
+                </label>
+                <Select value={String(minArchetypeGames)} onValueChange={(v) => { setMinArchetypeGames(Number(v)); setShowResult(false); }}>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 50, 100, 250, 500, 1000, 2500, 5000, 10000].map(val => (
+                      <SelectItem key={val} value={String(val)}>{val === 1 ? t("matchups.any") : val.toLocaleString()}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Min Matchup Games */}
+              <div className="flex flex-col gap-1.5 min-w-[140px]">
+                <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <Swords className="h-3.5 w-3.5 text-primary" /> Min Matchup Games
+                </label>
+                <Select value={String(minMatchupGames)} onValueChange={(v) => { setMinMatchupGames(Number(v)); setShowResult(false); }}>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 50, 100, 250, 500, 1000, 2500, 5000, 10000].map(val => (
+                      <SelectItem key={val} value={String(val)}>{val === 1 ? t("matchups.any") : val.toLocaleString()}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </motion.div>
 
           {/* Mode Toggle */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
             className="flex justify-center gap-3 mb-8">
-            {([3, 4] as DeckMode[]).map((m) => (
+            {([2, 3, 4] as DeckMode[]).map((m) => (
               <button key={m} onClick={() => handleModeChange(m)}
                 className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${mode === m ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
                   }`}>
-                {t(m === 3 ? "tournament.decks3" : "tournament.decks4")}
+                {t(m === 2 ? "tournament.decks2" : m === 3 ? "tournament.decks3" : "tournament.decks4")}
               </button>
             ))}
           </motion.div>
