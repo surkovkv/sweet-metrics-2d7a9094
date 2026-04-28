@@ -159,8 +159,7 @@ const TournamentStrategist = () => {
   const handleModeChange = (newMode: DeckMode) => {
     setMode(newMode);
     const resize = (arr: string[]) =>
-      newMode === 4 && arr.length === 3 ? [...arr, ""] :
-        newMode === 3 && arr.length === 4 ? arr.slice(0, 3) : arr;
+      Array.from({ length: newMode }, (_, i) => arr[i] ?? "");
     setMyArchetypes(resize(myArchetypes));
     setOppArchetypes(resize(oppArchetypes));
     setShowResult(false);
