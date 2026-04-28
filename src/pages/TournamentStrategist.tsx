@@ -38,7 +38,7 @@ import { useMatchupData } from "@/hooks/useMatchupData";
 import { useT } from "@/i18n/useTranslation";
 import { useTrialCounter } from "@/hooks/useTrialCounter";
 
-type DeckMode = 3 | 4;
+type DeckMode = 2 | 3 | 4;
 type GetWinrateFn = (my: string, opp: string) => number | null;
 type GetArchetypeInfoFn = (name: string) => ArchetypeInfo | undefined;
 type GetEstimatedGamesFn = (a: string, b: string) => number | null;
