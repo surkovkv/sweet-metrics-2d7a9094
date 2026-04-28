@@ -43,17 +43,17 @@ const Landing = () => {
             </p>
 
             <div className="flex items-center justify-center gap-4 flex-wrap">
-              <Link to="/tournament">
+              <Link to="/matchups">
                 <Button size="lg" className="gap-2 h-12 px-8 text-base font-semibold shadow-lg shadow-primary/25">
-                  <Swords className="h-5 w-5" />
-                  {t("landing.openStrategist")}
+                  <BarChart2 className="h-5 w-5" />
+                  {t("landing.matchupsTitle")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/matchups">
+              <Link to="/tournament">
                 <Button size="lg" variant="secondary" className="gap-2 h-12 px-8 text-base font-semibold">
-                  <BarChart2 className="h-5 w-5" />
-                  {t("landing.matchupsTitle")}
+                  <Swords className="h-5 w-5" />
+                  {t("landing.openStrategist")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
