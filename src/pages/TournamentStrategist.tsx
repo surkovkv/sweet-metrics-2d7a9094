@@ -147,11 +147,11 @@ const TournamentStrategist = () => {
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [oppManualBanIndex, setOppManualBanIndex] = useState<number | null>(null);
   const [banHistory, setBanHistory] = useState<Record<DeckMode, BanHistoryEntry[]>>({
-    3: [], 4: [],
+    2: [], 3: [], 4: [],
   });
 
   useEffect(() => {
-    setBanHistory({ 3: loadBanHistory(3), 4: loadBanHistory(4) });
+    setBanHistory({ 2: loadBanHistory(2), 3: loadBanHistory(3), 4: loadBanHistory(4) });
   }, []);
 
   const currentHistory = banHistory[mode];
