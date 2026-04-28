@@ -847,13 +847,24 @@ function PreBanMiniMatrix({ myArchetypes, oppArchetypes, getWinrate }: {
   );
 }
 
-function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedIndex, getWinrate, getArchetypeInfo, getEstimatedGames, minMatchupGames, t, archetypeGames }: {
+function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedIndex, getWinrate, getWinrateRaw, getArchetypeInfo, getEstimatedGames, minMatchupGames, t, archetypeGames }: {
   myArchetypes: string[]; oppArchetypes: string[]; bannedIndex: number | null; oppBannedIndex: number | null;
-  getWinrate: GetWinrateFn; getArchetypeInfo: GetArchetypeInfoFn; getEstimatedGames: GetEstimatedGamesFn;
+  getWinrate: GetWinrateFn; getWinrateRaw: GetWinrateFn;
+  getArchetypeInfo: GetArchetypeInfoFn; getEstimatedGames: GetEstimatedGamesFn;
   minMatchupGames: number;
   t: (key: string) => string;
   archetypeGames?: Record<string, number>;
 }) {
+  // Detect "all-grey" case → fall back to raw winrates ignoring min filter
+  const filteredHasAny = myArchetypes.some((my) =>
+    oppArchetypes.some((opp) => getWinrate(my, opp) !== null)
+  );
+  const rawHasAny = myArchetypes.some((my) =>
+    oppArchetypes.some((opp) => getWinrateRaw(my, opp) !== null)
+  );
+  const fallbackMode = !filteredHasAny && rawHasAny;
+  const wrFn: GetWinrateFn = fallbackMode ? getWinrateRaw : getWinrate;
+
   return (
     <Card className="bg-card border-border overflow-hidden">
       <CardHeader>
@@ -863,6 +874,12 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {fallbackMode && (
+          <div className="mb-4 p-3 rounded-lg bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 text-xs flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+            <span>{t("tournament.fallbackWarning")}</span>
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
@@ -910,18 +927,32 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                       )}
                     </td>
                     {oppArchetypes.map((opp, colIdx) => {
-                      const wr = getWinrate(my, opp);
+                      const wr = wrFn(my, opp);
                       const games = getEstimatedGames(my, opp);
                       const isBanned = bannedIndex === colIdx;
+                      const isLowSample = wr !== null && games !== null && games < 50;
                       return (
                         <td key={colIdx}
-                          className={`py-3 px-3 text-center border-2 border-border ${isBanned ? "opacity-40" : ""
-                            } ${getWinrateBg(wr)}`}>
-                          <div className={`font-bold ${getWinrateColor(wr)}`}>
+                          className={cn(
+                            "py-3 px-3 text-center border-2 border-border",
+                            isBanned && "opacity-40",
+                            isLowSample ? "bg-yellow-500/15" : getWinrateBg(wr),
+                          )}>
+                          <div className={cn("font-bold flex items-center justify-center gap-1", getWinrateColor(wr))}>
+                            {isLowSample && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <AlertTriangle className="h-3 w-3 text-yellow-400" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">{t("tournament.lowSampleTooltip")}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
                             {wr !== null ? `${wr}%` : "—"}
                           </div>
                           <div className="text-[10px] text-muted-foreground mt-0.5">
-                            {games !== null ? (games >= minMatchupGames ? `${games} ${t("tournament.games")}` : `< ${minMatchupGames} игр`) : t("tournament.lessGames")}
+                            {games !== null ? `${games} ${t("tournament.games")}` : ""}
                           </div>
                         </td>
                       );
@@ -932,10 +963,6 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
-          <Info className="h-3 w-3" />
-          {t("tournament.matrixNote")}
-        </p>
       </CardContent>
     </Card>
   );
