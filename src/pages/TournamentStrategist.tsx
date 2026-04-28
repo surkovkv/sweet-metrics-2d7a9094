@@ -1019,32 +1019,84 @@ function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [], arc
   excludeValues?: string[]; archetypeList: ArchetypeInfo[]; getWinrate: GetWinrateFn;
   archetypeGames: Record<string, number>;
 }) {
+  const [open, setOpen] = useState(false);
+  const t = useT();
+
+  // Compute a stable average winrate per archetype (used for color-coded badge).
+  const wrByArch = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const arch of archetypeList) {
+      let safeWr = arch.winrate;
+      if (safeWr < 45 && safeWr > 0) {
+        const wrs = archetypeList
+          .map((opp) => getWinrate(arch.name, opp.name))
+          .filter((w): w is number => w !== null);
+        if (wrs.length > 0) safeWr = wrs.reduce((s, w) => s + w, 0) / wrs.length;
+      }
+      map[arch.name] = Math.round(safeWr * 10) / 10;
+    }
+    return map;
+  }, [archetypeList, getWinrate]);
+
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="bg-secondary border-border text-foreground">
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {archetypeList.map((arch) => {
-          let safeWr = arch.winrate;
-          if (safeWr < 45 && safeWr > 0) {
-            const wrs = archetypeList.map(opp => getWinrate(arch.name, opp.name)).filter(w => w !== null) as number[];
-            if (wrs.length > 0) safeWr = wrs.reduce((sum, w) => sum + w, 0) / wrs.length;
-          }
-          return (
-            <SelectItem key={arch.name} value={arch.name}
-              disabled={excludeValues.includes(arch.name)}>
-              <span className="flex items-center justify-between gap-3 w-full">
-                <span>{arch.name}</span>
-                <span className="text-xs text-muted-foreground ml-2">
-                  {(archetypeGames[arch.name] || 0).toLocaleString()} игр
-                </span>
-              </span>
-            </SelectItem>
-          );
-        })}
-      </SelectContent>
-    </Select>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between bg-secondary border-border text-foreground font-normal h-10"
+        >
+          <span className={value ? "" : "text-muted-foreground"}>{value || placeholder}</span>
+          <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={t("tournament.archetypeSearchPlaceholder")} />
+          <CommandList>
+            <CommandEmpty>—</CommandEmpty>
+            <CommandGroup>
+              {archetypeList.map((arch) => {
+                const disabled = excludeValues.includes(arch.name);
+                const wr = wrByArch[arch.name] ?? 0;
+                const isSelected = value === arch.name;
+                return (
+                  <CommandItem
+                    key={arch.name}
+                    value={arch.name}
+                    disabled={disabled}
+                    onSelect={(currentValue) => {
+                      if (disabled) return;
+                      onChange(currentValue);
+                      setOpen(false);
+                    }}
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Check className={cn("h-4 w-4", isSelected ? "opacity-100" : "opacity-0")} />
+                      {arch.name}
+                    </span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className={cn("text-xs font-bold ml-2 tabular-nums", getWinrateColor(wr))}>
+                          {wr > 0 ? `${wr.toFixed(1)}%` : "—"}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">
+                          {(archetypeGames[arch.name] || 0).toLocaleString()} {t("tournament.games")}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
 
