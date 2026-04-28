@@ -481,6 +481,7 @@ const en: Record<string, string> = {
   "tournament.colorGreen": "green ≥55%",
   "tournament.colorYellow": "yellow 45–55%",
   "tournament.colorRed": "red <45%",
+  "tournament.decks2": "2 decks",
   "tournament.decks3": "3 decks",
   "tournament.decks4": "4 decks",
   "tournament.yourDecks": "Your Decks",
