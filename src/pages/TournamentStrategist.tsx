@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Swords, Trophy, ShieldAlert, Target, Info, Gamepad2,
   Lock, Crown, Ban, ArrowLeftRight, HelpCircle, Star, ChevronDown, ChevronUp, History, RotateCcw,
+  Layers, AlertTriangle, ChevronsUpDown, Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,8 +11,15 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
+} from "@/components/ui/command";
+import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
@@ -30,7 +38,7 @@ import { useMatchupData } from "@/hooks/useMatchupData";
 import { useT } from "@/i18n/useTranslation";
 import { useTrialCounter } from "@/hooks/useTrialCounter";
 
-type DeckMode = 3 | 4;
+type DeckMode = 2 | 3 | 4;
 type GetWinrateFn = (my: string, opp: string) => number | null;
 type GetArchetypeInfoFn = (name: string) => ArchetypeInfo | undefined;
 type GetEstimatedGamesFn = (a: string, b: string) => number | null;
@@ -119,6 +127,11 @@ const TournamentStrategist = () => {
     return matchupDB[my]?.[opp] ?? null;
   }, [matchupDB, gamesDB, minMatchupGames]);
 
+  /** Raw winrate without min-matchup-games filter — used for low-sample fallback. */
+  const getWinrateRaw = useCallback((my: string, opp: string): number | null => {
+    return matchupDB[my]?.[opp] ?? null;
+  }, [matchupDB]);
+
   const getArchetypeInfo = useCallback((name: string) => {
     const found = archetypeList.find((a) => a.name === name);
     return found ?? staticGetArchetypeInfo(name);
@@ -128,7 +141,7 @@ const TournamentStrategist = () => {
     return gamesDB[arch1]?.[arch2] ?? gamesDB[arch2]?.[arch1] ?? null;
   }, [gamesDB]);
 
-  const DATA_UPDATED = date || "2026-03-03";
+  
 
   const [mode, setMode] = useState<DeckMode>(3);
   const [myArchetypes, setMyArchetypes] = useState<string[]>(["", "", ""]);
@@ -139,11 +152,11 @@ const TournamentStrategist = () => {
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [oppManualBanIndex, setOppManualBanIndex] = useState<number | null>(null);
   const [banHistory, setBanHistory] = useState<Record<DeckMode, BanHistoryEntry[]>>({
-    3: [], 4: [],
+    2: [], 3: [], 4: [],
   });
 
   useEffect(() => {
-    setBanHistory({ 3: loadBanHistory(3), 4: loadBanHistory(4) });
+    setBanHistory({ 2: loadBanHistory(2), 3: loadBanHistory(3), 4: loadBanHistory(4) });
   }, []);
 
   const currentHistory = banHistory[mode];
@@ -151,8 +164,7 @@ const TournamentStrategist = () => {
   const handleModeChange = (newMode: DeckMode) => {
     setMode(newMode);
     const resize = (arr: string[]) =>
-      newMode === 4 && arr.length === 3 ? [...arr, ""] :
-        newMode === 3 && arr.length === 4 ? arr.slice(0, 3) : arr;
+      Array.from({ length: newMode }, (_, i) => arr[i] ?? "");
     setMyArchetypes(resize(myArchetypes));
     setOppArchetypes(resize(oppArchetypes));
     setShowResult(false);
@@ -263,12 +275,9 @@ const TournamentStrategist = () => {
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
               {t("tournament.title")} <span className="text-primary">{t("tournament.titleHighlight")}</span>
             </h1>
-            <p className="text-muted-foreground text-sm">
-              {t("tournament.updated")} {DATA_UPDATED} · {t("tournament.legendData")} (patch 35.0.3)
-            </p>
           </motion.div>
 
-          {/* Info / Help Box */}
+          {/* Info / Help Box — "Принцип работы" */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="mb-6">
             <button
               onClick={() => setShowInfoBox(!showInfoBox)}
@@ -284,86 +293,78 @@ const TournamentStrategist = () => {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mt-3 p-4 rounded-xl bg-secondary/60 border border-border text-sm text-muted-foreground space-y-2"
+                  className="mt-3 p-5 rounded-xl bg-secondary/60 border border-border text-sm text-muted-foreground"
                 >
-                  <h3 className="font-semibold text-foreground mb-2">{t("tournament.conceptTitle")}</h3>
-                  <p className="text-center">{t("tournament.conceptDesc")}</p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3 max-w-lg mx-auto">
-                    {[
-                      { abbr: t("tournament.avgWr"), desc: t("tournament.avgWrDesc") },
-                      { abbr: t("tournament.minWrLabel"), desc: t("tournament.minWrDesc") },
-                      { abbr: t("tournament.banLabel"), desc: t("tournament.banDesc") },
-                    ].map((item) => (
-                      <div key={item.abbr} className="p-2 bg-background/50 rounded-lg border border-border">
-                        <p className="font-bold text-primary text-xs">{item.abbr}</p>
-                        <p className="text-xs mt-1">{item.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="mt-2 text-xs text-center">{t("tournament.colors")} <span className="text-green-400">{t("tournament.colorGreen")}</span> · <span className="text-yellow-400">{t("tournament.colorYellow")}</span> · <span className="text-red-400">{t("tournament.colorRed")}</span></p>
+                  <h3 className="font-semibold text-foreground mb-3 text-center">{t("tournament.conceptTitle")}</h3>
+                  <p className="whitespace-pre-line leading-relaxed">{t("tournament.conceptDesc")}</p>
                 </motion.div>
               )}
             </AnimatePresence>
           </motion.div>
 
-          {/* Filters */}
+          {/* Filters — grouped card */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-            className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap uppercase tracking-wider">
-                {t("tournament.rank")}
-              </label>
-              <Select value={rank} onValueChange={(v) => { setRank(v as typeof rank); setShowResult(false); }}>
-                <SelectTrigger className="w-[110px] h-8 bg-secondary/70 border-none font-bold text-xs ring-offset-background focus:ring-1 focus:ring-primary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all" className="text-xs font-medium">{t("matchups.rankAll")}</SelectItem>
-                  <SelectItem value="legend" className="text-xs font-medium">{t("matchups.rankLegend")}</SelectItem>
-                  <SelectItem value="top_1k" className="text-xs font-medium">{t("matchups.rankTop1k")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap uppercase tracking-wider">
-                Min Archetype Games
-              </label>
-              <Select value={String(minArchetypeGames)} onValueChange={(v) => { setMinArchetypeGames(Number(v)); setShowResult(false); }}>
-                <SelectTrigger className="w-[90px] h-8 bg-secondary/70 border-none font-bold text-xs ring-offset-background focus:ring-1 focus:ring-primary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[1, 50, 100, 250, 500, 1000, 2500, 5000, 10000].map(val => (
-                    <SelectItem key={val} value={String(val)} className="text-xs font-medium">{val === 1 ? t("matchups.any") : val.toLocaleString()}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap uppercase tracking-wider">
-                Min Matchup Games
-              </label>
-              <Select value={String(minMatchupGames)} onValueChange={(v) => { setMinMatchupGames(Number(v)); setShowResult(false); }}>
-                <SelectTrigger className="w-[90px] h-8 bg-secondary/70 border-none font-bold text-xs ring-offset-background focus:ring-1 focus:ring-primary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[1, 50, 100, 250, 500, 1000, 2500, 5000, 10000].map(val => (
-                    <SelectItem key={val} value={String(val)} className="text-xs font-medium">{val === 1 ? t("matchups.any") : val.toLocaleString()}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            className="mb-6">
+            <div className="rounded-2xl bg-secondary/40 border border-border p-4 flex flex-col sm:flex-row sm:items-end justify-center gap-4 sm:gap-6">
+              {/* Rank */}
+              <div className="flex flex-col gap-1.5 min-w-[140px]">
+                <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <Trophy className="h-3.5 w-3.5 text-primary" /> {t("tournament.rank")}
+                </label>
+                <Select value={rank} onValueChange={(v) => { setRank(v as typeof rank); setShowResult(false); }}>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("matchups.rankAll")}</SelectItem>
+                    <SelectItem value="legend">{t("matchups.rankLegend")}</SelectItem>
+                    <SelectItem value="top_1k">{t("matchups.rankTop1k")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Min Archetype Games */}
+              <div className="flex flex-col gap-1.5 min-w-[140px]">
+                <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <Layers className="h-3.5 w-3.5 text-primary" /> Min Archetype Games
+                </label>
+                <Select value={String(minArchetypeGames)} onValueChange={(v) => { setMinArchetypeGames(Number(v)); setShowResult(false); }}>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 50, 100, 250, 500, 1000, 2500, 5000, 10000].map(val => (
+                      <SelectItem key={val} value={String(val)}>{val === 1 ? t("matchups.any") : val.toLocaleString()}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Min Matchup Games */}
+              <div className="flex flex-col gap-1.5 min-w-[140px]">
+                <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <Swords className="h-3.5 w-3.5 text-primary" /> Min Matchup Games
+                </label>
+                <Select value={String(minMatchupGames)} onValueChange={(v) => { setMinMatchupGames(Number(v)); setShowResult(false); }}>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 50, 100, 250, 500, 1000, 2500, 5000, 10000].map(val => (
+                      <SelectItem key={val} value={String(val)}>{val === 1 ? t("matchups.any") : val.toLocaleString()}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </motion.div>
 
           {/* Mode Toggle */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
             className="flex justify-center gap-3 mb-8">
-            {([3, 4] as DeckMode[]).map((m) => (
+            {([2, 3, 4] as DeckMode[]).map((m) => (
               <button key={m} onClick={() => handleModeChange(m)}
                 className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${mode === m ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
                   }`}>
-                {t(m === 3 ? "tournament.decks3" : "tournament.decks4")}
+                {t(m === 2 ? "tournament.decks2" : m === 3 ? "tournament.decks3" : "tournament.decks4")}
               </button>
             ))}
           </motion.div>
@@ -576,6 +577,7 @@ const TournamentStrategist = () => {
                     bannedIndex={effectiveBanIdx}
                     oppBannedIndex={oppManualBanIndex}
                     getWinrate={getWinrate}
+                    getWinrateRaw={getWinrateRaw}
                     getArchetypeInfo={getArchetypeInfo}
                     getEstimatedGames={getEstimatedGames}
                     minMatchupGames={minMatchupGames}
@@ -845,13 +847,24 @@ function PreBanMiniMatrix({ myArchetypes, oppArchetypes, getWinrate }: {
   );
 }
 
-function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedIndex, getWinrate, getArchetypeInfo, getEstimatedGames, minMatchupGames, t, archetypeGames }: {
+function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedIndex, getWinrate, getWinrateRaw, getArchetypeInfo, getEstimatedGames, minMatchupGames, t, archetypeGames }: {
   myArchetypes: string[]; oppArchetypes: string[]; bannedIndex: number | null; oppBannedIndex: number | null;
-  getWinrate: GetWinrateFn; getArchetypeInfo: GetArchetypeInfoFn; getEstimatedGames: GetEstimatedGamesFn;
+  getWinrate: GetWinrateFn; getWinrateRaw: GetWinrateFn;
+  getArchetypeInfo: GetArchetypeInfoFn; getEstimatedGames: GetEstimatedGamesFn;
   minMatchupGames: number;
   t: (key: string) => string;
   archetypeGames?: Record<string, number>;
 }) {
+  // Detect "all-grey" case → fall back to raw winrates ignoring min filter
+  const filteredHasAny = myArchetypes.some((my) =>
+    oppArchetypes.some((opp) => getWinrate(my, opp) !== null)
+  );
+  const rawHasAny = myArchetypes.some((my) =>
+    oppArchetypes.some((opp) => getWinrateRaw(my, opp) !== null)
+  );
+  const fallbackMode = !filteredHasAny && rawHasAny;
+  const wrFn: GetWinrateFn = fallbackMode ? getWinrateRaw : getWinrate;
+
   return (
     <Card className="bg-card border-border overflow-hidden">
       <CardHeader>
@@ -861,6 +874,12 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {fallbackMode && (
+          <div className="mb-4 p-3 rounded-lg bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 text-xs flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+            <span>{t("tournament.fallbackWarning")}</span>
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
@@ -908,18 +927,32 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                       )}
                     </td>
                     {oppArchetypes.map((opp, colIdx) => {
-                      const wr = getWinrate(my, opp);
+                      const wr = wrFn(my, opp);
                       const games = getEstimatedGames(my, opp);
                       const isBanned = bannedIndex === colIdx;
+                      const isLowSample = wr !== null && games !== null && games < 50;
                       return (
                         <td key={colIdx}
-                          className={`py-3 px-3 text-center border-2 border-border ${isBanned ? "opacity-40" : ""
-                            } ${getWinrateBg(wr)}`}>
-                          <div className={`font-bold ${getWinrateColor(wr)}`}>
+                          className={cn(
+                            "py-3 px-3 text-center border-2 border-border",
+                            isBanned && "opacity-40",
+                            isLowSample ? "bg-yellow-500/15" : getWinrateBg(wr),
+                          )}>
+                          <div className={cn("font-bold flex items-center justify-center gap-1", getWinrateColor(wr))}>
+                            {isLowSample && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <AlertTriangle className="h-3 w-3 text-yellow-400" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">{t("tournament.lowSampleTooltip")}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
                             {wr !== null ? `${wr}%` : "—"}
                           </div>
                           <div className="text-[10px] text-muted-foreground mt-0.5">
-                            {games !== null ? (games >= minMatchupGames ? `${games} ${t("tournament.games")}` : `< ${minMatchupGames} игр`) : t("tournament.lessGames")}
+                            {games !== null ? `${games} ${t("tournament.games")}` : ""}
                           </div>
                         </td>
                       );
@@ -930,10 +963,6 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
-          <Info className="h-3 w-3" />
-          {t("tournament.matrixNote")}
-        </p>
       </CardContent>
     </Card>
   );
@@ -990,32 +1019,84 @@ function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [], arc
   excludeValues?: string[]; archetypeList: ArchetypeInfo[]; getWinrate: GetWinrateFn;
   archetypeGames: Record<string, number>;
 }) {
+  const [open, setOpen] = useState(false);
+  const t = useT();
+
+  // Compute a stable average winrate per archetype (used for color-coded badge).
+  const wrByArch = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const arch of archetypeList) {
+      let safeWr = arch.winrate;
+      if (safeWr < 45 && safeWr > 0) {
+        const wrs = archetypeList
+          .map((opp) => getWinrate(arch.name, opp.name))
+          .filter((w): w is number => w !== null);
+        if (wrs.length > 0) safeWr = wrs.reduce((s, w) => s + w, 0) / wrs.length;
+      }
+      map[arch.name] = Math.round(safeWr * 10) / 10;
+    }
+    return map;
+  }, [archetypeList, getWinrate]);
+
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="bg-secondary border-border text-foreground">
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {archetypeList.map((arch) => {
-          let safeWr = arch.winrate;
-          if (safeWr < 45 && safeWr > 0) {
-            const wrs = archetypeList.map(opp => getWinrate(arch.name, opp.name)).filter(w => w !== null) as number[];
-            if (wrs.length > 0) safeWr = wrs.reduce((sum, w) => sum + w, 0) / wrs.length;
-          }
-          return (
-            <SelectItem key={arch.name} value={arch.name}
-              disabled={excludeValues.includes(arch.name)}>
-              <span className="flex items-center justify-between gap-3 w-full">
-                <span>{arch.name}</span>
-                <span className="text-xs text-muted-foreground ml-2">
-                  {(archetypeGames[arch.name] || 0).toLocaleString()} игр
-                </span>
-              </span>
-            </SelectItem>
-          );
-        })}
-      </SelectContent>
-    </Select>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between bg-secondary border-border text-foreground font-normal h-10"
+        >
+          <span className={value ? "" : "text-muted-foreground"}>{value || placeholder}</span>
+          <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={t("tournament.archetypeSearchPlaceholder")} />
+          <CommandList>
+            <CommandEmpty>—</CommandEmpty>
+            <CommandGroup>
+              {archetypeList.map((arch) => {
+                const disabled = excludeValues.includes(arch.name);
+                const wr = wrByArch[arch.name] ?? 0;
+                const isSelected = value === arch.name;
+                return (
+                  <CommandItem
+                    key={arch.name}
+                    value={arch.name}
+                    disabled={disabled}
+                    onSelect={(currentValue) => {
+                      if (disabled) return;
+                      onChange(currentValue);
+                      setOpen(false);
+                    }}
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Check className={cn("h-4 w-4", isSelected ? "opacity-100" : "opacity-0")} />
+                      {arch.name}
+                    </span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className={cn("text-xs font-bold ml-2 tabular-nums", getWinrateColor(wr))}>
+                          {wr > 0 ? `${wr.toFixed(1)}%` : "—"}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">
+                          {(archetypeGames[arch.name] || 0).toLocaleString()} {t("tournament.games")}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
 

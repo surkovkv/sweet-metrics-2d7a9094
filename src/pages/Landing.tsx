@@ -43,17 +43,17 @@ const Landing = () => {
             </p>
 
             <div className="flex items-center justify-center gap-4 flex-wrap">
-              <Link to="/tournament">
+              <Link to="/matchups">
                 <Button size="lg" className="gap-2 h-12 px-8 text-base font-semibold shadow-lg shadow-primary/25">
-                  <Swords className="h-5 w-5" />
-                  {t("landing.openStrategist")}
+                  <BarChart2 className="h-5 w-5" />
+                  {t("landing.matchupsTitle")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/matchups">
+              <Link to="/tournament">
                 <Button size="lg" variant="secondary" className="gap-2 h-12 px-8 text-base font-semibold">
-                  <BarChart2 className="h-5 w-5" />
-                  {t("landing.matchupsTitle")}
+                  <Swords className="h-5 w-5" />
+                  {t("landing.openStrategist")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -75,27 +75,10 @@ const Landing = () => {
           transition={{ delay: 0.3, duration: 0.5 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-20"
         >
-          <Link to="/tournament" className="group">
+          <Link to="/matchups" className="group">
             <div className="h-full p-6 rounded-2xl bg-primary/10 border border-primary/30 hover:bg-primary/15 hover:border-primary/60 transition-all duration-300 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 rounded-xl bg-primary/20">
-                  <Swords className="h-6 w-6 text-primary" />
-                </div>
-                <ChevronRight className="h-5 w-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <h3 className="font-display text-lg font-bold text-foreground mb-2">
-                {t("landing.strategistTitle")}
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {t("landing.strategistDesc")}
-              </p>
-            </div>
-          </Link>
-
-          <Link to="/matchups" className="group">
-            <div className="h-full p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 rounded-xl bg-secondary">
                   <BarChart2 className="h-6 w-6 text-primary" />
                 </div>
                 <ChevronRight className="h-5 w-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -105,6 +88,23 @@ const Landing = () => {
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {t("landing.matchupsDesc")}
+              </p>
+            </div>
+          </Link>
+
+          <Link to="/tournament" className="group">
+            <div className="h-full p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 rounded-xl bg-secondary">
+                  <Swords className="h-6 w-6 text-primary" />
+                </div>
+                <ChevronRight className="h-5 w-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <h3 className="font-display text-lg font-bold text-foreground mb-2">
+                {t("landing.strategistTitle")}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {t("landing.strategistDesc")}
               </p>
             </div>
           </Link>
