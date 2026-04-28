@@ -1,13 +1,18 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// Fresh HSGuru scraper — rebuilt from scratch.
+// Parses the real HSGuru matchup table structure, extracting:
+// - archetype list + class (from header buttons `opponent_<name>` + `class-background <css>`)
+// - popularity (from 3rd row of thead, "<pct>%")
+// - per-archetype total_games (from row cells' `aria-label="<Archetype> - <N> games"`)
+// - per-matchup winrate + estimated_games (from cells' `aria-label="A versus B - <N> games"` + inner `<span>NN.N</span>`)
+// - overall winrate (from first td of each row, which shows avg WR as `<span>NN.N</span>`)
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
-
-// Current patch period used on hsguru — change when a new patch drops
-const DEFAULT_PERIOD = "patch_35.0.3";
 
 const CLASS_MAP: Record<string, string> = {
   deathknight: "Death Knight",
@@ -32,177 +37,157 @@ const RANKS: Array<{ db: string; hsguru: string }> = [
   { db: "top_1k", hsguru: "top_legend" },
 ];
 
-function buildUrl(rankHsguru: string, period: string) {
+function buildUrl(rankHsguru: string) {
   const params = new URLSearchParams({
     min_archetype_sample: "1",
     min_matchup_sample: "1",
     rank: rankHsguru,
-    period,
   });
   return `https://www.hsguru.com/matchups?${params.toString()}`;
 }
 
-function parseMatchupTable(html: string) {
-  // Opponent archetype names from header buttons
-  const headerRegex = /phx-value-sort_by="opponent_([^"]+)"/g;
-  const opponentNames: string[] = [];
-  let match;
-  while ((match = headerRegex.exec(html)) !== null) {
-    const name = match[1].trim();
-    if (!opponentNames.includes(name)) opponentNames.push(name);
-  }
-
-  // Map archetype -> hsClass
-  const headerClassRegex =
-    /<th[^>]*class-background\s+(\w+)[^>]*>\s*<button[^>]*phx-value-sort_by="opponent_([^"]+)"[^>]*>/g;
-  const archetypeClassMap: Record<string, string> = {};
-  while ((match = headerClassRegex.exec(html)) !== null) {
-    const cssClass = match[1];
-    const archName = match[2].trim();
-    archetypeClassMap[archName] = CLASS_MAP[cssClass] || "Unknown";
-  }
-
-  // Popularity values from 3rd header row
-  const popularityValues: number[] = [];
-  const theadMatch = html.match(/<thead[^>]*>([\s\S]*?)<\/thead>/);
-  if (theadMatch) {
-    const trMatches = theadMatch[1].match(/<tr[^>]*>([\s\S]*?)<\/tr>/g);
-    if (trMatches && trMatches.length >= 3) {
-      const popRow = trMatches[2];
-      const popRegex = /<span[^>]*>(\d+\.?\d*)%<\/span>/g;
-      let popMatch;
-      while ((popMatch = popRegex.exec(popRow)) !== null) {
-        popularityValues.push(parseFloat(popMatch[1]));
-      }
-    }
-  }
-
-  const tbodyMatch = html.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/);
-  if (!tbodyMatch) return { matchups: [], archetypeStats: [] };
-
-  const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
-  const matchups: Array<{
-    archetype: string;
-    opponent: string;
-    winrate: number;
-    estimated_games: number | null;
-  }> = [];
-  const archetypeStats: Array<{
-    name: string;
-    winrate: number | null;
-    popularity: number | null;
-    total_games: number | null;
-    hs_class: string | null;
-  }> = [];
-
-  let rowMatch;
-  const tbodyHtml = tbodyMatch[1];
-  while ((rowMatch = rowRegex.exec(tbodyHtml)) !== null) {
-    const rowHtml = rowMatch[1];
-    const tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/g;
-    const cells: string[] = [];
-    let tdMatch;
-    while ((tdMatch = tdRegex.exec(rowHtml)) !== null) cells.push(tdMatch[1]);
-    if (cells.length < 3) continue;
-
-    // Cell 0: overall winrate
-    const cell0Text = cells[0].replace(/<[^>]*>/g, "").trim();
-    const providedWrMatch = cell0Text.match(/(\d+\.?\d*)/);
-    const providedWinrate = providedWrMatch ? parseFloat(providedWrMatch[1]) : null;
-
-    // Compute avg from row if provided is missing
-    let totalWR = 0;
-    let wrCount = 0;
-    for (let i = 2; i < cells.length && i - 2 < opponentNames.length; i++) {
-      const t = cells[i].replace(/<[^>]*>/g, "").trim();
-      const m = t.match(/(\d+\.?\d*)%?/);
-      if (m) {
-        const wr = parseFloat(m[1]);
-        if (wr >= 0 && wr <= 100) {
-          totalWR += wr;
-          wrCount++;
-        }
-      }
-    }
-    const overallWinrate =
-      providedWinrate !== null
-        ? providedWinrate
-        : wrCount > 0
-        ? Math.round((totalWR / wrCount) * 10) / 10
-        : null;
-
-    // Cell 1: archetype name + total games
-    let archetypeName = "";
-    let totalGames: number | null = null;
-    const linkMatch = cells[1].match(/<a[^>]*>\s*([^<]+)\s*<\/a>/);
-    if (linkMatch) archetypeName = linkMatch[1].trim();
-    else {
-      const plain = cells[1].replace(/<[^>]*>/g, "").trim();
-      const parts = plain.split(/\s+/);
-      const numIdx = parts.findIndex((p) => /^\d[\d,]*$/.test(p));
-      if (numIdx > 0) {
-        archetypeName = parts.slice(0, numIdx).join(" ");
-        totalGames = parseInt(parts[numIdx].replace(/,/g, ""));
-      } else archetypeName = plain;
-    }
-    const allNums = cells[1].match(/(\d[\d,]+)/g);
-    if (allNums && allNums.length > 0) {
-      const last = parseInt(allNums[allNums.length - 1].replace(/,/g, ""));
-      if (last > 50) totalGames = last;
-    }
-    if (!archetypeName) continue;
-
-    const hsClass = archetypeClassMap[archetypeName] || "Unknown";
-
-    archetypeStats.push({
-      name: archetypeName,
-      winrate: overallWinrate,
-      popularity: null,
-      total_games: totalGames,
-      hs_class: hsClass,
-    });
-
-    // Matchup cells
-    for (let i = 2; i < cells.length && i - 2 < opponentNames.length; i++) {
-      const cellText = cells[i].replace(/<[^>]*>/g, "").trim();
-      let wr: number | null = null;
-      let estGames: number | null = null;
-      const wrMatch = cellText.match(/^(\d+\.?\d*)%?/);
-      if (wrMatch) {
-        wr = parseFloat(wrMatch[1]);
-        const remaining = cellText.slice(wrMatch[0].length).trim();
-        if (remaining) {
-          const gm = remaining.match(/(\d[\d,]*)/);
-          if (gm) estGames = parseInt(gm[1].replace(/,/g, ""));
-        }
-      }
-      if (wr !== null && wr >= 0 && wr <= 100) {
-        matchups.push({
-          archetype: archetypeName,
-          opponent: opponentNames[i - 2],
-          winrate: Math.round(wr * 10) / 10,
-          estimated_games: estGames,
-        });
-      }
-    }
-  }
-
-  if (popularityValues.length === opponentNames.length) {
-    for (let i = 0; i < opponentNames.length; i++) {
-      const stat = archetypeStats.find((s) => s.name === opponentNames[i]);
-      if (stat) stat.popularity = popularityValues[i];
-    }
-  }
-
-  return { matchups, archetypeStats };
+function round1(n: number) {
+  return Math.round(n * 10) / 10;
 }
 
-async function scrapeOneRank(
-  apiKey: string,
-  rankHsguru: string,
-  period: string,
-) {
-  const url = buildUrl(rankHsguru, period);
+interface ParsedArchetype {
+  name: string;
+  hsClass: string;
+  winrate: number | null;
+  popularity: number | null;
+  totalGames: number | null;
+}
+interface ParsedMatchup {
+  archetype: string;
+  opponent: string;
+  winrate: number;
+  estimatedGames: number | null;
+}
+
+function parseMatchupTable(html: string): {
+  archetypes: ParsedArchetype[];
+  matchups: ParsedMatchup[];
+  detectedPeriod: string | null;
+} {
+  // Detect active patch/period link (first ".selected" item in period dropdown if any)
+  let detectedPeriod: string | null = null;
+  const periodRe = /href="\/matchups\?[^"]*period=([^"&]+)[^"]*"[^>]*class="[^"]*is-active[^"]*"/i;
+  const pMatch = html.match(periodRe);
+  if (pMatch) detectedPeriod = pMatch[1];
+
+  // 1. Opponent column archetypes + classes, in table order
+  // <th class="... class-background <cssClass>"> ... phx-value-sort_by="opponent_<Name>"
+  const thOpponentRe =
+    /<th[^>]*class-background\s+([a-z]+)[^>]*>[\s\S]*?phx-value-sort_by="opponent_([^"]+)"/g;
+  const opponentOrder: string[] = [];
+  const opponentClass: Record<string, string> = {};
+  let m: RegExpExecArray | null;
+  while ((m = thOpponentRe.exec(html)) !== null) {
+    const cssClass = m[1];
+    const name = m[2].trim();
+    if (!opponentOrder.includes(name)) {
+      opponentOrder.push(name);
+      opponentClass[name] = CLASS_MAP[cssClass] || "Unknown";
+    }
+  }
+
+  // 2. Popularity row (3rd <tr> of <thead>) — sequence of "<span>...NN.N%</span>"
+  const theadM = html.match(/<thead[^>]*>([\s\S]*?)<\/thead>/);
+  const popByIndex: number[] = [];
+  if (theadM) {
+    const trs = theadM[1].match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || [];
+    // Popularity row is the last <tr> in thead that is NOT the header (archetype names) row.
+    // Structure: row1 = winrate/archetype + opponent name headers, row2 = custom popularity form inputs, row3 = popularity %.
+    // Safer: pick the last <tr> that contains only "<span>NN.N%</span>" cells (no <button> / <form> / <input>).
+    for (let i = trs.length - 1; i >= 0; i--) {
+      const tr = trs[i];
+      if (tr.includes("<button") || tr.includes("<form") || tr.includes("<input")) continue;
+      const pops = [...tr.matchAll(/<span[^>]*>\s*([\d.]+)%\s*<\/span>/g)].map((x) =>
+        parseFloat(x[1]),
+      );
+      if (pops.length > 0) {
+        popByIndex.push(...pops);
+        break;
+      }
+    }
+  }
+
+  // 3. Body rows
+  const tbodyM = html.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/);
+  if (!tbodyM) {
+    return { archetypes: [], matchups: [], detectedPeriod };
+  }
+
+  const archetypes: ParsedArchetype[] = [];
+  const matchups: ParsedMatchup[] = [];
+  const rowRe = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
+  let rowM: RegExpExecArray | null;
+  while ((rowM = rowRe.exec(tbodyM[1])) !== null) {
+    const row = rowM[1];
+
+    // Row archetype name + total games: first <td> with aria-label "<Name> - <N> games"
+    const firstTdRe =
+      /<td[^>]*aria-label="([^"]+?)\s-\s([\d,]+)\s+games?"[^>]*>([\s\S]*?)<\/td>/;
+    const firstTd = row.match(firstTdRe);
+    if (!firstTd) continue;
+    const archetypeName = firstTd[1].trim();
+    const totalGames = parseInt(firstTd[2].replace(/,/g, ""));
+    const wrSpan = firstTd[3].match(/<span[^>]*>\s*([\d.]+)\s*<\/span>/);
+    const overallWr = wrSpan ? parseFloat(wrSpan[1]) : null;
+
+    // Class of archetype = class from the sticky-column td (class-background <class>)
+    const classTd = row.match(
+      /<td[^>]*class="[^"]*sticky-column[^"]*class-background\s+([a-z]+)[^"]*"/,
+    );
+    const hsClass = classTd ? CLASS_MAP[classTd[1]] || "Unknown" : "Unknown";
+
+    archetypes.push({
+      name: archetypeName,
+      hsClass,
+      winrate: overallWr !== null ? round1(overallWr) : null,
+      popularity: null, // filled below
+      totalGames,
+    });
+
+    // Matchup cells: every <td aria-label="A versus B - N games"> ... <span>NN.N</span>
+    const mupRe =
+      /<td[^>]*aria-label="([^"]+?)\s+versus\s+([^"]+?)\s-\s([\d,]+)\s+games?"[^>]*>[\s\S]*?<span[^>]*>\s*([\d.]+)\s*<\/span>[\s\S]*?<\/td>/g;
+    let mupM: RegExpExecArray | null;
+    while ((mupM = mupRe.exec(row)) !== null) {
+      const a = mupM[1].trim();
+      const b = mupM[2].trim();
+      const games = parseInt(mupM[3].replace(/,/g, ""));
+      const wr = parseFloat(mupM[4]);
+      if (a !== archetypeName) continue;
+      if (!Number.isFinite(wr) || wr < 0 || wr > 100) continue;
+      matchups.push({
+        archetype: a,
+        opponent: b,
+        winrate: round1(wr),
+        estimatedGames: Number.isFinite(games) ? games : null,
+      });
+    }
+  }
+
+  // Attach popularity by opponent order
+  if (popByIndex.length > 0) {
+    for (let i = 0; i < opponentOrder.length && i < popByIndex.length; i++) {
+      const name = opponentOrder[i];
+      const arch = archetypes.find((a) => a.name === name);
+      if (arch) arch.popularity = round1(popByIndex[i]);
+    }
+  }
+
+  // Also make sure hsClass is set from opponentClass for any archetype we know via header
+  for (const a of archetypes) {
+    if (a.hsClass === "Unknown" && opponentClass[a.name]) a.hsClass = opponentClass[a.name];
+  }
+
+  return { archetypes, matchups, detectedPeriod };
+}
+
+async function scrapeOneRank(apiKey: string, rankHsguru: string) {
+  const url = buildUrl(rankHsguru);
   console.log(`Scraping ${url}`);
   const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
     method: "POST",
@@ -218,7 +203,9 @@ async function scrapeOneRank(
     }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(`Firecrawl: ${data.error || res.status}`);
+  if (!res.ok) {
+    throw new Error(`Firecrawl failed (${res.status}): ${data?.error || "unknown"}`);
+  }
   const html = data.data?.html || data.html;
   if (!html) throw new Error("Firecrawl returned no HTML");
   return parseMatchupTable(html);
@@ -241,63 +228,106 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    let body: { period?: string } = {};
-    try {
-      if (req.method === "POST") body = await req.json();
-    } catch { /* ignore */ }
-    const period = body.period || DEFAULT_PERIOD;
     const today = new Date().toISOString().split("T")[0];
 
-    // Clear today's rows for this period so we re-insert fresh data
-    await supabase.from("matchups").delete().eq("date", today).eq("period", period);
-    await supabase.from("archetype_stats").delete().eq("date", today).eq("period", period);
+    // 1. Scrape all ranks FIRST (no DB writes yet). If "all" fails, abort.
+    const scraped: Record<
+      string,
+      { archetypes: ParsedArchetype[]; matchups: ParsedMatchup[]; detectedPeriod: string | null }
+    > = {};
 
-    const summary: Array<{ rank: string; archetypes: number; matchups: number }> = [];
-
-    for (const { db: rankDb, hsguru: rankHs } of RANKS) {
+    for (const { db, hsguru } of RANKS) {
       try {
-        const { matchups, archetypeStats } = await scrapeOneRank(apiKey, rankHs, period);
-
-        if (matchups.length === 0) {
-          console.warn(`No matchups for rank=${rankDb}`);
-          summary.push({ rank: rankDb, archetypes: 0, matchups: 0 });
-          continue;
-        }
-
-        const mRows = matchups.map((m) => ({
-          ...m,
-          date: today,
-          rank: rankDb,
-          period,
-        }));
-        for (let i = 0; i < mRows.length; i += 500) {
-          const batch = mRows.slice(i, i + 500);
-          const { error } = await supabase.from("matchups").insert(batch);
-          if (error) throw new Error(`matchups insert [${rankDb}]: ${error.message}`);
-        }
-
-        const sRows = archetypeStats.map((s) => ({
-          ...s,
-          date: today,
-          rank: rankDb,
-          period,
-        }));
-        const { error: sErr } = await supabase.from("archetype_stats").insert(sRows);
-        if (sErr) throw new Error(`stats insert [${rankDb}]: ${sErr.message}`);
-
-        summary.push({
-          rank: rankDb,
-          archetypes: archetypeStats.length,
-          matchups: matchups.length,
-        });
+        const parsed = await scrapeOneRank(apiKey, hsguru);
+        console.log(
+          `rank=${db}: archetypes=${parsed.archetypes.length}, matchups=${parsed.matchups.length}, period=${parsed.detectedPeriod}`,
+        );
+        scraped[db] = parsed;
       } catch (err) {
-        console.error(`rank=${rankDb} failed:`, err);
+        console.error(`rank=${db} scrape failed:`, err);
+        scraped[db] = { archetypes: [], matchups: [], detectedPeriod: null };
+      }
+    }
+
+    if (!scraped.all || scraped.all.archetypes.length === 0 || scraped.all.matchups.length === 0) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Primary scrape (rank=all) returned no data. DB not modified.",
+        }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Resolve period from the "all" scrape (fallback to "current")
+    const period = scraped.all.detectedPeriod || "current";
+
+    // 2. WIPE old data entirely (full reset) — user asked to rebuild from scratch.
+    const { error: delM } = await supabase.from("matchups").delete().gte("date", "1900-01-01");
+    if (delM) throw new Error(`wipe matchups: ${delM.message}`);
+    const { error: delS } = await supabase
+      .from("archetype_stats")
+      .delete()
+      .gte("date", "1900-01-01");
+    if (delS) throw new Error(`wipe stats: ${delS.message}`);
+
+    // 3. Insert fresh rows for all ranks that returned data.
+    const summary: Array<{
+      rank: string;
+      archetypes: number;
+      matchups: number;
+      matchupsWithGames: number;
+      archetypesWithGames: number;
+    }> = [];
+
+    for (const { db } of RANKS) {
+      const parsed = scraped[db];
+      if (!parsed || parsed.archetypes.length === 0) {
         summary.push({
-          rank: rankDb,
+          rank: db,
           archetypes: 0,
           matchups: 0,
+          matchupsWithGames: 0,
+          archetypesWithGames: 0,
         });
+        continue;
       }
+
+      const statRows = parsed.archetypes.map((a) => ({
+        name: a.name,
+        winrate: a.winrate,
+        popularity: a.popularity,
+        total_games: a.totalGames,
+        hs_class: a.hsClass,
+        date: today,
+        rank: db,
+        period,
+      }));
+      const { error: sErr } = await supabase.from("archetype_stats").insert(statRows);
+      if (sErr) throw new Error(`stats insert [${db}]: ${sErr.message}`);
+
+      const mupRows = parsed.matchups.map((x) => ({
+        archetype: x.archetype,
+        opponent: x.opponent,
+        winrate: x.winrate,
+        estimated_games: x.estimatedGames,
+        date: today,
+        rank: db,
+        period,
+      }));
+      for (let i = 0; i < mupRows.length; i += 500) {
+        const batch = mupRows.slice(i, i + 500);
+        const { error: mErr } = await supabase.from("matchups").insert(batch);
+        if (mErr) throw new Error(`matchups insert [${db}]: ${mErr.message}`);
+      }
+
+      summary.push({
+        rank: db,
+        archetypes: parsed.archetypes.length,
+        matchups: parsed.matchups.length,
+        matchupsWithGames: parsed.matchups.filter((x) => x.estimatedGames != null).length,
+        archetypesWithGames: parsed.archetypes.filter((a) => a.totalGames != null).length,
+      });
     }
 
     return new Response(
