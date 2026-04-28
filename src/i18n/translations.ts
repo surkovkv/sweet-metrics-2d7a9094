@@ -149,6 +149,7 @@ const ru: Record<string, string> = {
   "tournament.colorGreen": "зелёный ≥55%",
   "tournament.colorYellow": "жёлтый 45–55%",
   "tournament.colorRed": "красный <45%",
+  "tournament.decks2": "2 колоды",
   "tournament.decks3": "3 колоды",
   "tournament.decks4": "4 колоды",
   "tournament.yourDecks": "Твои колоды",
