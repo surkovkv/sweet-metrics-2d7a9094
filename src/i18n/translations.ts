@@ -2108,6 +2108,7 @@ const hi: Record<string, string> = {
   "tournament.colorGreen": "हरा ≥55%",
   "tournament.colorYellow": "पीला 45–55%",
   "tournament.colorRed": "लाल <45%",
+  "tournament.decks2": "2 डेक",
   "tournament.decks3": "3 डेक",
   "tournament.decks4": "4 डेक",
   "tournament.yourDecks": "आपके डेक",
