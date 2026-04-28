@@ -141,7 +141,7 @@ const TournamentStrategist = () => {
     return gamesDB[arch1]?.[arch2] ?? gamesDB[arch2]?.[arch1] ?? null;
   }, [gamesDB]);
 
-  const DATA_UPDATED = date || "2026-03-03";
+  
 
   const [mode, setMode] = useState<DeckMode>(3);
   const [myArchetypes, setMyArchetypes] = useState<string[]>(["", "", ""]);
