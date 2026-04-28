@@ -806,6 +806,7 @@ const es: Record<string, string> = {
   "tournament.colorGreen": "verde ≥55%",
   "tournament.colorYellow": "amarillo 45–55%",
   "tournament.colorRed": "rojo <45%",
+  "tournament.decks2": "2 mazos",
   "tournament.decks3": "3 mazos",
   "tournament.decks4": "4 mazos",
   "tournament.yourDecks": "Tus mazos",
