@@ -59,13 +59,30 @@ Deno.serve(async (req) => {
     const date = latest.date;
     const resolvedPeriod = latest.period;
 
-    const [matchupsRes, statsRes] = await Promise.all([
-      supabase
-        .from("matchups")
-        .select("*")
-        .eq("date", date)
-        .eq("rank", rank)
-        .eq("period", resolvedPeriod),
+    // Paginate matchups — Supabase default limit is 1000, can have 3000+ rows per rank
+    async function fetchAllMatchups() {
+      const pageSize = 1000;
+      let from = 0;
+      const all: any[] = [];
+      while (true) {
+        const { data, error } = await supabase
+          .from("matchups")
+          .select("*")
+          .eq("date", date)
+          .eq("rank", rank)
+          .eq("period", resolvedPeriod)
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        all.push(...data);
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+      return all;
+    }
+
+    const [matchupsData, statsRes] = await Promise.all([
+      fetchAllMatchups(),
       supabase
         .from("archetype_stats")
         .select("*")
@@ -73,6 +90,7 @@ Deno.serve(async (req) => {
         .eq("rank", rank)
         .eq("period", resolvedPeriod),
     ]);
+    const matchupsRes = { data: matchupsData };
 
     return new Response(
       JSON.stringify({
