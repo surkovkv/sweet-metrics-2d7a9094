@@ -127,6 +127,11 @@ const TournamentStrategist = () => {
     return matchupDB[my]?.[opp] ?? null;
   }, [matchupDB, gamesDB, minMatchupGames]);
 
+  /** Raw winrate without min-matchup-games filter — used for low-sample fallback. */
+  const getWinrateRaw = useCallback((my: string, opp: string): number | null => {
+    return matchupDB[my]?.[opp] ?? null;
+  }, [matchupDB]);
+
   const getArchetypeInfo = useCallback((name: string) => {
     const found = archetypeList.find((a) => a.name === name);
     return found ?? staticGetArchetypeInfo(name);
