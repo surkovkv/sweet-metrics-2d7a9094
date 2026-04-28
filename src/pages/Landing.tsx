@@ -50,6 +50,13 @@ const Landing = () => {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
+              <Link to="/matchups">
+                <Button size="lg" variant="secondary" className="gap-2 h-12 px-8 text-base font-semibold">
+                  <BarChart2 className="h-5 w-5" />
+                  {t("landing.matchupsTitle")}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
               {!user && (
                 <Link to="/auth">
                   <Button variant="outline" size="lg" className="h-12 px-8 text-base">
