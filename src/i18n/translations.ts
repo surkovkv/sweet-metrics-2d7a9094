@@ -1456,6 +1456,7 @@ const fr: Record<string, string> = {
   "tournament.colorGreen": "vert ≥55%",
   "tournament.colorYellow": "jaune 45–55%",
   "tournament.colorRed": "rouge <45%",
+  "tournament.decks2": "2 decks",
   "tournament.decks3": "3 decks",
   "tournament.decks4": "4 decks",
   "tournament.yourDecks": "Vos decks",
