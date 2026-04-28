@@ -577,6 +577,7 @@ const TournamentStrategist = () => {
                     bannedIndex={effectiveBanIdx}
                     oppBannedIndex={oppManualBanIndex}
                     getWinrate={getWinrate}
+                    getWinrateRaw={getWinrateRaw}
                     getArchetypeInfo={getArchetypeInfo}
                     getEstimatedGames={getEstimatedGames}
                     minMatchupGames={minMatchupGames}
