@@ -488,7 +488,7 @@ const en: Record<string, string> = {
   "tournament.decks3": "3 decks",
   "tournament.decks4": "4 decks",
   "tournament.fallbackWarning": "The selected decks don't have enough games for the current filter settings. The calculation is shown using the available sample — keep in mind that the data may not be representative.",
-  "tournament.lowSampleTooltip": "Less than 50 games — low reliability",
+  "tournament.lowSampleTooltip": "Fewer games than the selected threshold ({n}) — estimate may not be representative",
   "tournament.archetypeSearchPlaceholder": "Search deck...",
   "tournament.yourDecks": "Your Decks",
   "tournament.oppDecks": "Opponent's Decks",
