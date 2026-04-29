@@ -4,10 +4,10 @@ export const newsPosts: NewsPost[] = [
   {
     id: 1,
     slug: "tourneyhelper2-launch",
-    title: "TourneyHelper2 — официальный запуск",
+    title: "HS TourneyHelper — официальный запуск",
     summary:
       "Мы рады представить обновлённую версию платформы с новым интерфейсом, улучшенным анализом колод и турнирным режимом для 4 игроков.",
-    content: `<p>Мы рады объявить о выходе <strong>TourneyHelper2</strong> — полностью переработанной платформы для анализа турнирных колод Hearthstone.</p>
+    content: `<p>Мы рады объявить о выходе <strong>HS TourneyHelper</strong> — полностью переработанной платформы для анализа турнирных колод Hearthstone.</p>
 
 <h2>Что нового?</h2>
 <ul>
@@ -19,7 +19,7 @@ export const newsPosts: NewsPost[] = [
 
 <p>Попробуй прямо сейчас — просто перейди в раздел <strong>Анализатор</strong>.</p>`,
     date: "2026-02-23",
-    author: "Команда TourneyHelper2",
+    author: "Команда HS TourneyHelper",
     tags: ["Релиз", "Обновление"],
   },
   {
@@ -27,7 +27,7 @@ export const newsPosts: NewsPost[] = [
     slug: "ban-strategy-guide",
     title: "Гайд: как выбирать бан в турнирах Hearthstone",
     summary:
-      "Разбираем стратегию банов на примере Meta-колод сезона. Узнай, как TourneyHelper2 помогает принять правильное решение за секунды.",
+      "Разбираем стратегию банов на примере Meta-колод сезона. Узнай, как HS TourneyHelper помогает принять правильное решение за секунды.",
     content: `<p>Правильный бан — половина победы в турнире. В этом гайде мы разберём ключевые принципы выбора бана.</p>
 
 <h2>Основные принципы</h2>
@@ -38,7 +38,7 @@ export const newsPosts: NewsPost[] = [
   <li><strong>Мета-поправки</strong> — учитывай текущую популярность архетипов</li>
 </ul>
 
-<h2>Как помогает TourneyHelper2</h2>
+<h2>Как помогает HS TourneyHelper</h2>
 <p>Введи колоды соперника в анализатор — и платформа автоматически рассчитает предполагаемые винрейты и порекомендует бан.</p>`,
     date: "2026-02-20",
     author: "Кирилл С.",
@@ -66,7 +66,7 @@ export const newsPosts: NewsPost[] = [
   <li>Экспорт результатов анализа в буфер обмена</li>
 </ul>`,
     date: "2026-02-15",
-    author: "Команда TourneyHelper2",
+    author: "Команда HS TourneyHelper",
     tags: ["Патч-ноты", "Исправления"],
   },
   {
@@ -90,16 +90,16 @@ export const newsPosts: NewsPost[] = [
 
 <p>Мы обновим анализатор и мета-трекер в день выхода дополнения!</p>`,
     date: "2026-02-28",
-    author: "Команда TourneyHelper2",
+    author: "Команда HS TourneyHelper",
     tags: ["Дополнение", "Анонс", "Перекрёстки Пустоты"],
   },
   {
     id: 5,
     slug: "tourneyhelper-cup-1",
-    title: "Турнир TourneyHelper Cup #1 — регистрация открыта",
+    title: "Турнир HS TourneyHelper Cup #1 — регистрация открыта",
     summary:
-      "Первый официальный турнир TourneyHelper Cup! Формат Conquest BO5, призовой фонд — 500$. Регистрация до 10 марта.",
-    content: `<p>Мы рады объявить о первом официальном турнире сообщества — <strong>TourneyHelper Cup #1</strong>!</p>
+      "Первый официальный турнир HS TourneyHelper Cup! Формат Conquest BO5, призовой фонд — 500$. Регистрация до 10 марта.",
+    content: `<p>Мы рады объявить о первом официальном турнире сообщества — <strong>HS TourneyHelper Cup #1</strong>!</p>
 
 <h2>Формат</h2>
 <ul>
@@ -116,9 +116,9 @@ export const newsPosts: NewsPost[] = [
 </ul>
 
 <h2>Как участвовать</h2>
-<p>Зарегистрируйся на сайте до <strong>10 марта 2026</strong>. Турнир пройдёт <strong>15–16 марта</strong> в формате онлайн. Используй TourneyHelper2 для подготовки стратегии банов!</p>`,
+<p>Зарегистрируйся на сайте до <strong>10 марта 2026</strong>. Турнир пройдёт <strong>15–16 марта</strong> в формате онлайн. Используй HS TourneyHelper для подготовки стратегии банов!</p>`,
     date: "2026-02-26",
-    author: "Команда TourneyHelper2",
+    author: "Команда HS TourneyHelper",
     tags: ["Турнир", "Событие", "Conquest"],
   },
   {
@@ -171,7 +171,7 @@ export const newsPosts: NewsPost[] = [
   <li>Рекомендация лучшей колоды для лестницы</li>
 </ul>`,
     date: "2026-02-24",
-    author: "Команда TourneyHelper2",
+    author: "Команда HS TourneyHelper",
     tags: ["Обновление", "Мета-трекер"],
   },
   {
