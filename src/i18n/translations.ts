@@ -153,7 +153,7 @@ const ru: Record<string, string> = {
   "tournament.decks3": "3 колоды",
   "tournament.decks4": "4 колоды",
   "tournament.fallbackWarning": "В выбранных колодах недостаточно игр под текущие настройки фильтра. Расчёт показан по доступной выборке — учтите, что данные могут быть нерепрезентативны.",
-  "tournament.lowSampleTooltip": "Менее 50 игр — низкая надёжность",
+  "tournament.lowSampleTooltip": "Игр меньше выбранного порога ({n}) — оценка нерепрезентативна",
   "tournament.archetypeSearchPlaceholder": "Поиск колоды...",
   "tournament.yourDecks": "Твои колоды",
   "tournament.oppDecks": "Колоды противника",
