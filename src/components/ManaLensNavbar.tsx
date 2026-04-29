@@ -29,7 +29,7 @@ const ManaLensNavbar = () => {
             <span className="font-display text-xs font-bold text-primary-foreground">TH</span>
           </div>
           <span className="font-display text-lg font-bold text-foreground">
-            Tourney<span className="text-primary">Helper</span>
+            HS Tourney<span className="text-primary">Helper</span>
           </span>
         </Link>
 

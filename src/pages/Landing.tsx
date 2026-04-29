@@ -177,25 +177,6 @@ const Landing = () => {
           </div>
         </motion.div>
 
-        {/* Stats bar */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          className="flex flex-wrap justify-center gap-8 mb-16 text-center"
-        >
-          {[
-            { value: "22+", label: t("landing.stat1") },
-            { value: "200K+", label: t("landing.stat2") },
-            { value: "Legend", label: t("landing.stat3") },
-          ].map((stat, i) => (
-            <div key={i} className="px-6">
-              <div className="font-display text-2xl font-bold text-primary">{stat.value}</div>
-              <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
-            </div>
-          ))}
-        </motion.div>
-
         {/* Footer */}
         <footer className="border-t border-border pt-8 pb-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -204,7 +185,7 @@ const Landing = () => {
                 <span className="font-display text-[10px] font-bold text-primary-foreground">TH</span>
               </div>
               <span className="font-display text-sm font-semibold text-foreground">
-                Tourney<span className="text-primary">Helper</span>
+                HS Tourney<span className="text-primary">Helper</span>
               </span>
             </div>
             <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
