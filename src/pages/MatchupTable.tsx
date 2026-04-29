@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Grid3x3, Loader2, Calendar, Info, ArrowUpDown } from "lucide-react";
+import { Grid3x3, Loader2, Calendar, Info, ArrowUpDown, Trophy, Layers, Swords, Filter, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -13,6 +13,18 @@ import { useMatchupData, type RankFilter } from "@/hooks/useMatchupData";
 import { useT } from "@/i18n/useTranslation";
 
 const SAMPLE_OPTIONS = [1, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
+
+const HS_CLASSES = [
+  "Death Knight", "Demon Hunter", "Druid", "Hunter", "Mage", "Paladin",
+  "Priest", "Rogue", "Shaman", "Warlock", "Warrior",
+];
+
+const PERIOD_OPTIONS: { value: string; labelKey: string }[] = [
+  { value: "current", labelKey: "matchups.periodCurrent" },
+  { value: "past_3_days", labelKey: "matchups.period3Days" },
+  { value: "past_week", labelKey: "matchups.periodWeek" },
+  { value: "past_month", labelKey: "matchups.periodMonth" },
+];
 
 function getWrColor(wr: number | null) {
   if (wr === null) return "text-muted-foreground";
@@ -32,15 +44,20 @@ type SortKey = "popularity" | "winrate" | "name" | "games";
 const MatchupTable = () => {
   const t = useT();
   const [rank, setRank] = useState<RankFilter>("all");
+  const [period, setPeriod] = useState<string>("current");
   const [minArchGames, setMinArchGames] = useState<number>(1);
-  const [minMatchupGames, setMinMatchupGames] = useState<number>(1);
+  const [minMatchupGames, setMinMatchupGames] = useState<number>(50);
   const [sortKey, setSortKey] = useState<SortKey>("popularity");
+  const [classFilter, setClassFilter] = useState<string>("all");
 
-  const { archetypeList, matchupDB, gamesDB, archetypeGames, date, period, loading } =
-    useMatchupData(rank);
+  const { archetypeList, matchupDB, gamesDB, archetypeGames, date, loading } =
+    useMatchupData(rank, period);
 
   const filtered = useMemo(() => {
-    const list = archetypeList.filter((a) => (archetypeGames[a.name] ?? 0) >= minArchGames);
+    let list = archetypeList.filter((a) => (archetypeGames[a.name] ?? 0) >= minArchGames);
+    if (classFilter !== "all") {
+      list = list.filter((a) => a.hsClass === classFilter);
+    }
     list.sort((a, b) => {
       if (sortKey === "popularity") return b.popularity - a.popularity;
       if (sortKey === "winrate") return b.winrate - a.winrate;
@@ -49,23 +66,36 @@ const MatchupTable = () => {
       return a.name.localeCompare(b.name);
     });
     return list;
-  }, [archetypeList, archetypeGames, minArchGames, sortKey]);
+  }, [archetypeList, archetypeGames, minArchGames, sortKey, classFilter]);
 
-  // Summary stats
+  // Summary: total games (all archetypes), top popularity, best WR (with ≥50 games), most-played matchup
   const totalGames = useMemo(
     () => Object.values(archetypeGames).reduce((s, g) => s + g, 0),
     [archetypeGames],
   );
-  const avgMetaWr = useMemo(() => {
-    if (filtered.length === 0) return null;
-    const sum = filtered.reduce((s, a) => s + (a.winrate || 0), 0);
-    return Math.round((sum / filtered.length) * 10) / 10;
-  }, [filtered]);
 
   const topPop = filtered[0];
-  const topWr = useMemo(() => {
-    return [...filtered].sort((a, b) => b.winrate - a.winrate)[0];
-  }, [filtered]);
+
+  // Best WR: only consider archetypes with at least 50 total games
+  const bestWrDeck = useMemo(() => {
+    const eligible = filtered.filter((a) => (archetypeGames[a.name] ?? 0) >= 50);
+    if (eligible.length === 0) return null;
+    return [...eligible].sort((a, b) => b.winrate - a.winrate)[0];
+  }, [filtered, archetypeGames]);
+
+  // Most-played matchup (highest estimated games)
+  const topMatchup = useMemo(() => {
+    let best: { a: string; b: string; games: number } | null = null;
+    for (const a of Object.keys(gamesDB)) {
+      for (const b of Object.keys(gamesDB[a] || {})) {
+        const g = gamesDB[a][b];
+        if (g != null && (!best || g > best.games)) {
+          best = { a, b, games: g };
+        }
+      }
+    }
+    return best;
+  }, [gamesDB]);
 
   return (
     <TooltipProvider>
@@ -89,41 +119,55 @@ const MatchupTable = () => {
                 <Calendar className="h-3 w-3" />
                 <span>
                   {t("tournament.updated")} {date}
-                  {period ? ` · ${period}` : ""}
                 </span>
               </div>
             )}
           </motion.div>
 
-          {/* Filters */}
-          <Card className="bg-card border-border mb-6">
-            <CardContent className="pt-6 flex flex-wrap gap-4 items-end">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("matchups.rank")}
-                </label>
+          {/* Filters — grouped card (matches Tournament Strategist style) */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6"
+          >
+            <div className="rounded-2xl bg-secondary/40 border border-border p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              <FilterCell icon={<Trophy className="h-3.5 w-3.5 text-primary" />} label={t("matchups.rank")}>
                 <Select value={rank} onValueChange={(v) => setRank(v as RankFilter)}>
-                  <SelectTrigger className="w-36 h-9 bg-secondary border-border">
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("matchups.rankAll")}</SelectItem>
                     <SelectItem value="legend">{t("matchups.rankLegend")}</SelectItem>
                     <SelectItem value="top_1k">{t("matchups.rankTop1k")}</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("matchups.minArchetype")}
-                </label>
-                <Select
-                  value={String(minArchGames)}
-                  onValueChange={(v) => setMinArchGames(Number(v))}
-                >
-                  <SelectTrigger className="w-32 h-9 bg-secondary border-border">
-                    <SelectValue />
-                  </SelectTrigger>
+              </FilterCell>
+
+              <FilterCell icon={<Clock className="h-3.5 w-3.5 text-primary" />} label={t("matchups.period")}>
+                <Select value={period} onValueChange={(v) => setPeriod(v)}>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PERIOD_OPTIONS.map((p) => (
+                      <SelectItem key={p.value} value={p.value}>{t(p.labelKey)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FilterCell>
+
+              <FilterCell icon={<Filter className="h-3.5 w-3.5 text-primary" />} label={t("matchups.class")}>
+                <Select value={classFilter} onValueChange={setClassFilter}>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("matchups.classAll")}</SelectItem>
+                    {HS_CLASSES.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FilterCell>
+
+              <FilterCell icon={<Layers className="h-3.5 w-3.5 text-primary" />} label={t("matchups.minArchetype")}>
+                <Select value={String(minArchGames)} onValueChange={(v) => setMinArchGames(Number(v))}>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {SAMPLE_OPTIONS.map((n) => (
                       <SelectItem key={n} value={String(n)}>
@@ -132,18 +176,11 @@ const MatchupTable = () => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("matchups.minMatchup")}
-                </label>
-                <Select
-                  value={String(minMatchupGames)}
-                  onValueChange={(v) => setMinMatchupGames(Number(v))}
-                >
-                  <SelectTrigger className="w-32 h-9 bg-secondary border-border">
-                    <SelectValue />
-                  </SelectTrigger>
+              </FilterCell>
+
+              <FilterCell icon={<Swords className="h-3.5 w-3.5 text-primary" />} label={t("matchups.minMatchup")}>
+                <Select value={String(minMatchupGames)} onValueChange={(v) => setMinMatchupGames(Number(v))}>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {SAMPLE_OPTIONS.map((n) => (
                       <SelectItem key={n} value={String(n)}>
@@ -152,15 +189,11 @@ const MatchupTable = () => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("matchups.sortBy")}
-                </label>
+              </FilterCell>
+
+              <FilterCell icon={<ArrowUpDown className="h-3.5 w-3.5 text-primary" />} label={t("matchups.sortBy")}>
                 <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-                  <SelectTrigger className="w-40 h-9 bg-secondary border-border">
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="popularity">{t("matchups.sortPopularity")}</SelectItem>
                     <SelectItem value="winrate">{t("matchups.sortWinrate")}</SelectItem>
@@ -168,23 +201,27 @@ const MatchupTable = () => {
                     <SelectItem value="name">{t("matchups.sortName")}</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-            </CardContent>
-          </Card>
+              </FilterCell>
+            </div>
+          </motion.div>
 
           {/* Summary */}
           {!loading && filtered.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
               <SummaryCard label={t("matchups.totalGames")} value={totalGames.toLocaleString()} />
-              <SummaryCard label={t("matchups.archetypes")} value={String(filtered.length)} />
-              <SummaryCard
-                label={t("matchups.avgWr")}
-                value={avgMetaWr !== null ? `${avgMetaWr}%` : "—"}
-              />
               <SummaryCard
                 label={t("matchups.topDeck")}
                 value={topPop?.name || "—"}
-                sub={topWr ? `${t("matchups.bestWr")}: ${topWr.name} (${topWr.winrate}%)` : ""}
+              />
+              <SummaryCard
+                label={t("matchups.bestWr")}
+                value={bestWrDeck ? `${bestWrDeck.name}` : "—"}
+                sub={bestWrDeck ? `${bestWrDeck.winrate.toFixed(1)}%` : ""}
+              />
+              <SummaryCard
+                label={t("matchups.topMatchup")}
+                value={topMatchup ? `${topMatchup.a} vs ${topMatchup.b}` : "—"}
+                sub={topMatchup ? `${topMatchup.games.toLocaleString()} ${t("tournament.games")}` : ""}
               />
             </div>
           )}
@@ -293,20 +330,6 @@ const MatchupTable = () => {
                                       </p>
                                     </TooltipContent>
                                   </Tooltip>
-                                ) : belowThreshold ? (
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span className="text-muted-foreground">—</span>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="text-xs">
-                                        {t("matchups.belowThreshold").replace(
-                                          "{n}",
-                                          String(minMatchupGames),
-                                        )}
-                                      </p>
-                                    </TooltipContent>
-                                  </Tooltip>
                                 ) : (
                                   <span className="text-muted-foreground">—</span>
                                 )}
@@ -338,6 +361,17 @@ const MatchupTable = () => {
     </TooltipProvider>
   );
 };
+
+function FilterCell({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+        {icon} {label}
+      </label>
+      {children}
+    </div>
+  );
+}
 
 function SummaryCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
