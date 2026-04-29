@@ -11,6 +11,7 @@ type AuthContext = {
   loading: boolean;
   isAdmin: boolean;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 };
 
 const AuthCtx = createContext<AuthContext>({
@@ -20,6 +21,7 @@ const AuthCtx = createContext<AuthContext>({
   loading: true,
   isAdmin: false,
   signOut: async () => { },
+  refreshProfile: async () => { },
 });
 
 const sb = supabase as any;
@@ -88,8 +90,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await supabase.auth.signOut();
   };
 
+  const refreshProfile = async () => {
+    if (!user) return;
+    const prof = await fetchProfile(user.id);
+    setProfile(prof);
+  };
+
   return (
-    <AuthCtx.Provider value={{ user, session, profile, loading, isAdmin, signOut }}>
+    <AuthCtx.Provider value={{ user, session, profile, loading, isAdmin, signOut, refreshProfile }}>
       {children}
     </AuthCtx.Provider>
   );

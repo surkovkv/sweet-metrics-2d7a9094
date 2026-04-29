@@ -15,7 +15,7 @@ import { NewsPost } from "@/hooks/useNewsPosts";
 const sb = supabase as any;
 
 export default function Admin() {
-    const { user, profile, loading: authLoading, isAdmin } = useAuth();
+    const { user, profile, loading: authLoading, isAdmin, refreshProfile } = useAuth();
     const navigate = useNavigate();
     const { toast } = useToast();
 
@@ -77,7 +77,8 @@ export default function Admin() {
             toast({ title: "Ошибка", description: error.message, variant: "destructive" });
         } else {
             toast({ title: "PRO Статус обновлен", description: `Теперь статус PRO: ${newStatus}` });
-            setTimeout(() => window.location.reload(), 1000);
+            await refreshProfile();
+            await fetchData();
         }
     };
 

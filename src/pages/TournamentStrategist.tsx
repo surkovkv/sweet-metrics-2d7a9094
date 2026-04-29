@@ -930,7 +930,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                       const wr = wrFn(my, opp);
                       const games = getEstimatedGames(my, opp);
                       const isBanned = bannedIndex === colIdx;
-                      const isLowSample = wr !== null && games !== null && games < 50;
+                      const isLowSample = wr !== null && games !== null && games < minMatchupGames;
                       return (
                         <td key={colIdx}
                           className={cn(
@@ -945,7 +945,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                                   <AlertTriangle className="h-3 w-3 text-yellow-400" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p className="text-xs">{t("tournament.lowSampleTooltip")}</p>
+                                  <p className="text-xs">{t("tournament.lowSampleTooltip").replace("{n}", String(minMatchupGames))}</p>
                                 </TooltipContent>
                               </Tooltip>
                             )}
@@ -1022,22 +1022,6 @@ function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [], arc
   const [open, setOpen] = useState(false);
   const t = useT();
 
-  // Compute a stable average winrate per archetype (used for color-coded badge).
-  const wrByArch = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const arch of archetypeList) {
-      let safeWr = arch.winrate;
-      if (safeWr < 45 && safeWr > 0) {
-        const wrs = archetypeList
-          .map((opp) => getWinrate(arch.name, opp.name))
-          .filter((w): w is number => w !== null);
-        if (wrs.length > 0) safeWr = wrs.reduce((s, w) => s + w, 0) / wrs.length;
-      }
-      map[arch.name] = Math.round(safeWr * 10) / 10;
-    }
-    return map;
-  }, [archetypeList, getWinrate]);
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -1059,7 +1043,7 @@ function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [], arc
             <CommandGroup>
               {archetypeList.map((arch) => {
                 const disabled = excludeValues.includes(arch.name);
-                const wr = wrByArch[arch.name] ?? 0;
+                const games = archetypeGames[arch.name] || 0;
                 const isSelected = value === arch.name;
                 return (
                   <CommandItem
@@ -1077,18 +1061,9 @@ function ArchetypeSelect({ value, onChange, placeholder, excludeValues = [], arc
                       <Check className={cn("h-4 w-4", isSelected ? "opacity-100" : "opacity-0")} />
                       {arch.name}
                     </span>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className={cn("text-xs font-bold ml-2 tabular-nums", getWinrateColor(wr))}>
-                          {wr > 0 ? `${wr.toFixed(1)}%` : "—"}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="text-xs">
-                          {(archetypeGames[arch.name] || 0).toLocaleString()} {t("tournament.games")}
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <span className="text-xs text-muted-foreground tabular-nums ml-2">
+                      {games > 0 ? `${games.toLocaleString()} ${t("tournament.games")}` : "—"}
+                    </span>
                   </CommandItem>
                 );
               })}

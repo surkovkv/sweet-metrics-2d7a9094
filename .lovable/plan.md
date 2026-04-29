@@ -1,110 +1,117 @@
-## Plan: UX refinements (10 items)
+## План доработок
 
-### 1. Landing — swap order of "Tournament Strategist" and "Matchup Table"
+### 1. Список колод в калькуляторе банов (`TournamentStrategist.tsx`)
+- В `ArchetypeSelect`: вернуть в правую часть строки **количество игр** (`archetypeGames[arch.name]`) вместо процента avg WR. Бейдж — серого/нейтрального цвета, без цветового кода.
+- После выбора колоды (когда `value` установлен) — справа от триггера ничего не показывать (сейчас триггер уже так и работает; убедиться, что при `value` нет лишних бейджей).
+- Удалить вспомогательный `wrByArch` мемо, который больше не нужен.
 
-File: `src/pages/Landing.tsx`
+### 2. Fallback-предупреждение и подсветка ячеек
+- Заменить текст ключа `tournament.fallbackWarning` (во всех 8 языках в `src/i18n/translations.ts`) на:
+  «В выбранных колодах недостаточно игр под текущие настройки фильтра. Расчёт показан по доступной выборке — учтите, что данные могут быть нерепрезентативны.»
+- В `MatchupMatrix` уже есть подсветка ячеек с `< 50` игр (жёлтый фон + иконка `AlertTriangle`). Дополнительно: в **fallback-режиме** считать «недостаточно данных» по фактическому порогу `minMatchupGames` — то есть подсвечивать жёлтым любую ячейку, где `games < minMatchupGames` (а не только `< 50`). Tooltip уточнить: «Игр меньше выбранного порога ({n}) — оценка нерепрезентативна».
 
-- In the hero CTA buttons (lines 45–67) put **Matchup Table** button first (left), then **Tournament Strategist**.
-- In the feature cards grid (lines 78–128) put the Matchups card first, then Tournament card, then News. Make the Matchups card use the highlighted primary style currently on the Strategist card and the Strategist card use the neutral style — so the visual emphasis follows the new left position.
+### 3. Объяснение логики бана (текст «Принцип работы»)
+- Полностью заменить значение ключа `tournament.conceptDesc` (RU + перевод на остальные 7 языков) текстом из ТЗ:
+  - Заголовок секции (`tournament.conceptTitle`) → «Как определяется оптимальный бан».
+  - Тело: вступление о двух сценариях, ключевой принцип, развёрнутый пример с Dragon Warrior / Harold DK / Harold Rogue / Harold Warlock и расчётом дельт +7 / −7.4 / +7.4.
+- Логика `calculateOptimalBan` уже использует min-max (max(min) → max(avg)), что соответствует описанию — код алгоритма не трогаем, меняется только пояснительный текст.
 
-### 2. Tournament Strategist — prettier filter layout
+### 4. Бан-фикс выкидывания из аккаунта при смене FREE↔PRO в админке
+- В `Admin.tsx` функция `toggleProStatus` делает `window.location.reload()` через 1 с. Этот reload на хостинге Vercel + наш `onAuthStateChange` иногда теряет сессию.
+- Заменить `window.location.reload()` на **локальное обновление профиля без перезагрузки страницы**: после успешного UPDATE — повторно вызвать `supabase.from("profiles").select(...).eq("user_id", user.id).single()` и обновить state через метод, добавленный в `useAuth` (`refreshProfile`).
+- В `useAuth.tsx` экспортировать новый метод `refreshProfile` (вызывает `fetchProfile(user.id)` и пишет в `setProfile`).
 
-File: `src/pages/TournamentStrategist.tsx` (lines 309–357)
+### 5. Удалить блок статистики с лендинга
+- В `Landing.tsx` удалить секцию «Stats bar» (`stat1/2/3` — «22+ архетипов», «200K+ игр», «Legend данные ранга»).
 
-- Wrap the three filters (Rank / Min Archetype Games / Min Matchup Games) in a single rounded card: `rounded-2xl bg-secondary/40 border border-border p-3` with internal dividers between groups.
-- Stack each filter as `label on top, select below`, group them in a flex row with `gap-6` on desktop and `grid-cols-1` on mobile.
-- Use small icon prefixes (Trophy for rank, Layers for archetype games, Swords for matchup games) for visual rhythm.
-- Keep existing values and onChange behavior unchanged.
+### 6. Переименование бренда `TourneyHelper` → `HS TourneyHelper`
+Поменять во всех местах:
+- `index.html`: `<title>`, `<meta name="author">`, `<meta property="og:title">`.
+- `src/i18n/translations.ts`: 8 строк `landing.copyright` → «© 2026 HS TourneyHelper.».
+- `src/components/ManaLensNavbar.tsx`: логотип-инициалы — оставить «TH», но текстовый бренд (если рисуется рядом) → `HS TourneyHelper`.
+- `src/pages/Landing.tsx` футер: «Tourney<span>Helper</span>» → «HS Tourney<span>Helper</span>».
+- `src/data/news.ts`: упоминания «TourneyHelper2», «TourneyHelper Cup», «Команда TourneyHelper2» → «HS TourneyHelper» (или «Команда HS TourneyHelper»). Оставить slug-и как есть, чтобы не ломать ссылки.
+- `src/pages/Auth.tsx`, `src/pages/ResetPassword.tsx`: инициалы «TH» можно оставить.
 
-### 3. "How does it work?" — replace concept text, keep only "Принцип работы"
+### 7. Ежедневный автосинк HSGuru + кнопка в админке
+- Кнопка «Синхронизировать» в `Admin.tsx` уже есть → оставляем.
+- Включить расширения `pg_cron` и `pg_net` (миграция).
+- Добавить cron-job через `supabase--read_query` insert (НЕ миграция, т.к. содержит anon key и URL): запускать `scrape-hsguru` каждый день в 06:00 UTC.
 
-Files: `src/pages/TournamentStrategist.tsx` (lines 271–307), `src/i18n/translations.ts` (all 8 languages).
+### 8. Фильтры в `MatchupTable` — вид как в калькуляторе банов
+- Завернуть фильтры в один `rounded-2xl bg-secondary/40 border border-border` контейнер с лейблами сверху и иконками (`Trophy`, `Layers`, `Swords`, `ArrowUpDown`).
+- Добавить новые фильтры (см. ниже): класс архетипа (#13) и период (#15).
 
-- Change the toggle button label `tournament.howItWorks` to `"Принцип работы"` (and equivalent translations: How it works / Cómo funciona / 工作原理 / Comment ça marche / Como funciona / कैसे काम करता है / كيف يعمل).
-- Replace `tournament.conceptDesc` with the new long text:
-  > «Концепция турнирного бана»
-  > В турнирном формате каждый игрок использует 3–4 колоды. Перед началом первого матча игроки банят по одной колоде противника — она становится недоступной на всю серию.
-  > Задача помощника — помочь принять взвешенное решение. На основе статистики встреч и винрейтов инструмент подсказывает, какую колоду противника выгоднее всего отправить в бан. В результате твои оставшиеся колоды получают максимально удобные матчапы.
-  > (Translate to all 8 languages with consistent meaning.)
-- Remove the inner abbreviation grid (`avgWr / minWr / ban` cards) and the colors legend line — render only the title and the new paragraph.
-- Drop the now-unused keys from the JSX: `avgWr`, `avgWrDesc`, `minWrLabel`, `minWrDesc`, `banLabel`, `banDesc`, `colors`, `colorGreen/Yellow/Red`. Translation keys can stay (still used elsewhere if any) — just stop rendering them here.
+### 9. Минимум 50 игр на матчап в таблице (по умолчанию)
+- В `MatchupTable.tsx` поднять `useState minMatchupGames` дефолт с `1` до `50`. Для `< 50` ячейку показывать как `—` (логика уже есть через `belowThreshold`).
+- В select оставить «Любое (≥1)» как опцию для тех, кто хочет всё видеть.
 
-### 4. Add 2-deck mode (2v2 tournament)
+### 10. Сводка над матрицей — оставить только 2 + добавить ещё пару
+Оставить:
+- «Всего игр» (`totalGames`)
+- «Самая популярная» (`topPop.name`)
 
-File: `src/pages/TournamentStrategist.tsx`
+Удалить «Архетипов», «Средний WR», «Лучший WR».
 
-- Change `type DeckMode = 3 | 4;` → `2 | 3 | 4`.
-- Initial state arrays change to support `mode = 3` default, but include 2 in the toggle: `[2, 3, 4].map(...)` (lines 362).
-- `handleModeChange` resize logic: generalize to `Array.from({length: newMode}, (_, i) => arr[i] ?? "")`.
-- Add translation key `tournament.decks2` = "2 колоды" / "2 decks" / etc.
-- `BAN_HISTORY_KEY` already keyed by mode, so 2 just gets its own slot. Initial `setBanHistory` loads modes 2/3/4.
-- All ban-strategy functions in `src/data/banStrategy.ts` already iterate dynamically — no changes needed.
+Добавить:
+- **«Лучшая колода по WR»** — `topWr.name (топ-WR%)`, считая только архетипы с ≥ X игр (порог `minArchGames`).
+- **«Самый частый матчап»** — пара колод с наибольшим `estimated_games` в `gamesDB` (показать «`A vs B — N игр`»).
 
-### 5. Fix layout shift when opening deck dropdowns
+### 11. Текст под таблицей
+- Удалить плашку «Данные с hsguru.com» (если выводится в `t("matchups.note")` или подобном).
+- Заменить ключ `matchups.belowThreshold` (или соответствующий) на:
+  «Ячейка «—» означает, что выборка игр недостаточна для репрезентативного результата.»
 
-File: `src/index.css` (or global CSS)
-
-- Radix Dialog/Select adds `padding-right` on `<body>` when locking scroll → page shifts when scrollbar disappears.
-- Add a global rule:
-  ```css
-  html { scrollbar-gutter: stable; }
-  body[data-scroll-locked] { padding-right: 0 !important; margin-right: 0 !important; overflow: auto !important; }
+### 12. Средний WR считать только по матчапам с ≥ 50 игр
+- Фактически удаляется в #10, но сама формула в `MatchupTable.tsx` (`avgMetaWr`) всё равно используется в подсказке «Лучший WR» (#10). Переписать её так:
   ```
-- This reserves the scrollbar gutter permanently and neutralizes Radix's compensation.
+  собрать все matchups, где gamesDB[a][b] >= 50,
+  усреднить их winrate (округлить .toFixed(1))
+  ```
+  Использовать в новой карточке «Лучшая колода по WR» (порог применяем при определении topWr).
 
-### 6. Remove the data-source line in TournamentStrategist header
+### 13. Поиск/фильтр по классу
+- Добавить фильтр **«Класс»** (`Select`) со значениями: «Все», Death Knight, Demon Hunter, Druid, Hunter, Mage, Paladin, Priest, Rogue, Shaman, Warlock, Warrior.
+- Если выбран класс — фильтровать `archetypeList` по `a.hsClass === selectedClass` (и строки, и столбцы матрицы).
 
-File: `src/pages/TournamentStrategist.tsx` (lines 266–268)
+### 14. Заголовок «Обновлено …»
+- В `MatchupTable.tsx` заменить блок:
+  `Обновлено 2026-04-29 · current` → просто `Обновлено 2026-04-29` (убрать ` · ${period}`).
 
-- Delete the `<p>{t("tournament.updated")} {DATA_UPDATED} · {t("tournament.legendData")} (patch 35.0.3)</p>` paragraph entirely.
+### 15. Фильтр «Период»
+- Использовать данные, уже хранящиеся в БД, плюс короткий локальный шорткат:
+  - В `useMatchupData` уже принимается `period`. Добавить в UI селект «Период» с пресетами:
+    - «Текущий патч» (`period = null`/последний доступный — поведение по умолчанию).
+    - «Последние 3 дня» → `period = "past_3_days"`.
+    - «Последние 7 дней» → `period = "past_week"`.
+    - «Последние 30 дней» → `period = "past_month"`.
+  - Edge function `scrape-hsguru` сейчас определяет один активный `period` со страницы по умолчанию. Расширим её: парсить **все** значения `period` (`current`, `past_3_days`, `past_week`, `past_month`) для каждого ранга — т.е. дополнительные fetch к `https://www.hsguru.com/matchups?period=<value>&rank=<rank>` и складывать всё в `matchups`/`archetype_stats` с правильным `period`.
+  - В `get-matchups` уже есть фильтрация по `period` — оставляем.
+  - Если данных по выбранному периоду нет — показывать `«Нет данных за выбранный период»` (уже обрабатывается через пустой `archetypeList`).
 
-### 7. Highlight low-sample fallback in matchup matrix
-
-File: `src/pages/TournamentStrategist.tsx` (`MatchupMatrix` lines 848–940 + `getWinrate` 116–120)
-
-- Detect "all-grey" condition: when `showResult` is true, count cells where `getWinrate(my, opp) !== null`. If 0 → fall back: re-compute using raw `matchupDB` ignoring `minMatchupGames`.
-- Add a new prop `fallbackMode: boolean` to `MatchupMatrix`. When true:
-  - Render a prominent yellow banner above the table:
-    > «В выбранной колоде/фильтре недостаточно игр. Расчёт показан по доступной выборке. Будь осторожен — данные могут быть нерепрезентативны.»
-  - For each cell, if the underlying `games` value < 50, wrap value in yellow background `bg-yellow-500/15` with a small ⚠ icon and tooltip "Менее 50 игр — низкая надёжность".
-- Implementation: pass a second getter `getWinrateRaw` (no min filter) to the matrix; matrix uses it when `fallbackMode` is on.
-
-### 8. Replace "X игр" next to archetype in the deck dropdown
-
-File: `src/pages/TournamentStrategist.tsx` (`ArchetypeSelect` lines 988–1020)
-Proposed alternatives — pick one (default: option A):
-
-- **A. Average winrate** — show `WR 52.3%` (already pre-computed as `safeWr`). Color-coded green/yellow/red. Most actionable for picking decks.
-- **B. Popularity %** — show `pop 8.4%` from `archetype.popularity`. Useful for "what will I face" intuition.
-- **C. Tier badge** — "S/A/B/C" computed from winrate brackets. Compact and visual.
-- **D. Class color dot + WR%** — combines class identity and strength.
-
-Default implementation: **option A** with color coding. Keep games count visible only on hover via Tooltip.
-
-### 9. Searchable archetype dropdown
-
-File: `src/pages/TournamentStrategist.tsx` (`ArchetypeSelect`)
-
-- Replace Radix `Select` with a Popover + `cmdk` Command (already in project: `src/components/ui/command.tsx`).
-- Pattern: Button trigger showing current value; on open shows `<CommandInput placeholder="Search...">` + `<CommandList>` with `<CommandItem>` for each archetype. cmdk handles substring matching for free (typing "har" filters to "Harold Rogue", etc.).
-- Disabled items (excludeValues) keep `data-[disabled=true]` styling.
-- Keep the same prop signature so callers don't change.
-
-### 10. Remove "«—» — менее 500 игр" caption from results
-
-File: `src/pages/TournamentStrategist.tsx` (lines 933–936)
-
-- Delete the `<p className="text-xs text-muted-foreground mt-3 ...">{t("tournament.matrixNote")}</p>` block under the matchup matrix.
+### 16. Подзаголовок таблицы матчапов
+- Заменить ключ `matchups.subtitle` во всех 8 языках:
+  «Винрейты и популярность архетипов. Показывает, насколько эффективно одна колода играет против другой.»
 
 ---
 
-## Technical summary
+## Технические правки (сводка)
 
-- Files touched: `src/pages/Landing.tsx`, `src/pages/TournamentStrategist.tsx`, `src/index.css`, `src/i18n/translations.ts`.
-- New deps: none (cmdk + Popover already exist).
-- No DB / edge-function changes.
-- No breaking API changes — all changes are UI/UX and one type widening (`DeckMode`).
+| Файл | Изменения |
+|---|---|
+| `src/pages/TournamentStrategist.tsx` | #1 (вернуть games в `ArchetypeSelect`), #2 (порог в подсветке) |
+| `src/i18n/translations.ts` | #2, #3, #6, #11, #16 — перевод во всех 8 языках |
+| `src/hooks/useAuth.tsx` | #4 — добавить `refreshProfile` |
+| `src/pages/Admin.tsx` | #4 — убрать `window.location.reload()`, использовать `refreshProfile` |
+| `src/pages/Landing.tsx` | #5 (удалить статы), #6 (футер) |
+| `index.html`, `src/data/news.ts`, `ManaLensNavbar.tsx` | #6 — переименование |
+| `src/pages/MatchupTable.tsx` | #8, #9, #10, #11, #12, #13, #14, #15, #16 |
+| `src/hooks/useMatchupData.ts` | #15 — поддержка периодов (уже есть, проверить) |
+| `supabase/functions/scrape-hsguru/index.ts` | #15 — парсить 4 периода × 3 ранга |
+| Cron job (insert SQL, не миграция) | #7 — ежедневный запуск 06:00 UTC |
+| Миграция (`pg_cron`, `pg_net`) | #7 — расширения |
 
-## Open question for item 8
+---
 
-Default is **option A (avg winrate, color-coded)**. If you prefer a different alternative (B popularity, C tier badge, D class dot + WR), say so before approval and I'll switch.
+## Открытый вопрос
+Только один — для пункта **#15 (период)**: тащить дополнительно 4 периода × 3 ранга = **12 запросов к HSGuru за каждый sync-job** (~12× Firecrawl-кредитов). Это ОК? Если хочется сэкономить — могу сделать только 2 периода (`current` + `past_week`). Уточни перед запуском.
