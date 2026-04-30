@@ -1,12 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Fresh HSGuru scraper — rebuilt from scratch.
-// Parses the real HSGuru matchup table structure, extracting:
-// - archetype list + class (from header buttons `opponent_<name>` + `class-background <css>`)
-// - popularity (from 3rd row of thead, "<pct>%")
-// - per-archetype total_games (from row cells' `aria-label="<Archetype> - <N> games"`)
-// - per-matchup winrate + estimated_games (from cells' `aria-label="A versus B - <N> games"` + inner `<span>NN.N</span>`)
-// - overall winrate (from first td of each row, which shows avg WR as `<span>NN.N</span>`)
+// HSGuru scraper — fetches all combinations of (rank × period) and rebuilds the DB.
+// Periods correspond to HSGuru's `period` query param values.
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,20 +24,27 @@ const CLASS_MAP: Record<string, string> = {
   unknown: "Unknown",
 };
 
-// rank values stored in DB and expected by client filters
-// "all" | "legend" | "top_1k"  (top_1k = hsguru "top_legend")
 const RANKS: Array<{ db: string; hsguru: string }> = [
   { db: "all", hsguru: "all" },
   { db: "legend", hsguru: "legend" },
   { db: "top_1k", hsguru: "top_legend" },
 ];
 
-function buildUrl(rankHsguru: string) {
+// Periods we fetch. `current` = no `period` param (HSGuru default = current patch).
+const PERIODS: Array<{ db: string; hsguru: string | null }> = [
+  { db: "current", hsguru: null },
+  { db: "past_3_days", hsguru: "past_3_days" },
+  { db: "past_week", hsguru: "past_week" },
+  { db: "past_month", hsguru: "past_month" },
+];
+
+function buildUrl(rankHsguru: string, periodHsguru: string | null) {
   const params = new URLSearchParams({
     min_archetype_sample: "1",
     min_matchup_sample: "1",
     rank: rankHsguru,
   });
+  if (periodHsguru) params.set("period", periodHsguru);
   return `https://www.hsguru.com/matchups?${params.toString()}`;
 }
 
@@ -67,16 +69,8 @@ interface ParsedMatchup {
 function parseMatchupTable(html: string): {
   archetypes: ParsedArchetype[];
   matchups: ParsedMatchup[];
-  detectedPeriod: string | null;
 } {
-  // Detect active patch/period link (first ".selected" item in period dropdown if any)
-  let detectedPeriod: string | null = null;
-  const periodRe = /href="\/matchups\?[^"]*period=([^"&]+)[^"]*"[^>]*class="[^"]*is-active[^"]*"/i;
-  const pMatch = html.match(periodRe);
-  if (pMatch) detectedPeriod = pMatch[1];
-
   // 1. Opponent column archetypes + classes, in table order
-  // <th class="... class-background <cssClass>"> ... phx-value-sort_by="opponent_<Name>"
   const thOpponentRe =
     /<th[^>]*class-background\s+([a-z]+)[^>]*>[\s\S]*?phx-value-sort_by="opponent_([^"]+)"/g;
   const opponentOrder: string[] = [];
@@ -91,14 +85,11 @@ function parseMatchupTable(html: string): {
     }
   }
 
-  // 2. Popularity row (3rd <tr> of <thead>) — sequence of "<span>...NN.N%</span>"
+  // 2. Popularity row
   const theadM = html.match(/<thead[^>]*>([\s\S]*?)<\/thead>/);
   const popByIndex: number[] = [];
   if (theadM) {
     const trs = theadM[1].match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || [];
-    // Popularity row is the last <tr> in thead that is NOT the header (archetype names) row.
-    // Structure: row1 = winrate/archetype + opponent name headers, row2 = custom popularity form inputs, row3 = popularity %.
-    // Safer: pick the last <tr> that contains only "<span>NN.N%</span>" cells (no <button> / <form> / <input>).
     for (let i = trs.length - 1; i >= 0; i--) {
       const tr = trs[i];
       if (tr.includes("<button") || tr.includes("<form") || tr.includes("<input")) continue;
@@ -115,7 +106,7 @@ function parseMatchupTable(html: string): {
   // 3. Body rows
   const tbodyM = html.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/);
   if (!tbodyM) {
-    return { archetypes: [], matchups: [], detectedPeriod };
+    return { archetypes: [], matchups: [] };
   }
 
   const archetypes: ParsedArchetype[] = [];
@@ -125,7 +116,6 @@ function parseMatchupTable(html: string): {
   while ((rowM = rowRe.exec(tbodyM[1])) !== null) {
     const row = rowM[1];
 
-    // Row archetype name + total games: first <td> with aria-label "<Name> - <N> games"
     const firstTdRe =
       /<td[^>]*aria-label="([^"]+?)\s-\s([\d,]+)\s+games?"[^>]*>([\s\S]*?)<\/td>/;
     const firstTd = row.match(firstTdRe);
@@ -135,7 +125,6 @@ function parseMatchupTable(html: string): {
     const wrSpan = firstTd[3].match(/<span[^>]*>\s*([\d.]+)\s*<\/span>/);
     const overallWr = wrSpan ? parseFloat(wrSpan[1]) : null;
 
-    // Class of archetype = class from the sticky-column td (class-background <class>)
     const classTd = row.match(
       /<td[^>]*class="[^"]*sticky-column[^"]*class-background\s+([a-z]+)[^"]*"/,
     );
@@ -145,11 +134,10 @@ function parseMatchupTable(html: string): {
       name: archetypeName,
       hsClass,
       winrate: overallWr !== null ? round1(overallWr) : null,
-      popularity: null, // filled below
+      popularity: null,
       totalGames,
     });
 
-    // Matchup cells: every <td aria-label="A versus B - N games"> ... <span>NN.N</span>
     const mupRe =
       /<td[^>]*aria-label="([^"]+?)\s+versus\s+([^"]+?)\s-\s([\d,]+)\s+games?"[^>]*>[\s\S]*?<span[^>]*>\s*([\d.]+)\s*<\/span>[\s\S]*?<\/td>/g;
     let mupM: RegExpExecArray | null;
@@ -169,7 +157,6 @@ function parseMatchupTable(html: string): {
     }
   }
 
-  // Attach popularity by opponent order
   if (popByIndex.length > 0) {
     for (let i = 0; i < opponentOrder.length && i < popByIndex.length; i++) {
       const name = opponentOrder[i];
@@ -178,16 +165,15 @@ function parseMatchupTable(html: string): {
     }
   }
 
-  // Also make sure hsClass is set from opponentClass for any archetype we know via header
   for (const a of archetypes) {
     if (a.hsClass === "Unknown" && opponentClass[a.name]) a.hsClass = opponentClass[a.name];
   }
 
-  return { archetypes, matchups, detectedPeriod };
+  return { archetypes, matchups };
 }
 
-async function scrapeOneRank(apiKey: string, rankHsguru: string) {
-  const url = buildUrl(rankHsguru);
+async function scrapeOne(apiKey: string, rankHsguru: string, periodHsguru: string | null) {
+  const url = buildUrl(rankHsguru, periodHsguru);
   console.log(`Scraping ${url}`);
   const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
     method: "POST",
@@ -230,39 +216,39 @@ Deno.serve(async (req) => {
 
     const today = new Date().toISOString().split("T")[0];
 
-    // 1. Scrape all ranks FIRST (no DB writes yet). If "all" fails, abort.
-    const scraped: Record<
-      string,
-      { archetypes: ParsedArchetype[]; matchups: ParsedMatchup[]; detectedPeriod: string | null }
-    > = {};
+    // 1. Scrape all rank × period combinations
+    type ScrapeResult = { archetypes: ParsedArchetype[]; matchups: ParsedMatchup[] };
+    const scraped: Record<string, Record<string, ScrapeResult>> = {};
 
-    for (const { db, hsguru } of RANKS) {
-      try {
-        const parsed = await scrapeOneRank(apiKey, hsguru);
-        console.log(
-          `rank=${db}: archetypes=${parsed.archetypes.length}, matchups=${parsed.matchups.length}, period=${parsed.detectedPeriod}`,
-        );
-        scraped[db] = parsed;
-      } catch (err) {
-        console.error(`rank=${db} scrape failed:`, err);
-        scraped[db] = { archetypes: [], matchups: [], detectedPeriod: null };
+    for (const { db: rDb, hsguru: rHs } of RANKS) {
+      scraped[rDb] = {};
+      for (const { db: pDb, hsguru: pHs } of PERIODS) {
+        try {
+          const parsed = await scrapeOne(apiKey, rHs, pHs);
+          console.log(
+            `rank=${rDb} period=${pDb}: archetypes=${parsed.archetypes.length}, matchups=${parsed.matchups.length}`,
+          );
+          scraped[rDb][pDb] = parsed;
+        } catch (err) {
+          console.error(`rank=${rDb} period=${pDb} scrape failed:`, err);
+          scraped[rDb][pDb] = { archetypes: [], matchups: [] };
+        }
       }
     }
 
-    if (!scraped.all || scraped.all.archetypes.length === 0 || scraped.all.matchups.length === 0) {
+    // Sanity: at least the primary "all/current" must succeed
+    const primary = scraped.all?.current;
+    if (!primary || primary.archetypes.length === 0 || primary.matchups.length === 0) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Primary scrape (rank=all) returned no data. DB not modified.",
+          error: "Primary scrape (rank=all, period=current) returned no data. DB not modified.",
         }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    // Resolve period from the "all" scrape (fallback to "current")
-    const period = scraped.all.detectedPeriod || "current";
-
-    // 2. WIPE old data entirely (full reset) — user asked to rebuild from scratch.
+    // 2. Wipe existing data
     const { error: delM } = await supabase.from("matchups").delete().gte("date", "1900-01-01");
     if (delM) throw new Error(`wipe matchups: ${delM.message}`);
     const { error: delS } = await supabase
@@ -271,67 +257,61 @@ Deno.serve(async (req) => {
       .gte("date", "1900-01-01");
     if (delS) throw new Error(`wipe stats: ${delS.message}`);
 
-    // 3. Insert fresh rows for all ranks that returned data.
+    // 3. Insert fresh data per (rank, period)
     const summary: Array<{
       rank: string;
+      period: string;
       archetypes: number;
       matchups: number;
-      matchupsWithGames: number;
-      archetypesWithGames: number;
     }> = [];
 
-    for (const { db } of RANKS) {
-      const parsed = scraped[db];
-      if (!parsed || parsed.archetypes.length === 0) {
+    for (const { db: rDb } of RANKS) {
+      for (const { db: pDb } of PERIODS) {
+        const parsed = scraped[rDb][pDb];
+        if (!parsed || parsed.archetypes.length === 0) {
+          summary.push({ rank: rDb, period: pDb, archetypes: 0, matchups: 0 });
+          continue;
+        }
+
+        const statRows = parsed.archetypes.map((a) => ({
+          name: a.name,
+          winrate: a.winrate,
+          popularity: a.popularity,
+          total_games: a.totalGames,
+          hs_class: a.hsClass,
+          date: today,
+          rank: rDb,
+          period: pDb,
+        }));
+        const { error: sErr } = await supabase.from("archetype_stats").insert(statRows);
+        if (sErr) throw new Error(`stats insert [${rDb}/${pDb}]: ${sErr.message}`);
+
+        const mupRows = parsed.matchups.map((x) => ({
+          archetype: x.archetype,
+          opponent: x.opponent,
+          winrate: x.winrate,
+          estimated_games: x.estimatedGames,
+          date: today,
+          rank: rDb,
+          period: pDb,
+        }));
+        for (let i = 0; i < mupRows.length; i += 500) {
+          const batch = mupRows.slice(i, i + 500);
+          const { error: mErr } = await supabase.from("matchups").insert(batch);
+          if (mErr) throw new Error(`matchups insert [${rDb}/${pDb}]: ${mErr.message}`);
+        }
+
         summary.push({
-          rank: db,
-          archetypes: 0,
-          matchups: 0,
-          matchupsWithGames: 0,
-          archetypesWithGames: 0,
+          rank: rDb,
+          period: pDb,
+          archetypes: parsed.archetypes.length,
+          matchups: parsed.matchups.length,
         });
-        continue;
       }
-
-      const statRows = parsed.archetypes.map((a) => ({
-        name: a.name,
-        winrate: a.winrate,
-        popularity: a.popularity,
-        total_games: a.totalGames,
-        hs_class: a.hsClass,
-        date: today,
-        rank: db,
-        period,
-      }));
-      const { error: sErr } = await supabase.from("archetype_stats").insert(statRows);
-      if (sErr) throw new Error(`stats insert [${db}]: ${sErr.message}`);
-
-      const mupRows = parsed.matchups.map((x) => ({
-        archetype: x.archetype,
-        opponent: x.opponent,
-        winrate: x.winrate,
-        estimated_games: x.estimatedGames,
-        date: today,
-        rank: db,
-        period,
-      }));
-      for (let i = 0; i < mupRows.length; i += 500) {
-        const batch = mupRows.slice(i, i + 500);
-        const { error: mErr } = await supabase.from("matchups").insert(batch);
-        if (mErr) throw new Error(`matchups insert [${db}]: ${mErr.message}`);
-      }
-
-      summary.push({
-        rank: db,
-        archetypes: parsed.archetypes.length,
-        matchups: parsed.matchups.length,
-        matchupsWithGames: parsed.matchups.filter((x) => x.estimatedGames != null).length,
-        archetypesWithGames: parsed.archetypes.filter((a) => a.totalGames != null).length,
-      });
     }
 
     return new Response(
-      JSON.stringify({ success: true, date: today, period, summary }),
+      JSON.stringify({ success: true, date: today, summary }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
