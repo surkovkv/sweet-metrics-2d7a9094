@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
-  Swords, Trophy, Sparkles, ArrowRight, TrendingUp,
-  Crown, MessageCircle, Newspaper, Star, ChevronRight,
-  BarChart2, Shield, Zap,
+  Swords, ArrowRight, Crown, MessageCircle, Star,
+  BarChart2, Shield, Zap, ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
@@ -21,12 +20,12 @@ const Landing = () => {
 
       <main className="container mx-auto px-4 pt-24 pb-16 max-w-5xl">
 
-        {/* Hero */}
+        {/* Hero — без дублирующих CTA, чтобы не повторять карточки ниже */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center py-16 md:py-24 relative"
+          className="text-center py-12 md:py-20 relative"
         >
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-primary/10 rounded-full blur-3xl" />
@@ -38,91 +37,66 @@ const Landing = () => {
               <span className="text-primary">{t("landing.heroTitleHS")}</span>
             </h1>
 
-            <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+            <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed">
               {t("landing.heroDesc")}
             </p>
 
-            <div className="flex items-center justify-center gap-4 flex-wrap">
-              <Link to="/matchups">
-                <Button size="lg" className="gap-2 h-12 px-8 text-base font-semibold shadow-lg shadow-primary/25">
-                  <BarChart2 className="h-5 w-5" />
-                  {t("landing.matchupsTitle")}
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to="/tournament">
-                <Button size="lg" variant="secondary" className="gap-2 h-12 px-8 text-base font-semibold">
-                  <Swords className="h-5 w-5" />
-                  {t("landing.openStrategist")}
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              {!user && (
+            {!user && (
+              <div className="flex items-center justify-center gap-3 flex-wrap mt-6">
                 <Link to="/auth">
                   <Button variant="outline" size="lg" className="h-12 px-8 text-base">
                     {t("landing.loginSignup")}
                   </Button>
                 </Link>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </motion.div>
 
-        {/* Feature cards */}
+        {/* Features — единые карточки: описание + переход в одну */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-20"
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-20"
         >
           <Link to="/matchups" className="group">
-            <div className="h-full p-6 rounded-2xl bg-primary/10 border border-primary/30 hover:bg-primary/15 hover:border-primary/60 transition-all duration-300 hover:-translate-y-1">
+            <div className="h-full p-6 rounded-2xl bg-primary/10 border border-primary/30 hover:bg-primary/15 hover:border-primary/60 transition-all duration-300 hover:-translate-y-1 flex flex-col">
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 rounded-xl bg-primary/20">
+                <div className="p-2.5 rounded-xl bg-primary/20">
                   <BarChart2 className="h-6 w-6 text-primary" />
                 </div>
                 <ChevronRight className="h-5 w-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <h3 className="font-display text-lg font-bold text-foreground mb-2">
+              <h3 className="font-display text-xl font-bold text-foreground mb-2">
                 {t("landing.matchupsTitle")}
               </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1">
                 {t("landing.matchupsDesc")}
               </p>
+              <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                {t("landing.matchupsTitle")} <ArrowRight className="h-4 w-4" />
+              </div>
             </div>
           </Link>
 
           <Link to="/tournament" className="group">
-            <div className="h-full p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1">
+            <div className="h-full p-6 rounded-2xl bg-card border border-border hover:border-primary/50 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1 flex flex-col">
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 rounded-xl bg-secondary">
+                <div className="p-2.5 rounded-xl bg-secondary">
                   <Swords className="h-6 w-6 text-primary" />
                 </div>
                 <ChevronRight className="h-5 w-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <h3 className="font-display text-lg font-bold text-foreground mb-2">
+              <h3 className="font-display text-xl font-bold text-foreground mb-2">
                 {t("landing.strategistTitle")}
               </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1">
                 {t("landing.strategistDesc")}
               </p>
-            </div>
-          </Link>
-
-          <Link to="/news" className="group">
-            <div className="h-full p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 rounded-xl bg-secondary">
-                  <Newspaper className="h-6 w-6 text-primary" />
-                </div>
-                <ChevronRight className="h-5 w-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                {t("landing.openStrategist")} <ArrowRight className="h-4 w-4" />
               </div>
-              <h3 className="font-display text-lg font-bold text-foreground mb-2">
-                {t("landing.newsTitle")}
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {t("landing.newsDesc")}
-              </p>
             </div>
           </Link>
         </motion.div>
@@ -182,14 +156,13 @@ const Landing = () => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded bg-primary flex items-center justify-center">
-                <span className="font-display text-[10px] font-bold text-primary-foreground">TH</span>
+                <span className="font-display text-[10px] font-bold text-primary-foreground">HS</span>
               </div>
               <span className="font-display text-sm font-semibold text-foreground">
                 HS Tourney<span className="text-primary">Helper</span>
               </span>
             </div>
             <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
-              <Link to="/news" className="hover:text-foreground transition-colors">{t("nav.news")}</Link>
               <Link to="/contact" className="hover:text-foreground transition-colors flex items-center gap-1">
                 <MessageCircle className="h-3 w-3" /> {t("nav.contact")}
               </Link>
