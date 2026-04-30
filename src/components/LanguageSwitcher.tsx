@@ -4,12 +4,7 @@ import { Globe, ChevronDown } from "lucide-react";
 export const LANGUAGES = [
     { code: "en", label: "English", flag: "🇬🇧" },
     { code: "ru", label: "Русский", flag: "🇷🇺" },
-    { code: "es", label: "Español", flag: "🇪🇸" },
     { code: "zh", label: "中文", flag: "🇨🇳" },
-    { code: "hi", label: "हिन्दी", flag: "🇮🇳" },
-    { code: "ar", label: "العربية", flag: "🇸🇦" },
-    { code: "pt", label: "Português", flag: "🇧🇷" },
-    { code: "fr", label: "Français", flag: "🇫🇷" },
 ];
 
 export const LANG_STORAGE_KEY = "app_language";
@@ -17,7 +12,10 @@ export const LANG_STORAGE_KEY = "app_language";
 export function useLang() {
     const [lang, setLangState] = useState<string>(() => {
         if (typeof window !== "undefined") {
-            return localStorage.getItem(LANG_STORAGE_KEY) || "ru";
+            const stored = localStorage.getItem(LANG_STORAGE_KEY) || "ru";
+            // Migrate removed languages to default
+            if (!LANGUAGES.find((l) => l.code === stored)) return "ru";
+            return stored;
         }
         return "ru";
     });
@@ -25,7 +23,6 @@ export function useLang() {
     const setLang = (code: string) => {
         localStorage.setItem(LANG_STORAGE_KEY, code);
         setLangState(code);
-        // Trigger a storage event for other components to react
         window.dispatchEvent(new StorageEvent("storage", { key: LANG_STORAGE_KEY, newValue: code }));
     };
 
@@ -61,9 +58,7 @@ export default function LanguageSwitcher() {
 
             {open && (
                 <>
-                    {/* Backdrop */}
                     <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-                    {/* Dropdown */}
                     <div className="absolute right-0 top-full mt-1 z-50 w-44 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
                         {LANGUAGES.map((l) => (
                             <button

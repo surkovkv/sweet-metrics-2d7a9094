@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
-import { Swords, Newspaper, MessageCircle, Grid3x3 } from "lucide-react";
+import { Swords, MessageCircle, Grid3x3 } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useT } from "@/i18n/useTranslation";
@@ -12,7 +12,6 @@ const ManaLensNavbar = () => {
   const links = [
     { to: "/tournament", label: t("nav.strategist"), icon: Swords },
     { to: "/matchups", label: t("nav.matchups"), icon: Grid3x3 },
-    { to: "/news", label: t("nav.news"), icon: Newspaper },
     { to: "/contact", label: t("nav.contact"), icon: MessageCircle },
   ];
 
@@ -26,7 +25,7 @@ const ManaLensNavbar = () => {
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Link to="/" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="font-display text-xs font-bold text-primary-foreground">TH</span>
+            <span className="font-display text-xs font-bold text-primary-foreground">HS</span>
           </div>
           <span className="font-display text-lg font-bold text-foreground">
             HS Tourney<span className="text-primary">Helper</span>
