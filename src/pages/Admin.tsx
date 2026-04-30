@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, MessageSquare, Newspaper, Settings, Check, X, ToggleLeft, ToggleRight, Loader2, RefreshCcw, Users } from "lucide-react";
+import { Shield, MessageSquare, Settings, ToggleLeft, ToggleRight, Loader2, RefreshCcw, Users, Trash2, Image as ImageIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,20 +10,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
 import { Contact } from "@/hooks/useContacts";
-import { NewsPost } from "@/hooks/useNewsPosts";
 
 const sb = supabase as any;
+
+type ContactWithAttachments = Contact & { attachments?: string[] };
 
 export default function Admin() {
     const { user, profile, loading: authLoading, isAdmin, refreshProfile } = useAuth();
     const navigate = useNavigate();
     const { toast } = useToast();
 
-    const [contacts, setContacts] = useState<Contact[]>([]);
-    const [news, setNews] = useState<NewsPost[]>([]);
+    const [contacts, setContacts] = useState<ContactWithAttachments[]>([]);
     const [loadingData, setLoadingData] = useState(false);
-    const [editingPost, setEditingPost] = useState<NewsPost | null>(null);
-    const [showNewEditor, setShowNewEditor] = useState(false);
     const [syncLoading, setSyncLoading] = useState(false);
     const [userStats, setUserStats] = useState<{ total: number; pro: number } | null>(null);
 
@@ -37,14 +35,12 @@ export default function Admin() {
         if (!isAdmin) return;
         setLoadingData(true);
 
-        const [contactsRes, newsRes, statsRes] = await Promise.all([
+        const [contactsRes, statsRes] = await Promise.all([
             sb.from("contacts").select("*").order("created_at", { ascending: false }),
-            sb.from("news_posts").select("*").order("created_at", { ascending: false }),
             sb.from("profiles").select("is_pro"),
         ]);
 
         if (contactsRes.data) setContacts(contactsRes.data);
-        if (newsRes.data) setNews(newsRes.data);
         if (statsRes.data) {
             setUserStats({
                 total: statsRes.data.length,
@@ -59,12 +55,13 @@ export default function Admin() {
         fetchData();
     }, [isAdmin]);
 
-    const publishNews = async (id: string, publish: boolean) => {
-        const { error } = await sb.from("news_posts").update({ published: publish }).eq("id", id);
+    const deleteContact = async (id: string) => {
+        if (!confirm("Удалить сообщение?")) return;
+        const { error } = await sb.from("contacts").delete().eq("id", id);
         if (error) {
             toast({ title: "Ошибка", description: error.message, variant: "destructive" });
         } else {
-            toast({ title: "Успех", description: publish ? "Новость опубликована" : "Новость снята с публикации" });
+            toast({ title: "Удалено" });
             fetchData();
         }
     };
@@ -88,13 +85,13 @@ export default function Admin() {
             const { data, error } = await supabase.functions.invoke("scrape-hsguru");
             if (error) throw error;
             if (data?.success) {
-                const summary = (data.summary || []) as Array<{ rank: string; archetypes: number; matchups: number }>;
+                const summary = (data.summary || []) as Array<{ rank: string; period: string; archetypes: number; matchups: number }>;
                 const desc = summary
-                    .map((s) => `${s.rank}: ${s.archetypes} архетипов, ${s.matchups} матчапов`)
+                    .map((s) => `${s.rank}/${s.period}: ${s.archetypes}a/${s.matchups}m`)
                     .join(" · ") || `date=${data.date}`;
                 toast({
                     title: "Синхронизация завершена",
-                    description: `${desc} (${data.date}, ${data.period})`,
+                    description: `${desc} (${data.date})`,
                 });
             } else {
                 toast({
@@ -143,7 +140,7 @@ export default function Admin() {
                     </div>
 
                     {userStats && (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                             <Card className="bg-card border-border">
                                 <CardContent className="p-4 flex items-center gap-3">
                                     <Users className="h-5 w-5 text-primary" />
@@ -171,71 +168,20 @@ export default function Admin() {
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="bg-card border-border">
-                                <CardContent className="p-4 flex items-center gap-3">
-                                    <Newspaper className="h-5 w-5 text-primary" />
-                                    <div>
-                                        <p className="text-2xl font-bold text-foreground">{news.length}</p>
-                                        <p className="text-xs text-muted-foreground">Новостей</p>
-                                    </div>
-                                </CardContent>
-                            </Card>
                         </div>
                     )}
 
-                    <Tabs defaultValue="news" className="space-y-6">
+                    <Tabs defaultValue="contacts" className="space-y-6">
                         <TabsList className="bg-secondary">
-                            <TabsTrigger value="news" className="gap-2"><Newspaper className="h-4 w-4" /> Новости</TabsTrigger>
                             <TabsTrigger value="contacts" className="gap-2"><MessageSquare className="h-4 w-4" /> Сообщения</TabsTrigger>
                             <TabsTrigger value="settings" className="gap-2"><Settings className="h-4 w-4" /> Инструменты</TabsTrigger>
                         </TabsList>
-
-                        <TabsContent value="news" className="space-y-4">
-                            <Card className="bg-card border-border">
-                                <CardHeader>
-                                    <CardTitle>Модерация новостей</CardTitle>
-                                    <CardDescription>Одобрение или скрытие новостей от пользователей</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    {news.length === 0 ? (
-                                        <p className="text-muted-foreground text-center py-4">Нет новостей.</p>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            {news.map(post => (
-                                                <div key={post.id} className="p-4 rounded-lg bg-secondary/50 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between border border-border">
-                                                    <div>
-                                                        <h3 className="font-semibold text-foreground flex items-center gap-2">
-                                                            {post.title}
-                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${post.published ? 'bg-green-500/20 text-green-500' : 'bg-yellow-500/20 text-yellow-500'}`}>
-                                                                {post.published ? 'Опубликовано' : 'Ожидает'}
-                                                            </span>
-                                                        </h3>
-                                                        <p className="text-xs text-muted-foreground mt-1">Автор: {post.author_name} · Дата: {new Date(post.created_at).toLocaleDateString()}</p>
-                                                    </div>
-                                                    <div className="flex gap-2 w-full md:w-auto">
-                                                        {post.published ? (
-                                                            <Button size="sm" variant="destructive" onClick={() => publishNews(post.id, false)} className="w-full md:w-auto">
-                                                                <X className="h-4 w-4 mr-1" /> Скрыть
-                                                            </Button>
-                                                        ) : (
-                                                            <Button size="sm" onClick={() => publishNews(post.id, true)} className="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white">
-                                                                <Check className="h-4 w-4 mr-1" /> Одобрить
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
 
                         <TabsContent value="contacts">
                             <Card className="bg-card border-border">
                                 <CardHeader>
                                     <CardTitle>Обратная связь</CardTitle>
-                                    <CardDescription>Сообщения из раздела "Связаться с нами"</CardDescription>
+                                    <CardDescription>Сообщения из раздела «Связаться с нами»</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     {contacts.length === 0 ? (
@@ -244,16 +190,33 @@ export default function Admin() {
                                         <div className="space-y-4">
                                             {contacts.map(msg => (
                                                 <div key={msg.id} className="p-4 rounded-lg bg-secondary/50 border border-border">
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <div>
-                                                            <p className="font-semibold text-foreground">{msg.name}</p>
-                                                            <p className="text-xs text-muted-foreground">{msg.email}</p>
+                                                    <div className="flex justify-between items-start mb-2 gap-3">
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="font-semibold text-foreground truncate">{msg.name}</p>
+                                                            <p className="text-xs text-muted-foreground truncate">{msg.email}</p>
                                                         </div>
-                                                        <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleDateString()}</span>
+                                                        <div className="flex items-center gap-2 shrink-0">
+                                                            <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString("ru-RU")}</span>
+                                                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => deleteContact(msg.id)}>
+                                                                <Trash2 className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                     <div className="p-3 bg-background rounded-md text-sm text-foreground whitespace-pre-wrap border border-border">
                                                         {msg.message}
                                                     </div>
+                                                    {msg.attachments && msg.attachments.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2 mt-3">
+                                                            {msg.attachments.map((url, i) => (
+                                                                <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block group">
+                                                                    <img src={url} alt={`Скрин ${i + 1}`} className="h-20 w-20 object-cover rounded border border-border group-hover:border-primary transition-colors" />
+                                                                </a>
+                                                            ))}
+                                                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                                <ImageIcon className="h-3 w-3" /> {msg.attachments.length}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -282,13 +245,16 @@ export default function Admin() {
                                     <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg border border-border">
                                         <div>
                                             <p className="font-semibold">Tournament Strategist</p>
-                                            <p className="text-sm text-muted-foreground">Принудительно загрузить свежие данные HSGuru</p>
+                                            <p className="text-sm text-muted-foreground">Принудительно загрузить свежие данные HSGuru (12 запросов)</p>
                                         </div>
                                         <Button onClick={triggerHsguruFetch} disabled={syncLoading}>
                                             {syncLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                                             {syncLoading ? "Синхронизация..." : "Синхронизировать"}
                                         </Button>
                                     </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Автосинк выполняется ежедневно в 06:00 UTC.
+                                    </p>
                                 </CardContent>
                             </Card>
                         </TabsContent>

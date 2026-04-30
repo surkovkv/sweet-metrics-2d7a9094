@@ -1,14 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, User, MessageSquare, Send, CheckCircle } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Mail, MessageSquare, Send, CheckCircle, Image as ImageIcon, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
-import { sendContact } from "@/hooks/useContacts";
 import { useAuth } from "@/hooks/useAuth";
 import { useT } from "@/i18n/useTranslation";
+import { supabase } from "@/integrations/supabase/client";
+
+const ACCEPTED = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif"];
+const MAX_FILES = 5;
+const MAX_SIZE_MB = 5;
 
 const Contact = () => {
     const { user, profile, loading: authLoading } = useAuth();
@@ -17,6 +20,8 @@ const Contact = () => {
     const [loading, setLoading] = useState(false);
     const [sent, setSent] = useState(false);
     const [message, setMessage] = useState("");
+    const [files, setFiles] = useState<File[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const t = useT();
 
     useEffect(() => {
@@ -33,25 +38,63 @@ const Contact = () => {
         );
     }
 
-    const nameToSubmit = profile?.nickname || "Аноним";
-    const emailToSubmit = user.email || "";
+    const onPickFiles = (selected: FileList | null) => {
+        if (!selected) return;
+        const next: File[] = [];
+        for (const f of Array.from(selected)) {
+            if (!ACCEPTED.includes(f.type)) {
+                toast({ title: "Неподдерживаемый формат", description: f.name, variant: "destructive" });
+                continue;
+            }
+            if (f.size > MAX_SIZE_MB * 1024 * 1024) {
+                toast({ title: "Файл слишком большой", description: `${f.name} > ${MAX_SIZE_MB}MB`, variant: "destructive" });
+                continue;
+            }
+            next.push(f);
+        }
+        setFiles((prev) => [...prev, ...next].slice(0, MAX_FILES));
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+
+    const removeFile = (idx: number) => setFiles((p) => p.filter((_, i) => i !== idx));
+
+    const uploadAttachments = async (): Promise<string[]> => {
+        if (files.length === 0) return [];
+        const urls: string[] = [];
+        for (const f of files) {
+            const ext = f.name.split(".").pop() || "png";
+            const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+            const { error } = await supabase.storage
+                .from("contact-attachments")
+                .upload(path, f, { contentType: f.type, upsert: false });
+            if (error) throw error;
+            const { data } = supabase.storage.from("contact-attachments").getPublicUrl(path);
+            urls.push(data.publicUrl);
+        }
+        return urls;
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!message.trim()) return;
 
         setLoading(true);
-        const { error } = await sendContact({
-            name: nameToSubmit,
-            email: emailToSubmit,
-            message: message.trim(),
-        });
-        setLoading(false);
-
-        if (error) {
-            toast({ title: t("contact.sendError"), description: error.message, variant: "destructive" });
-        } else {
+        try {
+            const attachments = await uploadAttachments();
+            const { error } = await (supabase as any).from("contacts").insert({
+                name: profile?.nickname || "Аноним",
+                email: user.email || "",
+                message: message.trim(),
+                attachments,
+            });
+            if (error) throw error;
             setSent(true);
+            setMessage("");
+            setFiles([]);
+        } catch (err: any) {
+            toast({ title: t("contact.sendError"), description: err.message, variant: "destructive" });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -87,39 +130,12 @@ const Contact = () => {
                             <p className="text-muted-foreground">
                                 {t("contact.sentDesc")}
                             </p>
-                            <Button variant="outline" onClick={() => { setSent(false); setMessage(""); }}>
+                            <Button variant="outline" onClick={() => setSent(false)}>
                                 {t("contact.sendAnother")}
                             </Button>
                         </motion.div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-5">
-                            <div>
-                                <label className="text-sm text-muted-foreground mb-1.5 block">{t("contact.nameLabel")}</label>
-                                <div className="relative">
-                                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        value={nameToSubmit}
-                                        readOnly
-                                        disabled
-                                        className="pl-10 bg-secondary/50 border-border text-muted-foreground"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="text-sm text-muted-foreground mb-1.5 block">{t("contact.emailLabel")}</label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        type="email"
-                                        value={emailToSubmit}
-                                        readOnly
-                                        disabled
-                                        className="pl-10 bg-secondary/50 border-border text-muted-foreground"
-                                    />
-                                </div>
-                            </div>
-
                             <div>
                                 <label className="text-sm text-muted-foreground mb-1.5 block">{t("contact.messageLabel")}</label>
                                 <div className="relative">
@@ -135,8 +151,55 @@ const Contact = () => {
                                 </div>
                             </div>
 
+                            {/* Attachments */}
+                            <div>
+                                <label className="text-sm text-muted-foreground mb-1.5 block">
+                                    {t("contact.attachLabel")}
+                                </label>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept={ACCEPTED.join(",")}
+                                    multiple
+                                    className="hidden"
+                                    onChange={(e) => onPickFiles(e.target.files)}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={files.length >= MAX_FILES}
+                                    className="gap-2"
+                                >
+                                    <ImageIcon className="h-4 w-4" />
+                                    {t("contact.attachBtn")} ({files.length}/{MAX_FILES})
+                                </Button>
+                                {files.length > 0 && (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">
+                                        {files.map((f, i) => {
+                                            const url = URL.createObjectURL(f);
+                                            return (
+                                                <div key={i} className="relative group">
+                                                    <img src={url} alt={f.name} className="h-24 w-full object-cover rounded border border-border" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeFile(i)}
+                                                        className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-90 hover:opacity-100"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                                <p className="text-xs text-muted-foreground mt-1.5">
+                                    {t("contact.attachHint")}
+                                </p>
+                            </div>
+
                             <Button type="submit" disabled={loading} className="w-full h-11 gap-2 font-semibold">
-                                <Send className="h-4 w-4" />
+                                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                                 {loading ? t("contact.sending") : t("contact.sendBtn")}
                             </Button>
                         </form>
