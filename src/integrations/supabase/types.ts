@@ -55,6 +55,7 @@ export type Database = {
       }
       contacts: {
         Row: {
+          attachments: string[] | null
           category: string | null
           created_at: string
           email: string
@@ -63,6 +64,7 @@ export type Database = {
           name: string
         }
         Insert: {
+          attachments?: string[] | null
           category?: string | null
           created_at?: string
           email: string
@@ -71,6 +73,7 @@ export type Database = {
           name: string
         }
         Update: {
+          attachments?: string[] | null
           category?: string | null
           created_at?: string
           email?: string
@@ -113,51 +116,6 @@ export type Database = {
           period?: string
           rank?: string
           winrate?: number
-        }
-        Relationships: []
-      }
-      news_posts: {
-        Row: {
-          author_id: string
-          author_name: string
-          content: string
-          cover_image: string | null
-          created_at: string
-          id: string
-          published: boolean
-          slug: string
-          summary: string
-          tags: string[] | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          author_id: string
-          author_name: string
-          content: string
-          cover_image?: string | null
-          created_at?: string
-          id?: string
-          published?: boolean
-          slug: string
-          summary: string
-          tags?: string[] | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          author_id?: string
-          author_name?: string
-          content?: string
-          cover_image?: string | null
-          created_at?: string
-          id?: string
-          published?: boolean
-          slug?: string
-          summary?: string
-          tags?: string[] | null
-          title?: string
-          updated_at?: string
         }
         Relationships: []
       }
