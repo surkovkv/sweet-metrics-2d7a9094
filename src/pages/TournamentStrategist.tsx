@@ -487,36 +487,27 @@ const TournamentStrategist = () => {
           {/* Mobile Ban History — PRO only */}
           {IS_LOGGED_IN && IS_PRO && currentHistory.length > 0 && (
             <div className="md:hidden flex gap-2 mb-4 justify-center items-center">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => currentHistory[0] && restoreFromHistory(currentHistory[0])}
-                    className="w-9 h-9 rounded-full border-2 border-primary bg-primary/10 text-primary flex items-center justify-center transition-all"
-                  >
-                    <Star className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-xs font-semibold">BAN: {currentHistory[0].bannedDeck} ({currentHistory[0].avgWr}%)</p>
-                  <p className="text-[10px] text-primary">{t("tournament.restoreBan")}</p>
-                </TooltipContent>
-              </Tooltip>
-              {currentHistory[1] && (
-                <Tooltip>
+              {currentHistory.map((entry, idx) => (
+                <Tooltip key={idx}>
                   <TooltipTrigger asChild>
                     <button
-                      onClick={() => restoreFromHistory(currentHistory[1])}
-                      className="w-9 h-9 rounded-full border-2 border-border bg-secondary/50 text-muted-foreground flex items-center justify-center transition-all"
+                      onClick={() => restoreFromHistory(entry)}
+                      className={cn(
+                        "w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all",
+                        idx === 0
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-secondary/50 text-muted-foreground",
+                      )}
                     >
-                      <History className="h-3.5 w-3.5" />
+                      {idx === 0 ? <Star className="h-4 w-4" /> : <History className="h-3.5 w-3.5" />}
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p className="text-xs font-semibold">BAN: {currentHistory[1].bannedDeck} ({currentHistory[1].avgWr}%)</p>
+                    <p className="text-xs font-semibold">BAN: {entry.bannedDeck} ({entry.avgWr}%)</p>
                     <p className="text-[10px] text-primary">{t("tournament.restoreBan")}</p>
                   </TooltipContent>
                 </Tooltip>
-              )}
+              ))}
             </div>
           )}
 
