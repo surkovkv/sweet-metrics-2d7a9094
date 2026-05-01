@@ -22,6 +22,7 @@ const HS_CLASSES = [
 ];
 
 const PERIOD_OPTIONS: { value: string; labelKey: string }[] = [
+  { value: "current", labelKey: "matchups.periodCurrent" },
   { value: "past_3_days", labelKey: "matchups.period3Days" },
   { value: "past_week", labelKey: "matchups.periodWeek" },
   { value: "past_month", labelKey: "matchups.periodMonth" },
