@@ -246,6 +246,18 @@ const TournamentStrategist = () => {
     return calculateOpponentBan(myArchetypes, oppArchetypes, getWinrate);
   }, [showResult, showOpponentBan, myArchetypes, oppArchetypes, getWinrate]);
 
+  // Auto-select top opponent-ban suggestion when the section opens — keeps matrix
+  // and the suggestion list in sync (avoids the "red but not marked" confusion).
+  useEffect(() => {
+    if (showOpponentBan && oppBanOptions.length > 0 && oppManualBanIndex === null) {
+      setOppManualBanIndex(oppBanOptions[0].bannedIndex);
+    }
+    if (!showOpponentBan) {
+      setOppManualBanIndex(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showOpponentBan, oppBanOptions.length]);
+
   const effectiveBanIdx = manualBanIndex ?? (banOptions.length > 0 ? banOptions[0].bannedIndex : null);
 
   const optimalFirstDeck = useMemo(() => {
