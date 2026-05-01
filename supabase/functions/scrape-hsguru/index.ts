@@ -184,7 +184,8 @@ async function scrapeOne(apiKey: string, rankHsguru: string, periodHsguru: strin
     body: JSON.stringify({
       url,
       formats: ["html"],
-      waitFor: 8000,
+      waitFor: 5000,
+      timeout: 45000,
       onlyMainContent: false,
     }),
   });
@@ -216,13 +217,20 @@ Deno.serve(async (req) => {
 
     const today = new Date().toISOString().split("T")[0];
 
-    // 1. Scrape all rank × period combinations
+    // 1. Scrape all rank × period combinations IN PARALLEL to stay within
+    // the edge-function wall-clock budget (~150s). Firecrawl handles 12
+    // concurrent jobs comfortably; if any single scrape fails we just
+    // record an empty bucket and keep going.
     type ScrapeResult = { archetypes: ParsedArchetype[]; matchups: ParsedMatchup[] };
     const scraped: Record<string, Record<string, ScrapeResult>> = {};
+    for (const { db: rDb } of RANKS) scraped[rDb] = {};
 
-    for (const { db: rDb, hsguru: rHs } of RANKS) {
-      scraped[rDb] = {};
-      for (const { db: pDb, hsguru: pHs } of PERIODS) {
+    const jobs = RANKS.flatMap(({ db: rDb, hsguru: rHs }) =>
+      PERIODS.map(({ db: pDb, hsguru: pHs }) => ({ rDb, rHs, pDb, pHs })),
+    );
+
+    await Promise.all(
+      jobs.map(async ({ rDb, rHs, pDb, pHs }) => {
         try {
           const parsed = await scrapeOne(apiKey, rHs, pHs);
           console.log(
@@ -233,8 +241,8 @@ Deno.serve(async (req) => {
           console.error(`rank=${rDb} period=${pDb} scrape failed:`, err);
           scraped[rDb][pDb] = { archetypes: [], matchups: [] };
         }
-      }
-    }
+      }),
+    );
 
     // Sanity: at least the primary "all/current" must succeed
     const primary = scraped.all?.current;

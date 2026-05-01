@@ -22,6 +22,7 @@ const HS_CLASSES = [
 ];
 
 const PERIOD_OPTIONS: { value: string; labelKey: string }[] = [
+  { value: "current", labelKey: "matchups.periodCurrent" },
   { value: "past_3_days", labelKey: "matchups.period3Days" },
   { value: "past_week", labelKey: "matchups.periodWeek" },
   { value: "past_month", labelKey: "matchups.periodMonth" },
@@ -43,7 +44,7 @@ function getWrBg(wr: number | null) {
 const MatchupTable = () => {
   const t = useT();
   const [rank, setRank] = useState<RankFilter>("all");
-  const [period, setPeriod] = useState<string>("past_week");
+  const [period, setPeriod] = useState<string>("current");
   const [minMatchupGames, setMinMatchupGames] = useState<number>(50);
   const [classFilter, setClassFilter] = useState<string>("all");
   const [search, setSearch] = useState<string>("");
