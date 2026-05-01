@@ -445,44 +445,29 @@ const TournamentStrategist = () => {
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}
                 className="hidden md:flex flex-col items-center gap-2 pt-8">
                 {currentHistory.length > 0 ? (
-                  <>
-                    {/* Current ban (star) */}
-                    <Tooltip>
+                  currentHistory.map((entry, idx) => (
+                    <Tooltip key={idx}>
                       <TooltipTrigger asChild>
                         <button
-                          onClick={() => currentHistory[0] && restoreFromHistory(currentHistory[0])}
-                          className="w-9 h-9 rounded-full border-2 border-primary bg-primary/10 text-primary flex items-center justify-center transition-all hover:scale-110"
+                          onClick={() => restoreFromHistory(entry)}
+                          className={cn(
+                            "w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110",
+                            idx === 0
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border bg-secondary/50 text-muted-foreground hover:border-primary/50",
+                          )}
                         >
-                          <Star className="h-4 w-4" />
+                          {idx === 0 ? <Star className="h-4 w-4" /> : <History className="h-3.5 w-3.5" />}
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="left" className="max-w-xs">
-                        <p className="text-xs font-semibold">BAN: {currentHistory[0].bannedDeck}</p>
-                        <p className={`text-xs font-bold ${getWinrateColor(currentHistory[0].avgWr)}`}>{currentHistory[0].avgWr}%</p>
-                        <p className="text-[10px] text-muted-foreground mt-1">{currentHistory[0].myDecks.join(", ")} vs {currentHistory[0].oppDecks.join(", ")}</p>
+                        <p className="text-xs font-semibold">BAN: {entry.bannedDeck}</p>
+                        <p className={`text-xs font-bold ${getWinrateColor(entry.avgWr)}`}>{entry.avgWr}%</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{entry.myDecks.join(", ")} vs {entry.oppDecks.join(", ")}</p>
                         <p className="text-[10px] text-primary mt-1">{t("tournament.restoreBan")}</p>
                       </TooltipContent>
                     </Tooltip>
-                    {/* Previous ban */}
-                    {currentHistory[1] && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={() => restoreFromHistory(currentHistory[1])}
-                            className="w-9 h-9 rounded-full border-2 border-border bg-secondary/50 text-muted-foreground flex items-center justify-center transition-all hover:scale-110 hover:border-primary/50"
-                          >
-                            <History className="h-3.5 w-3.5" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="left" className="max-w-xs">
-                          <p className="text-xs font-semibold">BAN: {currentHistory[1].bannedDeck}</p>
-                          <p className={`text-xs font-bold ${getWinrateColor(currentHistory[1].avgWr)}`}>{currentHistory[1].avgWr}%</p>
-                          <p className="text-[10px] text-muted-foreground mt-1">{currentHistory[1].myDecks.join(", ")} vs {currentHistory[1].oppDecks.join(", ")}</p>
-                          <p className="text-[10px] text-primary mt-1">{t("tournament.restoreBan")}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                  </>
+                  ))
                 ) : (
                   <Tooltip>
                     <TooltipTrigger asChild>
