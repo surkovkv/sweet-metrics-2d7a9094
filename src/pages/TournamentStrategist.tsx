@@ -332,8 +332,8 @@ const TournamentStrategist = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {[1, 50, 100, 250, 500, 1000, 2500, 5000, 10000].map(val => (
-                      <SelectItem key={val} value={String(val)}>{val === 1 ? t("matchups.any") : val.toLocaleString()}</SelectItem>
+                    {[50, 100, 250, 500, 1000, 2500, 5000, 10000].map(val => (
+                      <SelectItem key={val} value={String(val)}>{val.toLocaleString()}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
