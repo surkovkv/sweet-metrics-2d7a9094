@@ -166,7 +166,7 @@ const Auth = () => {
 
           <Link to="/" className="inline-flex items-center gap-2 mt-12">
             <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-              <span className="font-display text-sm font-bold text-primary-foreground">TH</span>
+              <span className="font-display text-sm font-bold text-primary-foreground">HS</span>
             </div>
             <span className="font-display text-2xl font-bold text-foreground">
               Tourney<span className="text-primary">Helper</span>
