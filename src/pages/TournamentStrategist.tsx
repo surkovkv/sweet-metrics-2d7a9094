@@ -931,16 +931,24 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                     {oppArchetypes.map((opp, colIdx) => {
                       const wr = wrFn(my, opp);
                       const games = getEstimatedGames(my, opp);
-                      const isBanned = bannedIndex === colIdx;
+                      const isColBanned = bannedIndex === colIdx;
+                      const isCellBanned = isColBanned || isMyBanned;
                       const isLowSample = wr !== null && games !== null && games < minMatchupGames;
                       return (
                         <td key={colIdx}
                           className={cn(
-                            "py-3 px-3 text-center border-2 border-border",
-                            isBanned && "opacity-40",
+                            "relative py-3 px-3 text-center border-2 border-border",
                             isLowSample ? "bg-yellow-500/15" : getWinrateBg(wr),
                           )}>
-                          <div className={cn("font-bold flex items-center justify-center gap-1", getWinrateColor(wr))}>
+                          {/* red strike-through line on banned cells, drawn so % stays readable */}
+                          {isCellBanned && (
+                            <div className="pointer-events-none absolute left-1 right-1 top-1/2 h-[3px] bg-destructive/80 -translate-y-1/2 rounded-sm" />
+                          )}
+                          <div className={cn(
+                            "font-bold flex items-center justify-center gap-1 relative",
+                            getWinrateColor(wr),
+                            isCellBanned && "opacity-90",
+                          )}>
                             {isLowSample && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -953,7 +961,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                             )}
                             {wr !== null ? `${wr}%` : "—"}
                           </div>
-                          <div className="text-[10px] text-muted-foreground mt-0.5">
+                          <div className="text-[10px] text-muted-foreground mt-0.5 relative">
                             {games !== null ? `${games} ${t("tournament.games")}` : ""}
                           </div>
                         </td>
