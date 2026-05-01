@@ -84,8 +84,8 @@ const TournamentStrategist = () => {
   const canUseProFeatures = IS_PRO || (!IS_PRO && !isExhausted);
 
   // Filters State
-  const [minMatchupGames, setMinMatchupGames] = useState<number>(100);
-  const [minArchetypeGames, setMinArchetypeGames] = useState<number>(100);
+  const [minMatchupGames, setMinMatchupGames] = useState<number>(50);
+  const [minArchetypeGames, setMinArchetypeGames] = useState<number>(50);
 
   const filteredArchetypes = useMemo(() => {
     return archetypeList.filter((a) => {
