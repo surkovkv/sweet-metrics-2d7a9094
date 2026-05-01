@@ -184,7 +184,8 @@ async function scrapeOne(apiKey: string, rankHsguru: string, periodHsguru: strin
     body: JSON.stringify({
       url,
       formats: ["html"],
-      waitFor: 8000,
+      waitFor: 5000,
+      timeout: 45000,
       onlyMainContent: false,
     }),
   });
