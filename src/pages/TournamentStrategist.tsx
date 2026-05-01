@@ -389,16 +389,30 @@ const TournamentStrategist = () => {
                 {t("tournament.yourDecks")}
               </label>
               <div className="space-y-3">
-                {myArchetypes.map((arch, i) => (
-                  <ArchetypeSelect key={`my-${i}`} value={arch}
-                    onChange={(val) => updateMyArchetype(i, val)}
-                    placeholder={`${t("tournament.deck")} ${i + 1}...`}
-                    excludeValues={[...myArchetypes.filter((_, j) => j !== i).filter(Boolean)]}
-                    archetypeList={filteredArchetypes}
-                    getWinrate={getWinrate}
-                    archetypeGames={archetypeGames}
-                  />
-                ))}
+                {myArchetypes.map((arch, i) => {
+                  const isMyBanned = showResult && oppManualBanIndex === i;
+                  return (
+                    <div key={`my-${i}`} className="relative">
+                      <ArchetypeSelect value={arch}
+                        onChange={(val) => updateMyArchetype(i, val)}
+                        placeholder={`${t("tournament.deck")} ${i + 1}...`}
+                        excludeValues={[...myArchetypes.filter((_, j) => j !== i).filter(Boolean)]}
+                        archetypeList={filteredArchetypes}
+                        getWinrate={getWinrate}
+                        archetypeGames={archetypeGames}
+                      />
+                      {isMyBanned && (
+                        <div className="absolute inset-0 flex items-center pointer-events-none">
+                          <div className="absolute inset-0 rounded-lg border-2 border-destructive/50" />
+                          <div className="absolute left-0 right-0 top-1/2 h-[3px] bg-destructive -translate-y-1/2 mx-2" />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded">
+                            BAN
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </motion.div>
 
