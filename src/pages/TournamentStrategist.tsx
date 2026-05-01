@@ -916,16 +916,21 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                 const isMyBanned = oppBannedIndex === rowIdx;
                 const info = getArchetypeInfo(my);
                 return (
-                  <tr key={rowIdx} className={isMyBanned ? "opacity-40" : ""}>
-                    <td className="py-3 px-3 font-medium text-primary border-2 border-border">
-                      <div className={isMyBanned ? "line-through" : ""}>{my}</div>
+                  <tr key={rowIdx} className={cn(isMyBanned && "opacity-90")}>
+                    <td className={cn(
+                      "py-3 px-3 font-medium border-2 border-border",
+                      isMyBanned ? "text-destructive" : "text-primary",
+                    )}>
+                      {isMyBanned && (
+                        <span className="bg-destructive text-destructive-foreground text-[9px] font-bold px-1.5 py-0.5 rounded mb-1 inline-block">
+                          BAN
+                        </span>
+                      )}
+                      <div className={isMyBanned ? "line-through decoration-destructive decoration-[3px]" : ""}>{my}</div>
                       {info && archetypeGames && (
                         <div className="text-[10px] text-muted-foreground mt-1">
                           <span>{(archetypeGames[my] || 0).toLocaleString('ru-RU')} игр</span>
                         </div>
-                      )}
-                      {isMyBanned && (
-                        <span className="text-[9px] bg-destructive/20 text-destructive px-1 py-0.5 rounded">{t("tournament.banned")}</span>
                       )}
                     </td>
                     {oppArchetypes.map((opp, colIdx) => {
