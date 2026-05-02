@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Grid3x3, Loader2, Info, Trophy, Swords, Filter, Clock, Search } from "lucide-react";
+import { Grid3x3, Loader2, Info, Trophy, Swords, Filter, Clock, Layers } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
