@@ -51,16 +51,12 @@ const MatchupTable = () => {
   const { archetypeList, matchupDB, gamesDB, archetypeGames, loading } =
     useMatchupData(rank, period);
 
-  // Rows: only filter by 50+ games + class + name search; NO sorting (preserve original order = popularity from server)
+  // Rows: enforce min-archetype-games + class filter; preserve popularity order from server.
   const rows = useMemo(() => {
-    let list = archetypeList.filter((a) => (archetypeGames[a.name] ?? 0) >= MIN_ARCHETYPE_GAMES);
+    let list = archetypeList.filter((a) => (archetypeGames[a.name] ?? 0) >= Math.max(minArchetypeGames, MIN_ARCHETYPE_GAMES));
     if (classFilter !== "all") list = list.filter((a) => a.hsClass === classFilter);
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      list = list.filter((a) => a.name.toLowerCase().includes(q));
-    }
     return list;
-  }, [archetypeList, archetypeGames, classFilter, search]);
+  }, [archetypeList, archetypeGames, classFilter, minArchetypeGames]);
 
   // Columns: keep ALL eligible archetypes (≥50 games), independent of class filter,
   // but drop columns that have NO data above threshold for any selected row.
