@@ -18,33 +18,33 @@ const Landing = () => {
     <div className="min-h-screen bg-background overflow-x-hidden">
       <ManaLensNavbar />
 
-      <main className="container mx-auto px-4 pt-24 pb-16 max-w-5xl">
+      <main className="container mx-auto px-4 pt-20 pb-10 max-w-5xl">
 
         {/* Hero — без дублирующих CTA, чтобы не повторять карточки ниже */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center py-12 md:py-20 relative"
+          className="text-center pt-4 pb-8 md:pt-6 md:pb-10 relative"
         >
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-primary/10 rounded-full blur-3xl" />
           </div>
 
           <div className="relative z-10">
-            <h1 className="font-display text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
+            <h1 className="font-display text-4xl md:text-6xl font-bold text-foreground mb-4 leading-tight">
               {t("landing.heroTitle")}<br className="hidden md:block" />{" "}
               <span className="text-primary">{t("landing.heroTitleHS")}</span>
             </h1>
 
-            <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed">
+            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto mb-2 leading-relaxed">
               {t("landing.heroDesc")}
             </p>
 
             {!user && (
-              <div className="flex items-center justify-center gap-3 flex-wrap mt-6">
+              <div className="flex items-center justify-center gap-3 flex-wrap mt-4">
                 <Link to="/auth">
-                  <Button variant="outline" size="lg" className="h-12 px-8 text-base">
+                  <Button variant="outline" size="lg" className="h-11 px-6 text-base">
                     {t("landing.loginSignup")}
                   </Button>
                 </Link>
