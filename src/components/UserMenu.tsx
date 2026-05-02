@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { User, Crown, LogOut, Shield } from "lucide-react";
+import { Crown, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useT } from "@/i18n/useTranslation";
 import {
