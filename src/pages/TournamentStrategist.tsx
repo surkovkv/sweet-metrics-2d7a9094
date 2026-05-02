@@ -473,34 +473,27 @@ const TournamentStrategist = () => {
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}
                 className="hidden md:flex flex-col items-center gap-2 pt-8">
                 {currentHistory.length > 0 ? (
-                  currentHistory.map((entry, idx) => (
-                    <Tooltip key={idx}>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => restoreFromHistory(entry)}
-                          className={cn(
-                            "w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110",
-                            idx === 0
-                              ? "border-primary bg-primary/10 text-primary"
-                              : "border-border bg-secondary/50 text-muted-foreground hover:border-primary/50",
-                          )}
-                        >
-                          {idx === 0 ? <Star className="h-4 w-4" /> : <History className="h-3.5 w-3.5" />}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="left" className="max-w-xs">
-                        <p className="text-xs font-semibold">BAN: {entry.bannedDeck}</p>
-                        <p className={`text-xs font-bold ${getWinrateColor(entry.avgWr)}`}>{entry.avgWr}%</p>
-                        <p className="text-[10px] text-muted-foreground mt-1">{entry.myDecks.join(", ")} vs {entry.oppDecks.join(", ")}</p>
-                        <p className="text-[10px] text-primary mt-1">{t("tournament.restoreBan")}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => restoreFromHistory(currentHistory[0])}
+                        className="w-9 h-9 rounded-full border-2 border-primary bg-primary/10 text-primary flex items-center justify-center transition-all hover:scale-110"
+                      >
+                        <Clock className="h-4 w-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-xs">
+                      <p className="text-xs font-semibold">BAN: {currentHistory[0].bannedDeck}</p>
+                      <p className={`text-xs font-bold ${getWinrateColor(currentHistory[0].avgWr)}`}>{currentHistory[0].avgWr}%</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">{currentHistory[0].myDecks.join(", ")} vs {currentHistory[0].oppDecks.join(", ")}</p>
+                      <p className="text-[10px] text-primary mt-1">{t("tournament.restoreBan")}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 ) : (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className="w-9 h-9 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground">
-                        <History className="h-3.5 w-3.5" />
+                        <Clock className="h-3.5 w-3.5" />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="left">
@@ -512,30 +505,23 @@ const TournamentStrategist = () => {
             )}
           </div>
 
-          {/* Mobile Ban History — PRO only */}
+          {/* Mobile Ban History — PRO only (single last entry) */}
           {IS_LOGGED_IN && IS_PRO && currentHistory.length > 0 && (
             <div className="md:hidden flex gap-2 mb-4 justify-center items-center">
-              {currentHistory.map((entry, idx) => (
-                <Tooltip key={idx}>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => restoreFromHistory(entry)}
-                      className={cn(
-                        "w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all",
-                        idx === 0
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-secondary/50 text-muted-foreground",
-                      )}
-                    >
-                      {idx === 0 ? <Star className="h-4 w-4" /> : <History className="h-3.5 w-3.5" />}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-xs font-semibold">BAN: {entry.bannedDeck} ({entry.avgWr}%)</p>
-                    <p className="text-[10px] text-primary">{t("tournament.restoreBan")}</p>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => restoreFromHistory(currentHistory[0])}
+                    className="w-9 h-9 rounded-full border-2 border-primary bg-primary/10 text-primary flex items-center justify-center transition-all"
+                  >
+                    <Clock className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs font-semibold">BAN: {currentHistory[0].bannedDeck} ({currentHistory[0].avgWr}%)</p>
+                  <p className="text-[10px] text-primary">{t("tournament.restoreBan")}</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           )}
 
