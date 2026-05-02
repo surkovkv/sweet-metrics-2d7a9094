@@ -45,8 +45,8 @@ const MatchupTable = () => {
   const [rank, setRank] = useState<RankFilter>("all");
   const [period, setPeriod] = useState<string>("current");
   const [minMatchupGames, setMinMatchupGames] = useState<number>(50);
+  const [minArchetypeGames, setMinArchetypeGames] = useState<number>(50);
   const [classFilter, setClassFilter] = useState<string>("all");
-  const [search, setSearch] = useState<string>("");
 
   const { archetypeList, matchupDB, gamesDB, archetypeGames, loading } =
     useMatchupData(rank, period);
