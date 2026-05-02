@@ -18,33 +18,33 @@ const Landing = () => {
     <div className="min-h-screen bg-background overflow-x-hidden">
       <ManaLensNavbar />
 
-      <main className="container mx-auto px-4 pt-24 pb-16 max-w-5xl">
+      <main className="container mx-auto px-4 pt-20 pb-10 max-w-5xl">
 
         {/* Hero — без дублирующих CTA, чтобы не повторять карточки ниже */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center py-12 md:py-20 relative"
+          className="text-center pt-4 pb-8 md:pt-6 md:pb-10 relative"
         >
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-primary/10 rounded-full blur-3xl" />
           </div>
 
           <div className="relative z-10">
-            <h1 className="font-display text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
+            <h1 className="font-display text-4xl md:text-6xl font-bold text-foreground mb-4 leading-tight">
               {t("landing.heroTitle")}<br className="hidden md:block" />{" "}
               <span className="text-primary">{t("landing.heroTitleHS")}</span>
             </h1>
 
-            <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed">
+            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto mb-2 leading-relaxed">
               {t("landing.heroDesc")}
             </p>
 
             {!user && (
-              <div className="flex items-center justify-center gap-3 flex-wrap mt-6">
+              <div className="flex items-center justify-center gap-3 flex-wrap mt-4">
                 <Link to="/auth">
-                  <Button variant="outline" size="lg" className="h-12 px-8 text-base">
+                  <Button variant="outline" size="lg" className="h-11 px-6 text-base">
                     {t("landing.loginSignup")}
                   </Button>
                 </Link>
@@ -58,7 +58,7 @@ const Landing = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-20"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10"
         >
           <Link to="/matchups" className="group">
             <div className="h-full p-6 rounded-2xl bg-primary/10 border border-primary/30 hover:bg-primary/15 hover:border-primary/60 transition-all duration-300 hover:-translate-y-1 flex flex-col">
@@ -106,26 +106,28 @@ const Landing = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45, duration: 0.5 }}
-          className="mb-20"
+          className="mb-12"
         >
-          <div className="relative rounded-2xl overflow-hidden border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="relative rounded-2xl overflow-hidden border-2 border-yellow-400/60 bg-gradient-to-br from-yellow-400/15 via-yellow-500/10 to-amber-500/5 p-7 shadow-[0_0_40px_-10px_rgba(250,204,21,0.4)]">
+            {/* shimmer sweep */}
+            <div className="pointer-events-none absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-yellow-300/20 to-transparent" />
+            <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-400/25 text-yellow-200 text-xs font-bold mb-3">
                   <Crown className="h-3.5 w-3.5" /> {t("landing.proPlan")}
                 </div>
-                <h2 className="font-display text-2xl font-bold text-foreground mb-3">
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-yellow-100 mb-3 tracking-tight">
                   {t("landing.proUnlock")}
                 </h2>
-                <ul className="space-y-2">
+                <ul className="space-y-1.5">
                   {[
                     { icon: <BarChart2 className="h-4 w-4" />, text: t("landing.proFeature1") },
                     { icon: <Star className="h-4 w-4" />, text: t("landing.proFeature2") },
                     { icon: <Shield className="h-4 w-4" />, text: t("landing.proFeature3") },
                     { icon: <Zap className="h-4 w-4" />, text: t("landing.proFeature4") },
                   ].map((item, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span className="text-primary">{item.icon}</span>
+                    <li key={i} className="flex items-center gap-2 text-sm text-foreground/85">
+                      <span className="text-yellow-300">{item.icon}</span>
                       {item.text}
                     </li>
                   ))}
@@ -133,17 +135,17 @@ const Landing = () => {
               </div>
               <div className="flex flex-col items-center gap-3 shrink-0">
                 {isPro ? (
-                  <div className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary/20 text-primary font-semibold">
+                  <div className="flex items-center gap-2 px-6 py-3 rounded-xl bg-yellow-400/25 text-yellow-100 font-semibold">
                     <Crown className="h-5 w-5" /> {t("landing.proActive")}
                   </div>
                 ) : (
                   <>
                     <Link to="/upgrade">
-                      <Button size="lg" className="px-8 gap-2 shadow-lg shadow-primary/25">
+                      <Button size="lg" className="px-8 gap-2 bg-yellow-400 text-black hover:bg-yellow-300 shadow-lg shadow-yellow-500/40">
                         <Crown className="h-4 w-4" /> {t("landing.tryPro")}
                       </Button>
                     </Link>
-                    <p className="text-xs text-muted-foreground text-center">{t("landing.freeTrial")}</p>
+                    <p className="text-xs text-yellow-100/80 text-center">{t("landing.freeTrial")}</p>
                   </>
                 )}
               </div>
@@ -155,9 +157,6 @@ const Landing = () => {
         <footer className="border-t border-border pt-8 pb-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded bg-primary flex items-center justify-center">
-                <span className="font-display text-[10px] font-bold text-primary-foreground">HS</span>
-              </div>
               <span className="font-display text-sm font-semibold text-foreground">
                 HS Tourney<span className="text-primary">Helper</span>
               </span>

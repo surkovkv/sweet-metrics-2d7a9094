@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Grid3x3, Loader2, Info, Trophy, Swords, Filter, Clock, Search } from "lucide-react";
+import { Grid3x3, Loader2, Info, Trophy, Swords, Filter, Clock, Layers } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -46,28 +45,24 @@ const MatchupTable = () => {
   const [rank, setRank] = useState<RankFilter>("all");
   const [period, setPeriod] = useState<string>("current");
   const [minMatchupGames, setMinMatchupGames] = useState<number>(50);
+  const [minArchetypeGames, setMinArchetypeGames] = useState<number>(50);
   const [classFilter, setClassFilter] = useState<string>("all");
-  const [search, setSearch] = useState<string>("");
 
   const { archetypeList, matchupDB, gamesDB, archetypeGames, loading } =
     useMatchupData(rank, period);
 
-  // Rows: only filter by 50+ games + class + name search; NO sorting (preserve original order = popularity from server)
+  // Rows: enforce min-archetype-games + class filter; preserve popularity order from server.
   const rows = useMemo(() => {
-    let list = archetypeList.filter((a) => (archetypeGames[a.name] ?? 0) >= MIN_ARCHETYPE_GAMES);
+    let list = archetypeList.filter((a) => (archetypeGames[a.name] ?? 0) >= Math.max(minArchetypeGames, MIN_ARCHETYPE_GAMES));
     if (classFilter !== "all") list = list.filter((a) => a.hsClass === classFilter);
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      list = list.filter((a) => a.name.toLowerCase().includes(q));
-    }
     return list;
-  }, [archetypeList, archetypeGames, classFilter, search]);
+  }, [archetypeList, archetypeGames, classFilter, minArchetypeGames]);
 
   // Columns: keep ALL eligible archetypes (≥50 games), independent of class filter,
   // but drop columns that have NO data above threshold for any selected row.
   const allCols = useMemo(
-    () => archetypeList.filter((a) => (archetypeGames[a.name] ?? 0) >= MIN_ARCHETYPE_GAMES),
-    [archetypeList, archetypeGames],
+    () => archetypeList.filter((a) => (archetypeGames[a.name] ?? 0) >= Math.max(minArchetypeGames, MIN_ARCHETYPE_GAMES)),
+    [archetypeList, archetypeGames, minArchetypeGames],
   );
 
   const cols = useMemo(() => {
@@ -157,13 +152,15 @@ const MatchupTable = () => {
                 </Select>
               </FilterCell>
 
-              <FilterCell icon={<Search className="h-3.5 w-3.5 text-primary" />} label={t("matchups.search")}>
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder={t("matchups.searchPlaceholder")}
-                  className="h-9 bg-background border-border text-sm"
-                />
+              <FilterCell icon={<Layers className="h-3.5 w-3.5 text-primary" />} label={t("matchups.minArchetype")}>
+                <Select value={String(minArchetypeGames)} onValueChange={(v) => setMinArchetypeGames(Number(v))}>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {SAMPLE_OPTIONS.map((n) => (
+                      <SelectItem key={n} value={String(n)}>≥ {n.toLocaleString()}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </FilterCell>
             </div>
           </motion.div>

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { User, Crown, LogOut, Shield } from "lucide-react";
+import { Crown, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useT } from "@/i18n/useTranslation";
 import {
@@ -45,12 +45,6 @@ const UserMenu = () => {
           <p className="text-xs text-muted-foreground">{user.email}</p>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer gap-2" asChild>
-          <Link to="/profile">
-            <User className="h-4 w-4" />
-            {t("userMenu.profile")}
-          </Link>
-        </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem className="cursor-pointer gap-2 text-primary focus:text-primary" asChild>
             <Link to="/admin">

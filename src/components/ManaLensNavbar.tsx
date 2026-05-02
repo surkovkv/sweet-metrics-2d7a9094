@@ -24,9 +24,6 @@ const ManaLensNavbar = () => {
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="font-display text-xs font-bold text-primary-foreground">HS</span>
-          </div>
           <span className="font-display text-lg font-bold text-foreground">
             HS Tourney<span className="text-primary">Helper</span>
           </span>
