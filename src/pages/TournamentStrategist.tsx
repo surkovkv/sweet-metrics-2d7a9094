@@ -259,10 +259,12 @@ const TournamentStrategist = () => {
 
   const effectiveBanIdx = manualBanIndex ?? (banOptions.length > 0 ? banOptions[0].bannedIndex : null);
 
+  // For optimal first deck, use confirmed ban if any, otherwise the suggested one.
+  const oppBanForCalc = oppManualBanIndex ?? suggestedOppBanIdx;
   const optimalFirstDeck = useMemo(() => {
     if (!showResult || !IS_PRO) return null;
-    return calculateOptimalFirstDeck(myArchetypes, oppArchetypes, oppManualBanIndex, effectiveBanIdx, getWinrate);
-  }, [showResult, IS_PRO, myArchetypes, oppArchetypes, effectiveBanIdx, oppManualBanIndex, getWinrate]);
+    return calculateOptimalFirstDeck(myArchetypes, oppArchetypes, oppBanForCalc, effectiveBanIdx, getWinrate);
+  }, [showResult, IS_PRO, myArchetypes, oppArchetypes, effectiveBanIdx, oppBanForCalc, getWinrate]);
 
   const restoreFromHistory = (entry: BanHistoryEntry) => {
     setMyArchetypes(entry.myDecks);
