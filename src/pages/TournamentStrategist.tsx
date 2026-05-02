@@ -643,153 +643,182 @@ const TournamentStrategist = () => {
                   )}
                 </div>
 
-                {/* Opponent Ban Section — PRO only */}
-                <div className="relative">
-                  {IS_PRO ? (
-                    <Card className="bg-card border-border">
-                      <CardHeader>
-                        <CardTitle className="font-display text-lg flex items-center gap-2">
-                          <ArrowLeftRight className="h-5 w-5 text-primary" />
-                          {t("tournament.oppBan")}
-                          <Button
-                            onClick={() => setShowOpponentBan(!showOpponentBan)}
-                            variant={showOpponentBan ? "default" : "secondary"}
-                            size="default"
-                            className="ml-auto gap-1.5 font-semibold"
-                          >
-                            {showOpponentBan ? t("tournament.hide") : t("tournament.show")}
-                          </Button>
-                        </CardTitle>
-                      </CardHeader>
-                      <AnimatePresence>
-                        {showOpponentBan && oppBanOptions.length > 0 && (
-                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}>
-                            <CardContent className="space-y-3 pt-0">
-                              <p className="text-xs text-muted-foreground mb-2">
-                                {t("tournament.oppBanDesc")}
-                              </p>
-                              {oppBanOptions.map((opt, i) => {
-                                const isOppBanned = oppManualBanIndex === opt.bannedIndex;
-                                return (
-                                  <div key={i}
-                                    onClick={() => setOppManualBanIndex(isOppBanned ? null : opt.bannedIndex)}
-                                    className={`p-3 rounded-lg cursor-pointer transition-all ${isOppBanned
-                                      ? "bg-destructive/10 border border-destructive/30"
-                                      : i === 0 ? "bg-destructive/10 border border-destructive/30" : "bg-secondary/50 hover:bg-secondary"
-                                      }`}>
-                                    <div className="flex items-center justify-between">
-                                      <span className={`font-medium text-sm ${i === 0 ? "text-destructive" : "text-muted-foreground"}`}>
-                                        {i === 0 ? "🔴 " : `#${i + 1} `}
-                                        {opt.bannedArchetype}
-                                      </span>
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <span className={`font-bold text-lg ${getWinrateColor(opt.avgWinrate)}`}>
-                                            {opt.avgWinrate}%
+                {/* Opponent Ban + Optimal First Deck — side-by-side */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Opponent Ban Section — PRO only */}
+                  <div className="relative">
+                    {IS_PRO ? (
+                      <Card className="bg-card border-border h-full">
+                        <CardHeader>
+                          <CardTitle className="font-display text-base flex items-center gap-2">
+                            <ArrowLeftRight className="h-5 w-5 text-primary" />
+                            <span className="truncate">{t("tournament.oppBan")}</span>
+                            <Button
+                              onClick={() => setShowOpponentBan(!showOpponentBan)}
+                              variant={showOpponentBan ? "default" : "secondary"}
+                              size="sm"
+                              className="ml-auto gap-1.5 font-semibold shrink-0"
+                            >
+                              {showOpponentBan ? t("tournament.hide") : t("tournament.show")}
+                            </Button>
+                          </CardTitle>
+                        </CardHeader>
+                        <AnimatePresence>
+                          {showOpponentBan && oppBanOptions.length > 0 && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}>
+                              <CardContent className="space-y-3 pt-0">
+                                <p className="text-xs text-muted-foreground mb-2">
+                                  {t("tournament.oppBanDesc")}
+                                </p>
+                                {oppBanOptions.map((opt, i) => {
+                                  const isConfirmed = oppManualBanIndex === opt.bannedIndex;
+                                  const isSuggested = !isConfirmed && oppManualBanIndex === null && i === 0;
+                                  return (
+                                    <div key={i}
+                                      onClick={() => setOppManualBanIndex(isConfirmed ? null : opt.bannedIndex)}
+                                      className={cn(
+                                        "p-3 rounded-lg cursor-pointer transition-all",
+                                        isConfirmed && "bg-destructive/15 border border-destructive/40",
+                                        isSuggested && "bg-orange-500/10 border border-orange-500/50 animate-pulse",
+                                        !isConfirmed && !isSuggested && "bg-secondary/50 hover:bg-secondary",
+                                      )}>
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                          {/* Checkbox: empty when only suggested, filled green check when confirmed */}
+                                          <span className={cn(
+                                            "h-4 w-4 shrink-0 rounded border flex items-center justify-center",
+                                            isConfirmed
+                                              ? "bg-green-500 border-green-500 text-white"
+                                              : isSuggested
+                                                ? "border-orange-500 bg-background"
+                                                : "border-border bg-background",
+                                          )}>
+                                            {isConfirmed && <Check className="h-3 w-3" />}
                                           </span>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                          <p className="text-xs">{t("tournament.avgWrAfterBan")}</p>
-                                        </TooltipContent>
-                                      </Tooltip>
+                                          <span className={cn(
+                                            "font-medium text-sm truncate",
+                                            isConfirmed ? "text-destructive" : isSuggested ? "text-orange-400" : "text-muted-foreground",
+                                          )}>
+                                            {!isConfirmed && !isSuggested && `#${i + 1} `}
+                                            {opt.bannedArchetype}
+                                          </span>
+                                        </div>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <span className={`font-bold text-base shrink-0 ${getWinrateColor(opt.avgWinrate)}`}>
+                                              {opt.avgWinrate}%
+                                            </span>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p className="text-xs">{t("tournament.avgWrAfterBan")}</p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </div>
+                                      {isSuggested && (
+                                        <p className="text-[11px] text-orange-300 mt-2 leading-snug bg-yellow-500/15 rounded px-2 py-1">
+                                          {t("tournament.confirmSuggestedHint")}
+                                        </p>
+                                      )}
+                                      {isConfirmed && (
+                                        <p className="text-[11px] text-green-400 mt-2 leading-snug">
+                                          {t("tournament.confirmedOppBan")}
+                                        </p>
+                                      )}
                                     </div>
-                                    {isOppBanned && (
-                                      <p className="text-xs text-muted-foreground mt-1">
-                                        {t("tournament.markedAsBanned")}
-                                      </p>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </CardContent>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </Card>
-                  ) : (
-                    <Card className="bg-card border-border overflow-hidden">
-                      <div className="relative p-6">
-                        <div className="absolute inset-0 backdrop-blur-xl bg-background/80 z-10 flex flex-col items-center justify-center gap-2">
-                          <Crown className="h-6 w-6 text-primary" />
-                          <p className="text-foreground font-medium text-sm">{t("tournament.proOnly")}</p>
-                          <p className="text-xs text-muted-foreground">{t("tournament.oppBanProDesc")}</p>
-                        </div>
-                        <div className="space-y-3 opacity-30 select-none" aria-hidden>
-                          <p className="font-display text-lg flex items-center gap-2">
-                            <ArrowLeftRight className="h-5 w-5" /> {t("tournament.oppBan")}
-                          </p>
-                          <div className="h-10 bg-secondary/50 rounded" />
-                          <div className="h-10 bg-secondary/50 rounded" />
-                        </div>
-                      </div>
-                    </Card>
-                  )}
-                </div>
-
-                {/* Optimal First Deck — PRO only */}
-                <div className="relative">
-                  {IS_PRO ? (
-                    <Card className="bg-card border-border border-l-4 border-l-primary">
-                      <CardHeader>
-                        <CardTitle className="font-display text-lg flex items-center gap-2">
-                          <Star className="h-5 w-5 text-primary" />
-                          {t("tournament.optimalFirstDeck")}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {optimalFirstDeck ? (
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-3">
-                              <span className="text-2xl font-bold text-primary">{optimalFirstDeck.archetype}</span>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className={`text-lg font-bold ${getWinrateColor(optimalFirstDeck.avgWr)}`}>
-                                    {optimalFirstDeck.avgWr}%
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p className="text-xs">{t("tournament.avgWrFull")}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              {t("tournament.reasoningTemplate")
-                                .replace("{deck}", optimalFirstDeck.archetype)
-                                .replace("{wr}", String(optimalFirstDeck.avgWr))
-                                .replace("{opp}", optimalFirstDeck.topOpponent ?? "—")}
-                            </p>
-                            {(effectiveBanIdx !== null || oppManualBanIndex !== null) && (
-                              <div className="mt-2 p-2 bg-secondary/50 rounded text-xs text-muted-foreground flex items-center gap-2">
-                                <Info className="h-3 w-3" />
-                                {t("tournament.calculatedWithBans")}
-                                {effectiveBanIdx !== null ? ` «${oppArchetypes[effectiveBanIdx]}»` : ""}
-                                {oppManualBanIndex !== null ? ` · ${t("tournament.oppBan")}: «${myArchetypes[oppManualBanIndex]}»` : ""}
-                              </div>
-                            )}
+                                  );
+                                })}
+                              </CardContent>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </Card>
+                    ) : (
+                      <Card className="bg-card border-border overflow-hidden h-full">
+                        <div className="relative p-6">
+                          <div className="absolute inset-0 backdrop-blur-xl bg-background/80 z-10 flex flex-col items-center justify-center gap-2">
+                            <Crown className="h-6 w-6 text-primary" />
+                            <p className="text-foreground font-medium text-sm">{t("tournament.proOnly")}</p>
+                            <p className="text-xs text-muted-foreground text-center">{t("tournament.oppBanProDesc")}</p>
                           </div>
-                        ) : (
-                          <p className="text-muted-foreground text-sm">{t("tournament.notEnoughData")}</p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <Card className="bg-card border-border overflow-hidden">
-                      <div className="relative p-6">
-                        <div className="absolute inset-0 backdrop-blur-xl bg-background/80 z-10 flex flex-col items-center justify-center gap-2">
-                          <Crown className="h-6 w-6 text-primary" />
-                          <p className="text-foreground font-medium text-sm">{t("tournament.proOnly")}</p>
-                          <p className="text-xs text-muted-foreground">{t("tournament.optimalFirstDeckProDesc")}</p>
+                          <div className="space-y-3 opacity-30 select-none" aria-hidden>
+                            <p className="font-display text-lg flex items-center gap-2">
+                              <ArrowLeftRight className="h-5 w-5" /> {t("tournament.oppBan")}
+                            </p>
+                            <div className="h-10 bg-secondary/50 rounded" />
+                            <div className="h-10 bg-secondary/50 rounded" />
+                          </div>
                         </div>
-                        <div className="space-y-3 opacity-30 select-none" aria-hidden>
-                          <p className="font-display text-lg flex items-center gap-2">
-                            <Star className="h-5 w-5" /> {t("tournament.optimalFirstDeck")}
-                          </p>
-                          <div className="h-12 bg-secondary/50 rounded" />
+                      </Card>
+                    )}
+                  </div>
+
+                  {/* Optimal First Deck — PRO only */}
+                  <div className="relative">
+                    {IS_PRO ? (
+                      <Card className="bg-card border-border border-l-4 border-l-primary h-full">
+                        <CardHeader>
+                          <CardTitle className="font-display text-base flex items-center gap-2">
+                            <Star className="h-5 w-5 text-primary" />
+                            <span className="truncate">{t("tournament.optimalFirstDeck")}</span>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {optimalFirstDeck ? (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-3 flex-wrap">
+                                <span className="text-xl font-bold text-primary">{optimalFirstDeck.archetype}</span>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className={`text-base font-bold ${getWinrateColor(optimalFirstDeck.avgWr)}`}>
+                                      {optimalFirstDeck.avgWr}%
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs">{t("tournament.avgWrFull")}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                {t("tournament.reasoningTemplate")
+                                  .replace("{deck}", optimalFirstDeck.archetype)
+                                  .replace("{wr}", String(optimalFirstDeck.avgWr))
+                                  .replace("{opp}", optimalFirstDeck.topOpponent ?? "—")}
+                              </p>
+                              {(effectiveBanIdx !== null || oppBanForCalc !== null) && (
+                                <div className="mt-2 p-2 bg-secondary/50 rounded text-xs text-muted-foreground flex items-start gap-2">
+                                  <Info className="h-3 w-3 mt-0.5 shrink-0" />
+                                  <span>
+                                    {t("tournament.calculatedWithBans")}
+                                    {effectiveBanIdx !== null ? ` «${oppArchetypes[effectiveBanIdx]}»` : ""}
+                                    {oppBanForCalc !== null ? ` · ${t("tournament.oppBan")}: «${myArchetypes[oppBanForCalc]}»` : ""}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-muted-foreground text-sm">{t("tournament.notEnoughData")}</p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <Card className="bg-card border-border overflow-hidden h-full">
+                        <div className="relative p-6">
+                          <div className="absolute inset-0 backdrop-blur-xl bg-background/80 z-10 flex flex-col items-center justify-center gap-2">
+                            <Crown className="h-6 w-6 text-primary" />
+                            <p className="text-foreground font-medium text-sm">{t("tournament.proOnly")}</p>
+                            <p className="text-xs text-muted-foreground text-center">{t("tournament.optimalFirstDeckProDesc")}</p>
+                          </div>
+                          <div className="space-y-3 opacity-30 select-none" aria-hidden>
+                            <p className="font-display text-lg flex items-center gap-2">
+                              <Star className="h-5 w-5" /> {t("tournament.optimalFirstDeck")}
+                            </p>
+                            <div className="h-12 bg-secondary/50 rounded" />
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  )}
+                      </Card>
+                    )}
+                  </div>
                 </div>
 
               </motion.div>
