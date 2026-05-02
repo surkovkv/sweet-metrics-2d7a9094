@@ -45,7 +45,7 @@ type GetEstimatedGamesFn = (a: string, b: string) => number | null;
 
 /* Ban History */
 const BAN_HISTORY_KEY = "manalens_ban_history";
-const MAX_HISTORY = 3;
+const MAX_HISTORY = 1;
 
 interface BanHistoryEntry {
   myDecks: string[];
