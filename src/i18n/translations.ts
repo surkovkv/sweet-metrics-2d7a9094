@@ -147,7 +147,6 @@ const ru: Record<string, string> = {
   "tournament.confirmedOppBan": "Отмечено как бан противника — отражено в таблице и учтено для выбора оптимальной колоды для первой игры серии.",
   "matchups.search": "Поиск",
   "matchups.searchPlaceholder": "Название архетипа...",
-  "matchups.minArchetype": "Мин. игр (архетип)",
   "tournament.avgWr": "AVG WR",
   "tournament.avgWrDesc": "Средний винрейт колоды против всех других в мете",
   "tournament.popLabel": "Pop.",
