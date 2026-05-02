@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Swords, Trophy, ShieldAlert, Target, Info, Gamepad2,
-  Lock, Crown, Ban, ArrowLeftRight, HelpCircle, Star, ChevronDown, ChevronUp, History, RotateCcw,
+  Lock, Crown, Ban, ArrowLeftRight, HelpCircle, Star, ChevronDown, ChevronUp, History, RotateCcw, Clock,
   Layers, AlertTriangle, ChevronsUpDown, Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
