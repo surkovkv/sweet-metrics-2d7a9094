@@ -152,13 +152,15 @@ const MatchupTable = () => {
                 </Select>
               </FilterCell>
 
-              <FilterCell icon={<Search className="h-3.5 w-3.5 text-primary" />} label={t("matchups.search")}>
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder={t("matchups.searchPlaceholder")}
-                  className="h-9 bg-background border-border text-sm"
-                />
+              <FilterCell icon={<Layers className="h-3.5 w-3.5 text-primary" />} label={t("matchups.minArchetype")}>
+                <Select value={String(minArchetypeGames)} onValueChange={(v) => setMinArchetypeGames(Number(v))}>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {SAMPLE_OPTIONS.map((n) => (
+                      <SelectItem key={n} value={String(n)}>≥ {n.toLocaleString()}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </FilterCell>
             </div>
           </motion.div>
