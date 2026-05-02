@@ -106,26 +106,28 @@ const Landing = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45, duration: 0.5 }}
-          className="mb-20"
+          className="mb-12"
         >
-          <div className="relative rounded-2xl overflow-hidden border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="relative rounded-2xl overflow-hidden border-2 border-yellow-400/60 bg-gradient-to-br from-yellow-400/15 via-yellow-500/10 to-amber-500/5 p-7 shadow-[0_0_40px_-10px_rgba(250,204,21,0.4)]">
+            {/* shimmer sweep */}
+            <div className="pointer-events-none absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-yellow-300/20 to-transparent" />
+            <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-400/25 text-yellow-200 text-xs font-bold mb-3">
                   <Crown className="h-3.5 w-3.5" /> {t("landing.proPlan")}
                 </div>
-                <h2 className="font-display text-2xl font-bold text-foreground mb-3">
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-yellow-100 mb-3 tracking-tight">
                   {t("landing.proUnlock")}
                 </h2>
-                <ul className="space-y-2">
+                <ul className="space-y-1.5">
                   {[
                     { icon: <BarChart2 className="h-4 w-4" />, text: t("landing.proFeature1") },
                     { icon: <Star className="h-4 w-4" />, text: t("landing.proFeature2") },
                     { icon: <Shield className="h-4 w-4" />, text: t("landing.proFeature3") },
                     { icon: <Zap className="h-4 w-4" />, text: t("landing.proFeature4") },
                   ].map((item, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span className="text-primary">{item.icon}</span>
+                    <li key={i} className="flex items-center gap-2 text-sm text-foreground/85">
+                      <span className="text-yellow-300">{item.icon}</span>
                       {item.text}
                     </li>
                   ))}
@@ -133,17 +135,17 @@ const Landing = () => {
               </div>
               <div className="flex flex-col items-center gap-3 shrink-0">
                 {isPro ? (
-                  <div className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary/20 text-primary font-semibold">
+                  <div className="flex items-center gap-2 px-6 py-3 rounded-xl bg-yellow-400/25 text-yellow-100 font-semibold">
                     <Crown className="h-5 w-5" /> {t("landing.proActive")}
                   </div>
                 ) : (
                   <>
                     <Link to="/upgrade">
-                      <Button size="lg" className="px-8 gap-2 shadow-lg shadow-primary/25">
+                      <Button size="lg" className="px-8 gap-2 bg-yellow-400 text-black hover:bg-yellow-300 shadow-lg shadow-yellow-500/40">
                         <Crown className="h-4 w-4" /> {t("landing.tryPro")}
                       </Button>
                     </Link>
-                    <p className="text-xs text-muted-foreground text-center">{t("landing.freeTrial")}</p>
+                    <p className="text-xs text-yellow-100/80 text-center">{t("landing.freeTrial")}</p>
                   </>
                 )}
               </div>
