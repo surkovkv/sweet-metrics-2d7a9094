@@ -157,9 +157,6 @@ const Landing = () => {
         <footer className="border-t border-border pt-8 pb-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded bg-primary flex items-center justify-center">
-                <span className="font-display text-[10px] font-bold text-primary-foreground">HS</span>
-              </div>
               <span className="font-display text-sm font-semibold text-foreground">
                 HS Tourney<span className="text-primary">Helper</span>
               </span>
