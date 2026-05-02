@@ -61,8 +61,8 @@ const MatchupTable = () => {
   // Columns: keep ALL eligible archetypes (≥50 games), independent of class filter,
   // but drop columns that have NO data above threshold for any selected row.
   const allCols = useMemo(
-    () => archetypeList.filter((a) => (archetypeGames[a.name] ?? 0) >= MIN_ARCHETYPE_GAMES),
-    [archetypeList, archetypeGames],
+    () => archetypeList.filter((a) => (archetypeGames[a.name] ?? 0) >= Math.max(minArchetypeGames, MIN_ARCHETYPE_GAMES)),
+    [archetypeList, archetypeGames, minArchetypeGames],
   );
 
   const cols = useMemo(() => {
