@@ -904,26 +904,31 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr>
-                <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs border-2 border-border">
+                <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs border-2 border-border min-w-[110px] max-w-[140px]">
                   {t("tournament.youVsOpp")}
                 </th>
                 {oppArchetypes.map((opp, i) => {
                   const isBanned = bannedIndex === i;
                   const info = getArchetypeInfo(opp);
                   return (
-                    <th key={i} className={`text-center py-2 px-3 font-medium text-xs border-2 border-border ${isBanned ? "text-destructive" : "text-muted-foreground"
-                      }`}>
-                      {isBanned && (
-                        <span className="bg-destructive text-destructive-foreground text-[9px] font-bold px-1.5 py-0.5 rounded mb-1 inline-block">
-                          BAN
-                        </span>
-                      )}
-                      <div className={isBanned ? "line-through decoration-destructive decoration-[3px]" : ""}>{opp}</div>
-                      {info && archetypeGames && (
-                        <div className="text-[10px] opacity-60 space-y-0.5 mt-1">
-                          <div>{(archetypeGames[opp] || 0).toLocaleString('ru-RU')} игр</div>
-                        </div>
-                      )}
+                    <th key={i} className={cn(
+                      "text-center py-2 px-3 font-medium text-xs border-2 border-border align-bottom",
+                      isBanned ? "text-destructive opacity-70" : "text-foreground",
+                    )}>
+                      <div className="flex flex-col items-center gap-1">
+                        {isBanned && (
+                          <span className="bg-destructive text-destructive-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">BAN</span>
+                        )}
+                        <span className={cn(
+                          "inline-block",
+                          isBanned && "line-through decoration-destructive decoration-[2px]",
+                        )}>{opp}</span>
+                        {info && archetypeGames && (
+                          <span className="text-[10px] opacity-60">
+                            {(archetypeGames[opp] || 0).toLocaleString('ru-RU')} игр
+                          </span>
+                        )}
+                      </div>
                     </th>
                   );
                 })}
@@ -934,22 +939,25 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                 const isMyBanned = oppBannedIndex === rowIdx;
                 const info = getArchetypeInfo(my);
                 return (
-                  <tr key={rowIdx} className={cn(isMyBanned && "opacity-90")}>
+                  <tr key={rowIdx}>
                     <td className={cn(
-                      "py-3 px-3 font-medium border-2 border-border",
-                      isMyBanned ? "text-destructive" : "text-primary",
+                      "py-3 px-3 font-medium border-2 border-border min-w-[110px] max-w-[160px]",
+                      isMyBanned ? "text-destructive opacity-70" : "text-primary",
                     )}>
-                      {isMyBanned && (
-                        <span className="bg-destructive text-destructive-foreground text-[9px] font-bold px-1.5 py-0.5 rounded mb-1 inline-block">
-                          BAN
-                        </span>
-                      )}
-                      <div className={isMyBanned ? "line-through decoration-destructive decoration-[3px]" : ""}>{my}</div>
-                      {info && archetypeGames && (
-                        <div className="text-[10px] text-muted-foreground mt-1">
-                          <span>{(archetypeGames[my] || 0).toLocaleString('ru-RU')} игр</span>
-                        </div>
-                      )}
+                      <div className="flex flex-col items-start gap-1">
+                        {isMyBanned && (
+                          <span className="bg-destructive text-destructive-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">BAN</span>
+                        )}
+                        <span className={cn(
+                          "inline-block",
+                          isMyBanned && "line-through decoration-destructive decoration-[2px]",
+                        )}>{my}</span>
+                        {info && archetypeGames && (
+                          <span className="text-[10px] text-muted-foreground">
+                            {(archetypeGames[my] || 0).toLocaleString('ru-RU')} игр
+                          </span>
+                        )}
+                      </div>
                     </td>
                     {oppArchetypes.map((opp, colIdx) => {
                       const wr = wrFn(my, opp);
@@ -960,17 +968,13 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                       return (
                         <td key={colIdx}
                           className={cn(
-                            "relative py-3 px-3 text-center border-2 border-border",
+                            "py-3 px-3 text-center border-2 border-border",
                             isLowSample ? "bg-yellow-500/15" : getWinrateBg(wr),
+                            isCellBanned && "opacity-60",
                           )}>
-                          {/* red strike-through line on banned cells, drawn so % stays readable */}
-                          {isCellBanned && (
-                            <div className="pointer-events-none absolute left-1 right-1 top-1/2 h-[3px] bg-destructive/80 -translate-y-1/2 rounded-sm" />
-                          )}
                           <div className={cn(
-                            "font-bold flex items-center justify-center gap-1 relative",
+                            "font-bold flex items-center justify-center gap-1",
                             getWinrateColor(wr),
-                            isCellBanned && "opacity-90",
                           )}>
                             {isLowSample && (
                               <Tooltip>
@@ -982,9 +986,14 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                                 </TooltipContent>
                               </Tooltip>
                             )}
-                            {wr !== null ? `${wr}%` : "—"}
+                            <span className={cn(
+                              "inline-block",
+                              isCellBanned && "line-through decoration-destructive decoration-[2px]",
+                            )}>
+                              {wr !== null ? `${wr}%` : "—"}
+                            </span>
                           </div>
-                          <div className="text-[10px] text-muted-foreground mt-0.5 relative">
+                          <div className="text-[10px] text-muted-foreground mt-0.5">
                             {games !== null ? `${games} ${t("tournament.games")}` : ""}
                           </div>
                         </td>
