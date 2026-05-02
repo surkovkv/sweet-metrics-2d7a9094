@@ -282,44 +282,42 @@ const TournamentStrategist = () => {
         <ManaLensNavbar />
         <main className="container mx-auto px-4 pt-24 pb-12 max-w-5xl">
 
-          {/* Header */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-6">
-            <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
-              {t("tournament.title")} <span className="text-primary">{t("tournament.titleHighlight")}</span>
-            </h1>
-          </motion.div>
-
-          {/* Info / Help Box — "Принцип работы" */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="mb-6">
-            <button
-              onClick={() => setShowInfoBox(!showInfoBox)}
-              className="flex items-center gap-2 mx-auto text-sm text-muted-foreground hover:text-primary transition-colors bg-secondary/60 px-4 py-2 rounded-full border border-border"
-            >
-              <HelpCircle className="h-4 w-4" />
-              {t("tournament.howItWorks")}
-              {showInfoBox ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-            </button>
+          {/* Header — title + inline "How it works" toggle on the right */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground text-center">
+                {t("tournament.title")} <span className="text-primary">{t("tournament.titleHighlight")}</span>
+              </h1>
+              <button
+                onClick={() => setShowInfoBox(!showInfoBox)}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors bg-secondary/60 px-3 py-1.5 rounded-full border border-border"
+              >
+                <HelpCircle className="h-3.5 w-3.5" />
+                {t("tournament.howItWorks")}
+                {showInfoBox ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              </button>
+            </div>
             <AnimatePresence>
               {showInfoBox && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mt-3 p-5 rounded-xl bg-secondary/60 border border-border text-sm text-muted-foreground"
+                  className="mt-3 p-5 rounded-xl bg-secondary/60 border border-border text-sm text-muted-foreground w-full max-w-full overflow-hidden"
                 >
-                  <h3 className="font-semibold text-foreground mb-3 text-center">{t("tournament.conceptTitle")}</h3>
+                  <h3 className="font-semibold text-foreground mb-2">{t("tournament.conceptTitle")}</h3>
                   <p className="whitespace-pre-line leading-relaxed">{t("tournament.conceptDesc")}</p>
                 </motion.div>
               )}
             </AnimatePresence>
           </motion.div>
 
-          {/* Filters — grouped card */}
+          {/* Filters — grouped card (rank + deck count + min archetype + min matchup) */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-            className="mb-6">
-            <div className="rounded-2xl bg-secondary/40 border border-border p-4 flex flex-col sm:flex-row sm:items-end justify-center gap-4 sm:gap-6">
+            className="mb-8">
+            <div className="rounded-2xl bg-secondary/40 border border-border p-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
               {/* Rank */}
-              <div className="flex flex-col gap-1.5 min-w-[140px]">
+              <div className="flex flex-col gap-1.5 min-w-0">
                 <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                   <Trophy className="h-3.5 w-3.5 text-primary" /> {t("tournament.rank")}
                 </label>
@@ -334,10 +332,26 @@ const TournamentStrategist = () => {
                   </SelectContent>
                 </Select>
               </div>
-              {/* Min Archetype Games */}
-              <div className="flex flex-col gap-1.5 min-w-[140px]">
+              {/* Deck count */}
+              <div className="flex flex-col gap-1.5 min-w-0">
                 <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  <Layers className="h-3.5 w-3.5 text-primary" /> Min Archetype Games
+                  <Layers className="h-3.5 w-3.5 text-primary" /> {t("tournament.deckCount")}
+                </label>
+                <Select value={String(mode)} onValueChange={(v) => handleModeChange(Number(v) as DeckMode)}>
+                  <SelectTrigger className="h-9 bg-background border-border font-bold text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2">{t("tournament.decks2")}</SelectItem>
+                    <SelectItem value="3">{t("tournament.decks3")}</SelectItem>
+                    <SelectItem value="4">{t("tournament.decks4")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Min Archetype Games */}
+              <div className="flex flex-col gap-1.5 min-w-0">
+                <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <Layers className="h-3.5 w-3.5 text-primary" /> {t("matchups.minArchetype")}
                 </label>
                 <Select value={String(minArchetypeGames)} onValueChange={(v) => { setMinArchetypeGames(Number(v)); setShowResult(false); }}>
                   <SelectTrigger className="h-9 bg-background border-border font-bold text-sm">
@@ -351,9 +365,9 @@ const TournamentStrategist = () => {
                 </Select>
               </div>
               {/* Min Matchup Games */}
-              <div className="flex flex-col gap-1.5 min-w-[140px]">
+              <div className="flex flex-col gap-1.5 min-w-0">
                 <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  <Swords className="h-3.5 w-3.5 text-primary" /> Min Matchup Games
+                  <Swords className="h-3.5 w-3.5 text-primary" /> {t("matchups.minMatchup")}
                 </label>
                 <Select value={String(minMatchupGames)} onValueChange={(v) => { setMinMatchupGames(Number(v)); setShowResult(false); }}>
                   <SelectTrigger className="h-9 bg-background border-border font-bold text-sm">
@@ -367,18 +381,6 @@ const TournamentStrategist = () => {
                 </Select>
               </div>
             </div>
-          </motion.div>
-
-          {/* Mode Toggle */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-            className="flex justify-center gap-3 mb-8">
-            {([2, 3, 4] as DeckMode[]).map((m) => (
-              <button key={m} onClick={() => handleModeChange(m)}
-                className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${mode === m ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
-                  }`}>
-                {t(m === 2 ? "tournament.decks2" : m === 3 ? "tournament.decks3" : "tournament.decks4")}
-              </button>
-            ))}
           </motion.div>
 
           {/* Duplicate warning */}
