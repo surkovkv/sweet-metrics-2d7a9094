@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { type ArchetypeInfo } from "@/data/matchups";
 
-export type RankFilter = "all" | "legend" | "top_1k";
+export type RankFilter = "all" | "legend" | "diamond_to_legend" | "top_1k" | "top_5k";
 
 interface MatchupData {
   archetypeList: ArchetypeInfo[];
