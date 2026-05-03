@@ -20,10 +20,16 @@ const HS_CLASSES = [
   "Priest", "Rogue", "Shaman", "Warlock", "Warrior",
 ];
 
+// Period filter values map directly to HSGuru's `period` query param.
+// "current" = no period param = HSGuru's "current patch" (resolved dynamically server-side).
+// TODO: получать версию патча динамически из hsguru.com (сейчас бэкенд просто
+// запрашивает hsguru без period — он сам отдаёт данные текущего патча).
 const PERIOD_OPTIONS: { value: string; labelKey: string }[] = [
   { value: "current", labelKey: "matchups.periodCurrent" },
+  { value: "past_day", labelKey: "matchups.periodDay" },
   { value: "past_3_days", labelKey: "matchups.period3Days" },
   { value: "past_week", labelKey: "matchups.periodWeek" },
+  { value: "past_2_week", labelKey: "matchups.period2Weeks" },
   { value: "past_month", labelKey: "matchups.periodMonth" },
 ];
 
