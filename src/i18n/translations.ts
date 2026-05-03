@@ -671,6 +671,8 @@ const en: Record<string, string> = {
   "matchups.rankAll": "All",
   "matchups.rankLegend": "Legend",
   "matchups.rankTop1k": "Top 1K",
+  "matchups.rankDiamondLegend": "Diamond — Legend",
+  "matchups.rankTop5k": "Top 5K",
   "matchups.minArchetype": "Min games (archetype)",
   "matchups.minMatchup": "Min games (matchup)",
   "matchups.any": "Any",
