@@ -970,10 +970,18 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                           className={cn(
                             "py-3 px-3 text-center border-2 border-border relative",
                             isLowSample ? "bg-yellow-500/15" : getWinrateBg(wr),
-                            isCellBanned && "opacity-50",
+                            isCellBanned && "opacity-60",
                           )}>
-                          {isCellBanned && wr !== null && (
-                            <div className="pointer-events-none absolute left-1 right-1 top-1/2 h-[4px] bg-destructive -translate-y-1/2 rounded-sm" />
+                          {isCellBanned && (
+                            <svg
+                              className="pointer-events-none absolute inset-0 w-full h-full z-10"
+                              preserveAspectRatio="none"
+                              viewBox="0 0 100 100"
+                              aria-hidden
+                            >
+                              <line x1="0" y1="0" x2="100" y2="100" stroke="hsl(var(--destructive))" strokeWidth="6" vectorEffect="non-scaling-stroke" />
+                              <line x1="100" y1="0" x2="0" y2="100" stroke="hsl(var(--destructive))" strokeWidth="6" vectorEffect="non-scaling-stroke" />
+                            </svg>
                           )}
                           <div className={cn(
                             "font-bold flex items-center justify-center gap-1 relative",
