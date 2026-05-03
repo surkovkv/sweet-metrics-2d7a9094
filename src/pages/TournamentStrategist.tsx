@@ -921,7 +921,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                         )}
                         <span className={cn(
                           "inline-block",
-                          isBanned && "line-through decoration-destructive decoration-[2px]",
+                          isBanned && "line-through decoration-destructive decoration-[4px]",
                         )}>{opp}</span>
                         {info && archetypeGames && (
                           <span className="text-[10px] opacity-60">
@@ -950,7 +950,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                         )}
                         <span className={cn(
                           "inline-block",
-                          isMyBanned && "line-through decoration-destructive decoration-[2px]",
+                          isMyBanned && "line-through decoration-destructive decoration-[4px]",
                         )}>{my}</span>
                         {info && archetypeGames && (
                           <span className="text-[10px] text-muted-foreground">
@@ -968,12 +968,15 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                       return (
                         <td key={colIdx}
                           className={cn(
-                            "py-3 px-3 text-center border-2 border-border",
+                            "py-3 px-3 text-center border-2 border-border relative",
                             isLowSample ? "bg-yellow-500/15" : getWinrateBg(wr),
-                            isCellBanned && "opacity-60",
+                            isCellBanned && "opacity-50",
                           )}>
+                          {isCellBanned && wr !== null && (
+                            <div className="pointer-events-none absolute left-1 right-1 top-1/2 h-[4px] bg-destructive -translate-y-1/2 rounded-sm" />
+                          )}
                           <div className={cn(
-                            "font-bold flex items-center justify-center gap-1",
+                            "font-bold flex items-center justify-center gap-1 relative",
                             getWinrateColor(wr),
                           )}>
                             {isLowSample && (
@@ -986,10 +989,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                                 </TooltipContent>
                               </Tooltip>
                             )}
-                            <span className={cn(
-                              "inline-block",
-                              isCellBanned && "line-through decoration-destructive decoration-[2px]",
-                            )}>
+                            <span className="inline-block">
                               {wr !== null ? `${wr}%` : "—"}
                             </span>
                           </div>
@@ -1130,9 +1130,9 @@ function getWinrateColor(wr: number | null) {
 
 function getWinrateBg(wr: number | null) {
   if (wr === null) return "bg-secondary/50";
-  if (wr >= 55) return "bg-green-500/10";
-  if (wr >= 45) return "bg-yellow-500/10";
-  return "bg-red-500/10";
+  if (wr >= 55) return "bg-green-500/25";
+  if (wr >= 45) return "bg-yellow-500/25";
+  return "bg-red-500/25";
 }
 
 export default TournamentStrategist;

@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Always reserve scrollbar gutter to prevent layout shift when Radix Select / Dialog opens */
+html {
+  scrollbar-gutter: stable;
+}
+
 @layer base {
   :root {
     --background: 222 47% 11%;
