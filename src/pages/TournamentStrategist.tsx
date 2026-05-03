@@ -298,12 +298,13 @@ const TournamentStrategist = () => {
                 {showInfoBox ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
               </button>
             </div>
-            <AnimatePresence>
+            <AnimatePresence initial={false}>
               {showInfoBox && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
                   className="mt-3 p-5 rounded-xl bg-secondary/60 border border-border text-sm text-muted-foreground w-full max-w-full overflow-hidden"
                 >
                   <h3 className="font-semibold text-foreground mb-2">{t("tournament.conceptTitle")}</h3>
