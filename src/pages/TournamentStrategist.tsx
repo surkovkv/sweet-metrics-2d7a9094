@@ -284,7 +284,7 @@ const TournamentStrategist = () => {
         <main className="container mx-auto px-4 pt-24 pb-12 max-w-5xl">
 
           {/* Header — title + inline "How it works" toggle on the right */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="page-title">
             <div className="flex flex-wrap items-center justify-center gap-3">
               <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground text-center">
                 {t("tournament.title")} <span className="text-primary">{t("tournament.titleHighlight")}</span>
