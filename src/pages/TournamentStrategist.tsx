@@ -329,7 +329,9 @@ const TournamentStrategist = () => {
                   <SelectContent>
                     <SelectItem value="all">{t("matchups.rankAll")}</SelectItem>
                     <SelectItem value="legend">{t("matchups.rankLegend")}</SelectItem>
+                    <SelectItem value="diamond_to_legend">{t("matchups.rankDiamondLegend")}</SelectItem>
                     <SelectItem value="top_1k">{t("matchups.rankTop1k")}</SelectItem>
+                    <SelectItem value="top_5k">{t("matchups.rankTop5k")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
