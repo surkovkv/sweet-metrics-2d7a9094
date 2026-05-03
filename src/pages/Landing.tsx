@@ -15,10 +15,10 @@ const Landing = () => {
   const t = useT();
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <ManaLensNavbar />
 
-      <main className="container mx-auto px-4 pt-20 pb-10 max-w-5xl">
+      <main className="flex-1 flex flex-col container mx-auto px-4 pt-20 pb-10 max-w-5xl">
 
         {/* Hero — без дублирующих CTA, чтобы не повторять карточки ниже */}
         <motion.div
@@ -58,7 +58,7 @@ const Landing = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16"
         >
           <Link to="/matchups" className="group">
             <div className="h-full p-6 rounded-2xl bg-primary/10 border border-primary/30 hover:bg-primary/15 hover:border-primary/60 transition-all duration-300 hover:-translate-y-1 flex flex-col">
@@ -106,7 +106,7 @@ const Landing = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45, duration: 0.5 }}
-          className="mb-12"
+          className="mb-16"
         >
           <div className="relative rounded-2xl overflow-hidden border-2 border-yellow-400/60 bg-gradient-to-br from-yellow-400/15 via-yellow-500/10 to-amber-500/5 p-7 shadow-[0_0_40px_-10px_rgba(250,204,21,0.4)]">
             {/* shimmer sweep */}
@@ -153,8 +153,11 @@ const Landing = () => {
           </div>
         </motion.div>
 
+        {/* Spacer pushes footer to bottom; PRO sits ~3/4 */}
+        <div className="flex-1" />
+
         {/* Footer */}
-        <footer className="border-t border-border pt-8 pb-4">
+        <footer className="border-t border-border pt-8 pb-4 mt-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <span className="font-display text-sm font-semibold text-foreground">
