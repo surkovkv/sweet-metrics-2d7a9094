@@ -191,9 +191,6 @@ const MatchupTable = () => {
                         </th>
                         <th className="py-2 px-2 border-b-2 border-border text-muted-foreground font-semibold">WR%</th>
                         <th className="py-2 px-2 border-b-2 border-border text-muted-foreground font-semibold">POP%</th>
-                        <th className="py-2 px-2 border-b-2 border-border text-muted-foreground font-semibold">
-                          {t("matchups.games")}
-                        </th>
                         {cols.map((opp) => (
                           <th
                             key={opp.name}
