@@ -331,6 +331,8 @@ const ru: Record<string, string> = {
   "matchups.rankAll": "Все",
   "matchups.rankLegend": "Легенда",
   "matchups.rankTop1k": "Топ 1К",
+  "matchups.rankDiamondLegend": "Алмаз — Легенда",
+  "matchups.rankTop5k": "Топ 5К",
   "matchups.minArchetype": "Мин. игр (архетип)",
   "matchups.minMatchup": "Мин. игр (матчап)",
   "matchups.any": "Любое",
