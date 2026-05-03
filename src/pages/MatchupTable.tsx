@@ -95,7 +95,7 @@ const MatchupTable = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6"
+            className="page-title"
           >
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
               <Grid3x3 className="h-8 w-8 text-primary" />
