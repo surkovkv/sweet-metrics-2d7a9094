@@ -218,9 +218,6 @@ const MatchupTable = () => {
                           <td className="py-2 px-2 border-b border-border text-center text-muted-foreground">
                             {row.popularity.toFixed(1)}
                           </td>
-                          <td className="py-2 px-2 border-b border-border text-center text-muted-foreground">
-                            {(archetypeGames[row.name] ?? 0).toLocaleString()}
-                          </td>
                           {cols.map((col) => {
                             const wr = matchupDB[row.name]?.[col.name] ?? null;
                             const games =
