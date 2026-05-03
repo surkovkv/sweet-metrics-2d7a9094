@@ -27,14 +27,18 @@ const CLASS_MAP: Record<string, string> = {
 const RANKS: Array<{ db: string; hsguru: string }> = [
   { db: "all", hsguru: "all" },
   { db: "legend", hsguru: "legend" },
+  { db: "diamond_to_legend", hsguru: "diamond_to_legend" },
   { db: "top_1k", hsguru: "top_legend" },
+  { db: "top_5k", hsguru: "top_5000" },
 ];
 
 // Periods we fetch. `current` = no `period` param (HSGuru default = current patch).
 const PERIODS: Array<{ db: string; hsguru: string | null }> = [
   { db: "current", hsguru: null },
+  { db: "past_day", hsguru: "past_day" },
   { db: "past_3_days", hsguru: "past_3_days" },
   { db: "past_week", hsguru: "past_week" },
+  { db: "past_2_week", hsguru: "past_2_week" },
   { db: "past_month", hsguru: "past_month" },
 ];
 

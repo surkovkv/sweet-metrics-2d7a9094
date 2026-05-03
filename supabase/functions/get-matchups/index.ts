@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
       } catch { /* ignore */ }
     }
 
-    if (!["all", "legend", "top_1k"].includes(rank)) rank = "all";
+    if (!["all", "legend", "diamond_to_legend", "top_1k", "top_5k"].includes(rank)) rank = "all";
 
     // Find the latest date+period with data for this rank
     let q = supabase

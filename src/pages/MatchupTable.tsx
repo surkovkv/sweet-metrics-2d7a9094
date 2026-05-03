@@ -20,10 +20,16 @@ const HS_CLASSES = [
   "Priest", "Rogue", "Shaman", "Warlock", "Warrior",
 ];
 
+// Period filter values map directly to HSGuru's `period` query param.
+// "current" = no period param = HSGuru's "current patch" (resolved dynamically server-side).
+// TODO: получать версию патча динамически из hsguru.com (сейчас бэкенд просто
+// запрашивает hsguru без period — он сам отдаёт данные текущего патча).
 const PERIOD_OPTIONS: { value: string; labelKey: string }[] = [
   { value: "current", labelKey: "matchups.periodCurrent" },
+  { value: "past_day", labelKey: "matchups.periodDay" },
   { value: "past_3_days", labelKey: "matchups.period3Days" },
   { value: "past_week", labelKey: "matchups.periodWeek" },
+  { value: "past_2_week", labelKey: "matchups.period2Weeks" },
   { value: "past_month", labelKey: "matchups.periodMonth" },
 ];
 
@@ -89,7 +95,7 @@ const MatchupTable = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6"
+            className="page-title"
           >
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
               <Grid3x3 className="h-8 w-8 text-primary" />
@@ -113,7 +119,9 @@ const MatchupTable = () => {
                   <SelectContent>
                     <SelectItem value="all">{t("matchups.rankAll")}</SelectItem>
                     <SelectItem value="legend">{t("matchups.rankLegend")}</SelectItem>
+                    <SelectItem value="diamond_to_legend">{t("matchups.rankDiamondLegend")}</SelectItem>
                     <SelectItem value="top_1k">{t("matchups.rankTop1k")}</SelectItem>
+                    <SelectItem value="top_5k">{t("matchups.rankTop5k")}</SelectItem>
                   </SelectContent>
                 </Select>
               </FilterCell>
@@ -191,9 +199,6 @@ const MatchupTable = () => {
                         </th>
                         <th className="py-2 px-2 border-b-2 border-border text-muted-foreground font-semibold">WR%</th>
                         <th className="py-2 px-2 border-b-2 border-border text-muted-foreground font-semibold">POP%</th>
-                        <th className="py-2 px-2 border-b-2 border-border text-muted-foreground font-semibold">
-                          {t("matchups.games")}
-                        </th>
                         {cols.map((opp) => (
                           <th
                             key={opp.name}
@@ -220,9 +225,6 @@ const MatchupTable = () => {
                           </td>
                           <td className="py-2 px-2 border-b border-border text-center text-muted-foreground">
                             {row.popularity.toFixed(1)}
-                          </td>
-                          <td className="py-2 px-2 border-b border-border text-center text-muted-foreground">
-                            {(archetypeGames[row.name] ?? 0).toLocaleString()}
                           </td>
                           {cols.map((col) => {
                             const wr = matchupDB[row.name]?.[col.name] ?? null;

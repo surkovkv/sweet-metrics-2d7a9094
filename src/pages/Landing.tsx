@@ -160,8 +160,11 @@ const Landing = () => {
         <footer className="border-t border-border pt-8 pb-4 mt-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
+              <span className="inline-flex items-center justify-center h-6 w-6 rounded bg-primary text-primary-foreground font-display text-[10px] font-bold">
+                HS
+              </span>
               <span className="font-display text-sm font-semibold text-foreground">
-                HS Tourney<span className="text-primary">Helper</span>
+                Tourney<span className="text-primary">Helper</span>
               </span>
             </div>
             <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">

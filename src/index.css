@@ -7,7 +7,13 @@
 /* Always reserve scrollbar gutter to prevent layout shift when Radix Select / Dialog opens */
 html {
   scrollbar-gutter: stable;
+  overflow-y: scroll; /* item 6 — keep scrollbar always visible to prevent shift */
 }
+
+/* Item 5 — adaptive bottom margin only for the top-most page heading */
+.page-title { margin-bottom: 1rem; }
+@media (min-width: 1920px) { .page-title { margin-bottom: 2rem; } }
+@media (min-width: 2560px) { .page-title { margin-bottom: 3rem; } }
 
 @layer base {
   :root {

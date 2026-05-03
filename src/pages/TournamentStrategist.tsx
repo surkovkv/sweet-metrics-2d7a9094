@@ -75,7 +75,7 @@ const TournamentStrategist = () => {
   const { user, profile } = useAuth();
   const IS_PRO = profile?.is_pro ?? false;
   const IS_LOGGED_IN = !!user;
-  const [rank, setRank] = useState<"all" | "legend" | "top_1k">("all");
+  const [rank, setRank] = useState<"all" | "legend" | "diamond_to_legend" | "top_1k" | "top_5k">("all");
   const { archetypeList, matchupDB, gamesDB, archetypeGames, date } = useMatchupData(rank);
   const t = useT();
   const { remaining, isExhausted, consumeTrial, maxTrials } = useTrialCounter();
@@ -284,7 +284,7 @@ const TournamentStrategist = () => {
         <main className="container mx-auto px-4 pt-24 pb-12 max-w-5xl">
 
           {/* Header — title + inline "How it works" toggle on the right */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="page-title">
             <div className="flex flex-wrap items-center justify-center gap-3">
               <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground text-center">
                 {t("tournament.title")} <span className="text-primary">{t("tournament.titleHighlight")}</span>
@@ -298,12 +298,13 @@ const TournamentStrategist = () => {
                 {showInfoBox ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
               </button>
             </div>
-            <AnimatePresence>
+            <AnimatePresence initial={false}>
               {showInfoBox && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
                   className="mt-3 p-5 rounded-xl bg-secondary/60 border border-border text-sm text-muted-foreground w-full max-w-full overflow-hidden"
                 >
                   <h3 className="font-semibold text-foreground mb-2">{t("tournament.conceptTitle")}</h3>
@@ -329,7 +330,9 @@ const TournamentStrategist = () => {
                   <SelectContent>
                     <SelectItem value="all">{t("matchups.rankAll")}</SelectItem>
                     <SelectItem value="legend">{t("matchups.rankLegend")}</SelectItem>
+                    <SelectItem value="diamond_to_legend">{t("matchups.rankDiamondLegend")}</SelectItem>
                     <SelectItem value="top_1k">{t("matchups.rankTop1k")}</SelectItem>
+                    <SelectItem value="top_5k">{t("matchups.rankTop5k")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -970,10 +973,18 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                           className={cn(
                             "py-3 px-3 text-center border-2 border-border relative",
                             isLowSample ? "bg-yellow-500/15" : getWinrateBg(wr),
-                            isCellBanned && "opacity-50",
+                            isCellBanned && "opacity-60",
                           )}>
-                          {isCellBanned && wr !== null && (
-                            <div className="pointer-events-none absolute left-1 right-1 top-1/2 h-[4px] bg-destructive -translate-y-1/2 rounded-sm" />
+                          {isCellBanned && (
+                            <svg
+                              className="pointer-events-none absolute inset-0 w-full h-full z-10"
+                              preserveAspectRatio="none"
+                              viewBox="0 0 100 100"
+                              aria-hidden
+                            >
+                              <line x1="0" y1="0" x2="100" y2="100" stroke="hsl(var(--destructive))" strokeWidth="6" vectorEffect="non-scaling-stroke" />
+                              <line x1="100" y1="0" x2="0" y2="100" stroke="hsl(var(--destructive))" strokeWidth="6" vectorEffect="non-scaling-stroke" />
+                            </svg>
                           )}
                           <div className={cn(
                             "font-bold flex items-center justify-center gap-1 relative",
