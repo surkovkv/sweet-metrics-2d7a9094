@@ -24,7 +24,7 @@ const ManaLensNavbar = () => {
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Link to="/" className="flex items-center gap-2">
-          <span className="inline-flex items-center justify-center h-7 w-7 rounded bg-primary text-primary-foreground font-display text-xs font-bold shadow-sm">
+          <span className="inline-flex items-center justify-center h-7 w-7 rounded bg-yellow-400 text-black font-display text-xs font-bold shadow-sm">
             HS
           </span>
           <span className="font-display text-lg font-bold text-foreground">
