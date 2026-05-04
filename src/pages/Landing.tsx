@@ -170,7 +170,7 @@ const Landing = () => {
         <footer className="border-t border-border pt-8 pb-4 mt-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center justify-center h-6 w-6 rounded bg-primary text-primary-foreground font-display text-[10px] font-bold">
+              <span className="inline-flex items-center justify-center h-6 w-6 rounded bg-yellow-400 text-black font-display text-[10px] font-bold shadow-sm">
                 HS
               </span>
               <span className="font-display text-sm font-semibold text-foreground">
