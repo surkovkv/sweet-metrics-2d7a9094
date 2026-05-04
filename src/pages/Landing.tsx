@@ -69,7 +69,7 @@ const Landing = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12"
         >
           <Link to="/matchups" className="group">
             <div className="h-full p-6 rounded-2xl bg-primary/10 border border-primary/30 hover:bg-primary/15 hover:border-primary/60 transition-all duration-300 hover:-translate-y-1 flex flex-col">
@@ -112,15 +112,13 @@ const Landing = () => {
           </Link>
         </motion.div>
 
-        {/* PRO features block */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45, duration: 0.5 }}
-          className="mb-16"
+          className="mb-8"
         >
           <div className="relative rounded-2xl overflow-hidden border-2 border-yellow-400/60 bg-gradient-to-br from-yellow-400/15 via-yellow-500/10 to-amber-500/5 p-7 shadow-[0_0_40px_-10px_rgba(250,204,21,0.4)]">
-            {/* shimmer sweep */}
             <div className="pointer-events-none absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-yellow-300/20 to-transparent" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
@@ -130,16 +128,18 @@ const Landing = () => {
                 <h2 className="font-display text-2xl md:text-3xl font-bold text-yellow-100 mb-3 tracking-tight">
                   {t("landing.proUnlock")}
                 </h2>
-                <ul className="space-y-1.5">
-                  {[
-                    { icon: <BarChart2 className="h-4 w-4" />, text: t("landing.proFeature1") },
-                    { icon: <Star className="h-4 w-4" />, text: t("landing.proFeature2") },
-                    { icon: <Shield className="h-4 w-4" />, text: t("landing.proFeature3") },
-                    { icon: <Zap className="h-4 w-4" />, text: t("landing.proFeature4") },
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-foreground/85">
-                      <span className="text-yellow-300">{item.icon}</span>
-                      {item.text}
+                <ul className="space-y-2">
+                  {proFeatures.map((item, i) => (
+                    <li
+                      key={i}
+                      className={
+                        item.highlight
+                          ? "flex items-start gap-2 text-sm font-bold text-yellow-300 bg-yellow-400/10 border border-yellow-400/40 rounded-lg px-3 py-2"
+                          : "flex items-start gap-2 text-sm text-foreground/85"
+                      }
+                    >
+                      <Star className={`h-4 w-4 mt-0.5 shrink-0 ${item.highlight ? "text-yellow-300 fill-yellow-300" : "text-yellow-300/60"}`} />
+                      <span>{item.text}</span>
                     </li>
                   ))}
                 </ul>
@@ -164,8 +164,7 @@ const Landing = () => {
           </div>
         </motion.div>
 
-        {/* Spacer pushes footer to bottom; PRO sits ~3/4 */}
-        <div className="flex-1" />
+        <div className="flex-1 min-h-[2vh]" />
 
         {/* Footer */}
         <footer className="border-t border-border pt-8 pb-4 mt-auto">
