@@ -14,18 +14,29 @@ const Landing = () => {
   const isPro = profile?.is_pro ?? false;
   const t = useT();
 
+  const proFeatures = [
+    { text: t("landing.proFeature1"), highlight: true },
+    { text: t("landing.proFeature2"), highlight: false },
+    { text: t("landing.proFeature3"), highlight: false },
+    { text: t("landing.proFeature4"), highlight: false },
+    { text: t("landing.proFeature5"), highlight: false },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <ManaLensNavbar />
 
-      <main className="flex-1 flex flex-col container mx-auto px-4 pt-20 pb-10 max-w-5xl">
+      <main className="flex-1 flex flex-col justify-center container mx-auto px-4 pt-24 pb-12 max-w-5xl">
 
-        {/* Hero — без дублирующих CTA, чтобы не повторять карточки ниже */}
+        {/* spacer top */}
+        <div className="flex-1 min-h-[2vh]" />
+
+        {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center pt-4 pb-8 md:pt-6 md:pb-10 relative"
+          className="text-center pb-8 md:pb-10 relative"
         >
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-primary/10 rounded-full blur-3xl" />

@@ -975,20 +975,10 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                             isLowSample ? "bg-yellow-500/15" : getWinrateBg(wr),
                             isCellBanned && "opacity-60",
                           )}>
-                          {isCellBanned && (
-                            <svg
-                              className="pointer-events-none absolute inset-0 w-full h-full z-10"
-                              preserveAspectRatio="none"
-                              viewBox="0 0 100 100"
-                              aria-hidden
-                            >
-                              <line x1="0" y1="0" x2="100" y2="100" stroke="hsl(var(--destructive))" strokeWidth="6" vectorEffect="non-scaling-stroke" />
-                              <line x1="100" y1="0" x2="0" y2="100" stroke="hsl(var(--destructive))" strokeWidth="6" vectorEffect="non-scaling-stroke" />
-                            </svg>
-                          )}
                           <div className={cn(
                             "font-bold flex items-center justify-center gap-1 relative",
                             getWinrateColor(wr),
+                            isCellBanned && "[&>span]:relative [&>span]:after:absolute [&>span]:after:left-[-4px] [&>span]:after:right-[-4px] [&>span]:after:top-1/2 [&>span]:after:h-[5px] [&>span]:after:-translate-y-1/2 [&>span]:after:bg-[hsl(0_95%_60%)] [&>span]:after:rounded-sm [&>span]:after:content-['']",
                           )}>
                             {isLowSample && (
                               <Tooltip>
