@@ -15,17 +15,16 @@ import { useT } from "@/i18n/useTranslation";
 const SAMPLE_OPTIONS = [50, 100, 250, 500, 1000, 2500, 5000, 10000];
 const MIN_ARCHETYPE_GAMES = 50; // hard floor
 
+// Текущий патч HS — обновлять при выходе нового
+const CURRENT_PATCH = "35.2.2";
+
 const HS_CLASSES = [
   "Death Knight", "Demon Hunter", "Druid", "Hunter", "Mage", "Paladin",
   "Priest", "Rogue", "Shaman", "Warlock", "Warrior",
 ];
 
-// Period filter values map directly to HSGuru's `period` query param.
-// "current" = no period param = HSGuru's "current patch" (resolved dynamically server-side).
-// TODO: получать версию патча динамически из hsguru.com (сейчас бэкенд просто
-// запрашивает hsguru без period — он сам отдаёт данные текущего патча).
-const PERIOD_OPTIONS: { value: string; labelKey: string }[] = [
-  { value: "current", labelKey: "matchups.periodCurrent" },
+const PERIOD_OPTIONS: { value: string; labelKey: string; suffix?: string }[] = [
+  { value: "current", labelKey: "matchups.periodCurrent", suffix: ` (${CURRENT_PATCH})` },
   { value: "past_day", labelKey: "matchups.periodDay" },
   { value: "past_3_days", labelKey: "matchups.period3Days" },
   { value: "past_week", labelKey: "matchups.periodWeek" },
@@ -131,7 +130,7 @@ const MatchupTable = () => {
                   <SelectTrigger className="h-9 bg-background border-border font-bold text-sm"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {PERIOD_OPTIONS.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>{t(p.labelKey)}</SelectItem>
+                      <SelectItem key={p.value} value={p.value}>{t(p.labelKey)}{p.suffix ?? ""}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
