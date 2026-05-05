@@ -301,14 +301,18 @@ const TournamentStrategist = () => {
             <AnimatePresence initial={false}>
               {showInfoBox && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.25, ease: "easeInOut" }}
-                  className="mt-3 p-5 rounded-xl bg-secondary/60 border border-border text-sm text-muted-foreground w-full max-w-full overflow-hidden"
+                  key="howitworks"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ height: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }, opacity: { duration: 0.2 } }}
+                  style={{ overflow: "hidden" }}
+                  className="w-full max-w-full"
                 >
-                  <h3 className="font-semibold text-foreground mb-2">{t("tournament.conceptTitle")}</h3>
-                  <p className="whitespace-pre-line leading-relaxed">{t("tournament.conceptDesc")}</p>
+                  <div className="mt-3 p-5 rounded-xl bg-secondary/60 border border-border text-sm text-muted-foreground">
+                    <h3 className="font-semibold text-foreground mb-2">{t("tournament.conceptTitle")}</h3>
+                    <p className="whitespace-pre-line leading-relaxed">{t("tournament.conceptDesc")}</p>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
