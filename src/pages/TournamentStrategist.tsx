@@ -607,13 +607,15 @@ const TournamentStrategist = () => {
                         </div>
                       )}
 
-                      {banOptions.map((option, i) => (
-                        <BanOptionCard key={i} option={option} index={i}
-                          isActive={effectiveBanIdx === option.bannedIndex}
-                          onManualBan={IS_PRO ? () => setManualBanIndex(option.bannedIndex) : undefined}
-                          t={t}
-                        />
-                      ))}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {banOptions.map((option, i) => (
+                          <BanOptionCard key={i} option={option} index={i}
+                            isActive={effectiveBanIdx === option.bannedIndex}
+                            onManualBan={IS_PRO ? () => setManualBanIndex(option.bannedIndex) : undefined}
+                            t={t}
+                          />
+                        ))}
+                      </div>
 
                       {/* Reset manual ban — prominent button */}
                       {manualBanIndex !== null && IS_PRO && (
@@ -1017,41 +1019,42 @@ function BanOptionCard({ option, index, isActive, onManualBan, t }: {
 }) {
   return (
     <TooltipProvider>
-      <div className={`p-4 rounded-lg transition-all ${isActive
+      <div className={`p-3 rounded-lg transition-all flex flex-col h-full ${isActive
         ? "bg-destructive/10 border border-destructive/30 ring-1 ring-destructive/20"
         : "bg-secondary/50 hover:bg-secondary/70"
         } ${onManualBan && !isActive ? "cursor-pointer" : ""}`}
         onClick={!isActive && onManualBan ? onManualBan : undefined}
       >
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            {isActive ? (
-              <span className="text-lg">🔴</span>
-            ) : (
-              <span className="text-muted-foreground text-sm">#{index + 1}</span>
-            )}
-            <span className={`font-medium ${isActive ? "text-foreground" : "text-muted-foreground"}`}>
-              {t("tournament.banThis")}{" "}
-              <span className={isActive ? "text-destructive font-bold" : ""}>{option.bannedArchetype}</span>
-            </span>
-          </div>
+        {/* Top: name */}
+        <div className="flex items-center gap-1.5 mb-2 min-w-0">
+          {isActive ? (
+            <span className="text-base shrink-0">🔴</span>
+          ) : (
+            <span className="text-muted-foreground text-xs shrink-0">#{index + 1}</span>
+          )}
+          <span className={`font-semibold text-sm truncate ${isActive ? "text-destructive" : "text-foreground"}`}>
+            {option.bannedArchetype}
+          </span>
+        </div>
+        {/* Bottom: WR + reasoning */}
+        <div className="mt-auto">
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex flex-col items-end">
-                <span className={`font-bold text-lg ${getWinrateColor(option.avgWinrate)}`}>
+              <div className="flex items-baseline gap-1.5">
+                <span className={`font-bold text-xl ${getWinrateColor(option.avgWinrate)}`}>
                   {option.avgWinrate}%
                 </span>
-                <span className="text-[10px] text-muted-foreground">AVG WR</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide">AVG WR</span>
               </div>
             </TooltipTrigger>
             <TooltipContent>
               <p className="text-xs">{t("tournament.avgWrAfterBan")}</p>
             </TooltipContent>
           </Tooltip>
+          {option.reasoning && (
+            <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug line-clamp-3">{option.reasoning}</p>
+          )}
         </div>
-        {option.reasoning && (
-          <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{option.reasoning}</p>
-        )}
       </div>
     </TooltipProvider>
   );
