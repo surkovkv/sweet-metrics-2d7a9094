@@ -3,7 +3,7 @@
 
 const ru: Record<string, string> = {
   // nav
-  "nav.strategist": "Стратег",
+  "nav.strategist": "Калькулятор банов",
   "nav.matchups": "Матчапы",
   "nav.news": "Новости",
   "nav.contact": "Связаться",

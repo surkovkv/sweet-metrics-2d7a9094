@@ -978,7 +978,7 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                           <div className={cn(
                             "font-bold flex items-center justify-center gap-1 relative",
                             getWinrateColor(wr),
-                            isCellBanned && "[&>span]:relative [&>span]:after:absolute [&>span]:after:left-[-4px] [&>span]:after:right-[-4px] [&>span]:after:top-1/2 [&>span]:after:h-[5px] [&>span]:after:-translate-y-1/2 [&>span]:after:bg-[hsl(0_95%_60%)] [&>span]:after:rounded-sm [&>span]:after:content-['']",
+                            isCellBanned && "[&>span]:relative [&>span]:after:absolute [&>span]:after:left-[-4px] [&>span]:after:right-[-4px] [&>span]:after:top-1/2 [&>span]:after:h-[3px] [&>span]:after:-translate-y-1/2 [&>span]:after:bg-[hsl(0_95%_60%)] [&>span]:after:rounded-sm [&>span]:after:content-['']",
                           )}>
                             {isLowSample && (
                               <Tooltip>
