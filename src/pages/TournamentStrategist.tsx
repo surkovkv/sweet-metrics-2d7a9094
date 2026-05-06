@@ -972,7 +972,6 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                         )}>{my}</span>
                       </div>
 
-                      </div>
                     </td>
                     {oppArchetypes.map((opp, colIdx) => {
                       const wr = wrFn(my, opp);
