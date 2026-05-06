@@ -597,47 +597,63 @@ const TournamentStrategist = () => {
                     <CardHeader>
                       <CardTitle className="font-display text-lg flex items-center gap-2">
                         <ShieldAlert className="h-5 w-5 text-destructive" />
-                        {t("tournament.banRecommendation")}
+                        <span className="truncate">{t("tournament.banRecommendation")}</span>
+                        <Button
+                          onClick={() => setShowBanRecommendation(!showBanRecommendation)}
+                          variant={showBanRecommendation ? "default" : "secondary"}
+                          size="sm"
+                          className="ml-auto gap-1.5 font-semibold shrink-0"
+                        >
+                          {showBanRecommendation ? t("tournament.hide") : t("tournament.show")}
+                        </Button>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* PRO hint about manual ban */}
-                      {IS_PRO && (
-                        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary">
-                          <Crown className="h-4 w-4 shrink-0" />
-                          {t("tournament.manualBanProHint")}
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {banOptions.map((option, i) => (
-                          <BanOptionCard key={i} option={option} index={i}
-                            isActive={effectiveBanIdx === option.bannedIndex}
-                            onManualBan={IS_PRO ? () => setManualBanIndex(option.bannedIndex) : undefined}
-                            t={t}
-                          />
-                        ))}
-                      </div>
-
-                      {/* Reset manual ban — prominent button */}
-                      {manualBanIndex !== null && IS_PRO && (
-                        <Button
-                          onClick={() => setManualBanIndex(null)}
-                          variant="destructive"
-                          size="lg"
-                          className="w-full gap-2 mt-2"
+                    <AnimatePresence initial={false}>
+                      {showBanRecommendation && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ height: { duration: 0.25, ease: [0.4, 0, 0.2, 1] } }}
+                          style={{ overflow: "hidden" }}
                         >
-                          <RotateCcw className="h-4 w-4" />
-                          {t("tournament.resetManualBan")}
-                        </Button>
+                          <CardContent className="space-y-4">
+                            {IS_PRO && (
+                              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary">
+                                <Crown className="h-4 w-4 shrink-0" />
+                                {t("tournament.manualBanProHint")}
+                              </div>
+                            )}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              {banOptions.map((option, i) => (
+                                <BanOptionCard key={i} option={option} index={i}
+                                  isActive={effectiveBanIdx === option.bannedIndex}
+                                  onManualBan={IS_PRO ? () => setManualBanIndex(option.bannedIndex) : undefined}
+                                  t={t}
+                                />
+                              ))}
+                            </div>
+                            {manualBanIndex !== null && IS_PRO && (
+                              <Button
+                                onClick={() => setManualBanIndex(null)}
+                                variant="destructive"
+                                size="lg"
+                                className="w-full gap-2 mt-2"
+                              >
+                                <RotateCcw className="h-4 w-4" />
+                                {t("tournament.resetManualBan")}
+                              </Button>
+                            )}
+                            {!IS_PRO && (
+                              <p className="text-xs text-muted-foreground text-center mt-2">
+                                {t("tournament.manualBanProOnly")}
+                              </p>
+                            )}
+                          </CardContent>
+                        </motion.div>
                       )}
+                    </AnimatePresence>
 
-                      {!IS_PRO && (
-                        <p className="text-xs text-muted-foreground text-center mt-2">
-                          {t("tournament.manualBanProOnly")}
-                        </p>
-                      )}
-                    </CardContent>
                   </Card>
                   {/* Blur ban recommendation for FREE users when trials exhausted */}
                   {!IS_PRO && isExhausted && (
