@@ -102,9 +102,11 @@ const Upgrade = () => {
                   ))}
                 </ul>
                 {user ? (
-                  <Button variant="outline" className="w-full" disabled={!isPro}>
-                    {isPro ? "Текущий (без Legendary)" : "Текущий план"}
-                  </Button>
+                  !isPro ? (
+                    <Button variant="outline" className="w-full" disabled>
+                      Текущий план
+                    </Button>
+                  ) : null
                 ) : (
                   <Link to="/auth">
                     <Button variant="outline" className="w-full gap-2">Зарегистрироваться</Button>
