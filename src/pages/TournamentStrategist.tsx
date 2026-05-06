@@ -946,11 +946,16 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                           "inline-block",
                           isBanned && "line-through decoration-destructive decoration-[4px]",
                         )}>{opp}</span>
-                        {info && archetypeGames && (
-                          <span className="text-[10px] opacity-60">
-                            {(archetypeGames[opp] || 0).toLocaleString('ru-RU')} игр
-                          </span>
-                        )}
+                      </div>
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {/* removed games count under archetype name per request */}
+              {(() => null)()}
+
                       </div>
                     </th>
                   );
