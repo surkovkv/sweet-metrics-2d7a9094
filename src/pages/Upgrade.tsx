@@ -5,47 +5,43 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
+import bronzeIconImg from "@/assets/rank-bronze.png";
+import legendaryIconImg from "@/assets/rank-legendary.png";
 
 const FREE_FEATURES = [
-  "Калькулятор банов: 3 расчёта (пробные)",
-  "Таблица матчапов с базовыми фильтрами",
-  "Рекомендация одного бана",
-  "Данные ранга All / Legend",
-  "Раздел вопросов и идей",
+  "Калькулятор банов: 3 пробных расчёта со всеми функциями",
+  "Доступна только матрица матчапов",
+  "Таблица матчапов: фильтры отключены",
+  "Стандартная выборка за последнюю неделю",
 ];
 
 const DAYPASS_FEATURES = [
-  "Полный функционал Tournament Prep",
-  "Безлимитные расчёты в калькуляторе",
-  "ИИ-рекомендации и прогноз бана соперника",
-  "Все ранги и периоды",
+  "Полный функционал тарифа Legendary",
   "Автоматически отключается через 24 часа",
+  "Идеально для дня турнира — потом возврат к Free",
 ];
 
 const LEGENDARY_FEATURES = [
-  { text: "ИИ подскажет твой лучший бан", highlight: true },
-  { text: "Прогноз бана соперника", highlight: false },
-  { text: "Оптимальная колода для первого матча с учётом банов", highlight: false },
-  { text: "Ручной режим бана + сохранение последнего расчёта", highlight: false },
-  { text: "Все ранги: Diamond–Legend, Top 1K, Top 5K", highlight: false },
-  { text: "Приоритетная поддержка в Telegram", highlight: false },
-  { text: "Ранний доступ к новым функциям и данным", highlight: false },
+  { text: "ИИ подскажет, какую колоду противника лучше забанить", highlight: true },
+  { text: "Прогноз бана от соперника", highlight: false },
+  { text: "Оптимальная колода для первого матча с учётом всех банов", highlight: false },
+  { text: "Ручной режим бана, сохранение последнего расчёта", highlight: false },
+  { text: "Открыты все фильтры: ранги, периоды, количество игр по архетипам / матчапам", highlight: false },
+  { text: "Приоритетная поддержка в Telegram-боте", highlight: false },
 ];
 
 const TIERS = [
   { id: "month", title: "Месяц", price: "199₽", per: "/мес", note: "Подписка, отмена в любой момент" },
-  { id: "season", title: "Сезон (3 мес)", price: "399₽", per: "", note: "Экономия 33% — самый популярный", popular: true },
-  { id: "year", title: "Год", price: "999₽", per: "", note: "Экономия 58% — для постоянных игроков" },
+  { id: "season", title: "Сезон (3 мес)", price: "349₽", per: "", note: "Экономия 42% — самый популярный", popular: true },
+  { id: "year", title: "Год", price: "899₽", per: "", note: "Экономия 62% — для постоянных игроков" },
 ];
 
-// Bronze 10 rank icon (FREE) — small hex with bronze gradient
-const BronzeIcon = ({ className = "h-5 w-5" }: { className?: string }) => (
-  <span className={`inline-flex items-center justify-center ${className} rounded-md bg-gradient-to-br from-amber-700 via-amber-800 to-amber-900 border border-amber-600/60 shadow-inner`} aria-hidden />
+const BronzeIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
+  <img src={bronzeIconImg} alt="Bronze rank" className={`${className} object-contain drop-shadow`} />
 );
 
-// Legendary rank 1 icon — golden hex with "1"
-const LegendaryIcon = ({ className = "h-5 w-5" }: { className?: string }) => (
-  <span className={`inline-flex items-center justify-center ${className} rounded-md bg-gradient-to-br from-yellow-300 via-yellow-500 to-amber-600 border border-yellow-300/80 shadow-[0_0_10px_rgba(250,204,21,0.4)] text-black font-display font-bold text-[10px]`}>1</span>
+const LegendaryIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
+  <img src={legendaryIconImg} alt="Legendary rank" className={`${className} object-contain drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]`} />
 );
 
 const Upgrade = () => {
