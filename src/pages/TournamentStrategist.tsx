@@ -149,6 +149,7 @@ const TournamentStrategist = () => {
   const [showResult, setShowResult] = useState(false);
   const [manualBanIndex, setManualBanIndex] = useState<number | null>(null);
   const [showOpponentBan, setShowOpponentBan] = useState(false);
+  const [showBanRecommendation, setShowBanRecommendation] = useState(true);
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [oppManualBanIndex, setOppManualBanIndex] = useState<number | null>(null);
   const [banHistory, setBanHistory] = useState<Record<DeckMode, BanHistoryEntry[]>>({
@@ -283,19 +284,16 @@ const TournamentStrategist = () => {
         <ManaLensNavbar />
         <main className="container mx-auto px-4 pt-24 pb-12 max-w-5xl">
 
-          {/* Header — title + inline "How it works" toggle on the right */}
+          {/* Header — centered "How it works" toggle (title removed per request) */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="page-title">
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground text-center">
-                {t("tournament.title")} <span className="text-primary">{t("tournament.titleHighlight")}</span>
-              </h1>
+            <div className="flex items-center justify-center">
               <button
                 onClick={() => setShowInfoBox(!showInfoBox)}
-                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors bg-secondary/60 px-3 py-1.5 rounded-full border border-border"
+                className="flex items-center gap-2 text-sm md:text-base font-semibold text-foreground hover:text-primary transition-colors bg-secondary/60 px-5 py-2.5 rounded-full border border-border"
               >
-                <HelpCircle className="h-3.5 w-3.5" />
+                <HelpCircle className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 {t("tournament.howItWorks")}
-                {showInfoBox ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                {showInfoBox ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </button>
             </div>
             <AnimatePresence initial={false}>
@@ -599,47 +597,63 @@ const TournamentStrategist = () => {
                     <CardHeader>
                       <CardTitle className="font-display text-lg flex items-center gap-2">
                         <ShieldAlert className="h-5 w-5 text-destructive" />
-                        {t("tournament.banRecommendation")}
+                        <span className="truncate">{t("tournament.banRecommendation")}</span>
+                        <Button
+                          onClick={() => setShowBanRecommendation(!showBanRecommendation)}
+                          variant={showBanRecommendation ? "default" : "secondary"}
+                          size="sm"
+                          className="ml-auto gap-1.5 font-semibold shrink-0"
+                        >
+                          {showBanRecommendation ? t("tournament.hide") : t("tournament.show")}
+                        </Button>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* PRO hint about manual ban */}
-                      {IS_PRO && (
-                        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary">
-                          <Crown className="h-4 w-4 shrink-0" />
-                          {t("tournament.manualBanProHint")}
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {banOptions.map((option, i) => (
-                          <BanOptionCard key={i} option={option} index={i}
-                            isActive={effectiveBanIdx === option.bannedIndex}
-                            onManualBan={IS_PRO ? () => setManualBanIndex(option.bannedIndex) : undefined}
-                            t={t}
-                          />
-                        ))}
-                      </div>
-
-                      {/* Reset manual ban — prominent button */}
-                      {manualBanIndex !== null && IS_PRO && (
-                        <Button
-                          onClick={() => setManualBanIndex(null)}
-                          variant="destructive"
-                          size="lg"
-                          className="w-full gap-2 mt-2"
+                    <AnimatePresence initial={false}>
+                      {showBanRecommendation && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ height: { duration: 0.25, ease: [0.4, 0, 0.2, 1] } }}
+                          style={{ overflow: "hidden" }}
                         >
-                          <RotateCcw className="h-4 w-4" />
-                          {t("tournament.resetManualBan")}
-                        </Button>
+                          <CardContent className="space-y-4">
+                            {IS_PRO && (
+                              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary">
+                                <Crown className="h-4 w-4 shrink-0" />
+                                {t("tournament.manualBanProHint")}
+                              </div>
+                            )}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              {banOptions.map((option, i) => (
+                                <BanOptionCard key={i} option={option} index={i}
+                                  isActive={effectiveBanIdx === option.bannedIndex}
+                                  onManualBan={IS_PRO ? () => setManualBanIndex(option.bannedIndex) : undefined}
+                                  t={t}
+                                />
+                              ))}
+                            </div>
+                            {manualBanIndex !== null && IS_PRO && (
+                              <Button
+                                onClick={() => setManualBanIndex(null)}
+                                variant="destructive"
+                                size="lg"
+                                className="w-full gap-2 mt-2"
+                              >
+                                <RotateCcw className="h-4 w-4" />
+                                {t("tournament.resetManualBan")}
+                              </Button>
+                            )}
+                            {!IS_PRO && (
+                              <p className="text-xs text-muted-foreground text-center mt-2">
+                                {t("tournament.manualBanProOnly")}
+                              </p>
+                            )}
+                          </CardContent>
+                        </motion.div>
                       )}
+                    </AnimatePresence>
 
-                      {!IS_PRO && (
-                        <p className="text-xs text-muted-foreground text-center mt-2">
-                          {t("tournament.manualBanProOnly")}
-                        </p>
-                      )}
-                    </CardContent>
                   </Card>
                   {/* Blur ban recommendation for FREE users when trials exhausted */}
                   {!IS_PRO && isExhausted && (
@@ -932,11 +946,6 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                           "inline-block",
                           isBanned && "line-through decoration-destructive decoration-[4px]",
                         )}>{opp}</span>
-                        {info && archetypeGames && (
-                          <span className="text-[10px] opacity-60">
-                            {(archetypeGames[opp] || 0).toLocaleString('ru-RU')} игр
-                          </span>
-                        )}
                       </div>
                     </th>
                   );
@@ -961,12 +970,8 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                           "inline-block",
                           isMyBanned && "line-through decoration-destructive decoration-[4px]",
                         )}>{my}</span>
-                        {info && archetypeGames && (
-                          <span className="text-[10px] text-muted-foreground">
-                            {(archetypeGames[my] || 0).toLocaleString('ru-RU')} игр
-                          </span>
-                        )}
                       </div>
+
                     </td>
                     {oppArchetypes.map((opp, colIdx) => {
                       const wr = wrFn(my, opp);
