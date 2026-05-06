@@ -84,9 +84,12 @@ html {
   }
 
   /* Prevent Radix Dialog/Select scroll-lock from shifting layout */
-  body[data-scroll-locked] {
+  body[data-scroll-locked],
+  body[style*="padding-right"],
+  html[data-scroll-locked],
+  html[style*="padding-right"] {
     padding-right: 0 !important;
     margin-right: 0 !important;
-    overflow: auto !important;
+    overflow-y: scroll !important;
   }
 }
