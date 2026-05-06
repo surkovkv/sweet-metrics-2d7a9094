@@ -75,12 +75,8 @@ export function calculateOptimalBan(
   const isObvious = results.length <= 1 ||
     (best.avgWinrate - results[1].avgWinrate >= OBVIOUS_THRESHOLD);
 
-  if (isObvious) {
-    // Возвращаем только один — очевидный выбор
-    return [best];
-  }
-
-  // Неочевидный бан: добавляем reasoning
+  // Всегда возвращаем все варианты (чтобы пользователь мог переключаться).
+  // reasoning добавляем всегда — для очевидного бана подчёркиваем уверенность.
   return results.map((opt, idx) => {
     // Найти самую проблемную колоду, которую мы оставляем (с худшим WR)
     const worstMatchup = [...opt.remainingWinrates]
