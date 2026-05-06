@@ -970,11 +970,8 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
                           "inline-block",
                           isMyBanned && "line-through decoration-destructive decoration-[4px]",
                         )}>{my}</span>
-                        {info && archetypeGames && (
-                          <span className="text-[10px] text-muted-foreground">
-                            {(archetypeGames[my] || 0).toLocaleString('ru-RU')} игр
-                          </span>
-                        )}
+                      </div>
+
                       </div>
                     </td>
                     {oppArchetypes.map((opp, colIdx) => {
