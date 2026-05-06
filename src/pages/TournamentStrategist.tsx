@@ -283,19 +283,16 @@ const TournamentStrategist = () => {
         <ManaLensNavbar />
         <main className="container mx-auto px-4 pt-24 pb-12 max-w-5xl">
 
-          {/* Header — title + inline "How it works" toggle on the right */}
+          {/* Header — centered "How it works" toggle (title removed per request) */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="page-title">
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground text-center">
-                {t("tournament.title")} <span className="text-primary">{t("tournament.titleHighlight")}</span>
-              </h1>
+            <div className="flex items-center justify-center">
               <button
                 onClick={() => setShowInfoBox(!showInfoBox)}
-                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors bg-secondary/60 px-3 py-1.5 rounded-full border border-border"
+                className="flex items-center gap-2 text-sm md:text-base font-semibold text-foreground hover:text-primary transition-colors bg-secondary/60 px-5 py-2.5 rounded-full border border-border"
               >
-                <HelpCircle className="h-3.5 w-3.5" />
+                <HelpCircle className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 {t("tournament.howItWorks")}
-                {showInfoBox ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                {showInfoBox ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </button>
             </div>
             <AnimatePresence initial={false}>
