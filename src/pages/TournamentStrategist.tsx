@@ -953,16 +953,6 @@ function MatchupMatrix({ myArchetypes, oppArchetypes, bannedIndex, oppBannedInde
               </tr>
             </thead>
             <tbody>
-              {/* removed games count under archetype name per request */}
-              {(() => null)()}
-
-                      </div>
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
               {myArchetypes.map((my, rowIdx) => {
                 const isMyBanned = oppBannedIndex === rowIdx;
                 const info = getArchetypeInfo(my);
