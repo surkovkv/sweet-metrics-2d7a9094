@@ -149,6 +149,7 @@ const TournamentStrategist = () => {
   const [showResult, setShowResult] = useState(false);
   const [manualBanIndex, setManualBanIndex] = useState<number | null>(null);
   const [showOpponentBan, setShowOpponentBan] = useState(false);
+  const [showBanRecommendation, setShowBanRecommendation] = useState(true);
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [oppManualBanIndex, setOppManualBanIndex] = useState<number | null>(null);
   const [banHistory, setBanHistory] = useState<Record<DeckMode, BanHistoryEntry[]>>({
