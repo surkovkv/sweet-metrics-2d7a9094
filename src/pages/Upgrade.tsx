@@ -127,7 +127,7 @@ const Upgrade = () => {
                   <Clock className="h-5 w-5" /> Day Pass
                 </CardTitle>
                 <p className="text-3xl font-bold text-foreground">
-                  150₽<span className="text-sm text-muted-foreground font-normal">/24 часа</span>
+                  99₽<span className="text-sm text-muted-foreground font-normal">/24 часа</span>
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">Сегодня турнир? Полный доступ на день.</p>
               </CardHeader>
