@@ -88,9 +88,11 @@ export function calculateOptimalBan(
       .sort((a, b) => (b.bestWr ?? 0) - (a.bestWr ?? 0))[0];
 
     const reasoning = idx === 0
-      ? `Общий лучший вариант. Оставляет нам сильные матчапы против ${bestMatchup?.opponent ?? "противников"}.`
-      : `Выбери этот бан, если хочешь избежать игры против ${opt.bannedArchetype}` +
-      (worstMatchup ? `, но придётся иметь дело с ${worstMatchup.opponent} (WR ${worstMatchup.bestWr}%).` : ".");
+      ? (isObvious
+          ? `Лучший выбор. Сильные матчапы против ${bestMatchup?.opponent ?? "оставшихся"}.`
+          : `Общий лучший вариант. Оставляет нам сильные матчапы против ${bestMatchup?.opponent ?? "противников"}.`)
+      : `Альтернатива: бан ${opt.bannedArchetype}` +
+        (worstMatchup ? `, но придётся играть против ${worstMatchup.opponent} (WR ${worstMatchup.bestWr}%).` : ".");
 
     return { ...opt, reasoning };
   });
