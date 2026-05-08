@@ -81,25 +81,33 @@ export default function Admin() {
 
     const triggerHsguruFetch = async () => {
         setSyncLoading(true);
+        // Sync rank-by-rank to stay under the edge-runtime wall-clock budget.
+        // Each batch scrapes one rank × 6 periods in parallel (~6 Firecrawl
+        // jobs) and rewrites only that rank's rows in the DB.
+        const ranks = ["all", "legend", "diamond_to_legend", "top_1k", "top_5k"];
+        const allSummary: Array<{ rank: string; period: string; archetypes: number; matchups: number }> = [];
+        let lastDate: string | null = null;
         try {
-            const { data, error } = await supabase.functions.invoke("scrape-hsguru");
-            if (error) throw error;
-            if (data?.success) {
-                const summary = (data.summary || []) as Array<{ rank: string; period: string; archetypes: number; matchups: number }>;
-                const desc = summary
-                    .map((s) => `${s.rank}/${s.period}: ${s.archetypes}a/${s.matchups}m`)
-                    .join(" · ") || `date=${data.date}`;
+            for (const rank of ranks) {
+                const { data, error } = await supabase.functions.invoke("scrape-hsguru", { body: { rank } });
+                if (error) throw error;
+                if (!data?.success) {
+                    throw new Error(`[${rank}] ${data?.error || "Неизвестная ошибка"}`);
+                }
+                lastDate = data.date ?? lastDate;
+                allSummary.push(...((data.summary || []) as typeof allSummary));
                 toast({
-                    title: "Синхронизация завершена",
-                    description: `${desc} (${data.date})`,
-                });
-            } else {
-                toast({
-                    title: "Ошибка синхронизации",
-                    description: data?.error || "Неизвестная ошибка",
-                    variant: "destructive",
+                    title: `Синхронизирован ${rank}`,
+                    description: `${(data.summary || []).reduce((s: number, x: { matchups: number }) => s + x.matchups, 0)} матчапов`,
                 });
             }
+            const desc = allSummary
+                .map((s) => `${s.rank}/${s.period}: ${s.archetypes}a/${s.matchups}m`)
+                .join(" · ") || `date=${lastDate}`;
+            toast({
+                title: "Синхронизация завершена",
+                description: `${desc} (${lastDate})`,
+            });
         } catch (err: any) {
             toast({
                 title: "Ошибка",

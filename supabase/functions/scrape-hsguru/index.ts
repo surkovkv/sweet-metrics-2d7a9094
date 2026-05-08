@@ -235,15 +235,33 @@ Deno.serve(async (req) => {
 
     const today = new Date().toISOString().split("T")[0];
 
-    // 1. Scrape all rank × period combinations IN PARALLEL to stay within
-    // the edge-function wall-clock budget (~150s). Firecrawl handles 12
-    // concurrent jobs comfortably; if any single scrape fails we just
-    // record an empty bucket and keep going.
+    // Optional batch mode: accept { rank?: string } in body to scrape only one
+    // rank (all 6 periods, run in parallel — ~6 Firecrawl jobs, well under the
+    // edge-runtime wall-clock budget). If no rank is provided we fall back to
+    // the legacy "all at once" mode, used by manual full re-syncs.
+    let onlyRank: string | null = null;
+    if (req.method === "POST") {
+      try {
+        const body = await req.json();
+        if (body?.rank && typeof body.rank === "string") onlyRank = body.rank;
+      } catch { /* ignore */ }
+    }
+
+    const ranksToRun = onlyRank
+      ? RANKS.filter((r) => r.db === onlyRank)
+      : RANKS;
+    if (onlyRank && ranksToRun.length === 0) {
+      return new Response(
+        JSON.stringify({ success: false, error: `Unknown rank: ${onlyRank}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     type ScrapeResult = { archetypes: ParsedArchetype[]; matchups: ParsedMatchup[] };
     const scraped: Record<string, Record<string, ScrapeResult>> = {};
-    for (const { db: rDb } of RANKS) scraped[rDb] = {};
+    for (const { db: rDb } of ranksToRun) scraped[rDb] = {};
 
-    const jobs = RANKS.flatMap(({ db: rDb, hsguru: rHs }) =>
+    const jobs = ranksToRun.flatMap(({ db: rDb, hsguru: rHs }) =>
       PERIODS.map(({ db: pDb, hsguru: pHs }) => ({ rDb, rHs, pDb, pHs })),
     );
 
@@ -262,26 +280,29 @@ Deno.serve(async (req) => {
       }),
     );
 
-    // Sanity: at least the primary "all/current" must succeed
-    const primary = scraped.all?.current;
-    if (!primary || primary.archetypes.length === 0 || primary.matchups.length === 0) {
+    // Sanity: in batch mode require the requested rank's "current" period to
+    // have data; in full mode require "all/current". Otherwise we don't touch
+    // the DB to avoid wiping good data on a Firecrawl outage.
+    const sanityRank = onlyRank ?? "all";
+    const sanity = scraped[sanityRank]?.current;
+    if (!sanity || sanity.archetypes.length === 0 || sanity.matchups.length === 0) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Primary scrape (rank=all, period=current) returned no data. DB not modified.",
+          error: `Primary scrape (rank=${sanityRank}, period=current) returned no data. DB not modified.`,
         }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    // 2. Wipe existing data
-    const { error: delM } = await supabase.from("matchups").delete().gte("date", "1900-01-01");
-    if (delM) throw new Error(`wipe matchups: ${delM.message}`);
-    const { error: delS } = await supabase
-      .from("archetype_stats")
-      .delete()
-      .gte("date", "1900-01-01");
-    if (delS) throw new Error(`wipe stats: ${delS.message}`);
+    // 2. Wipe existing data — only the ranks we just scraped, so batches are
+    // safe to run independently (cron / pg_net or sequential admin calls).
+    for (const { db: rDb } of ranksToRun) {
+      const { error: delM } = await supabase.from("matchups").delete().eq("rank", rDb);
+      if (delM) throw new Error(`wipe matchups [${rDb}]: ${delM.message}`);
+      const { error: delS } = await supabase.from("archetype_stats").delete().eq("rank", rDb);
+      if (delS) throw new Error(`wipe stats [${rDb}]: ${delS.message}`);
+    }
 
     // 3. Insert fresh data per (rank, period)
     const summary: Array<{
@@ -291,7 +312,7 @@ Deno.serve(async (req) => {
       matchups: number;
     }> = [];
 
-    for (const { db: rDb } of RANKS) {
+    for (const { db: rDb } of ranksToRun) {
       for (const { db: pDb } of PERIODS) {
         const parsed = scraped[rDb][pDb];
         if (!parsed || parsed.archetypes.length === 0) {
