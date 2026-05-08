@@ -108,7 +108,7 @@ export default function Admin() {
                 title: "Синхронизация завершена",
                 description: `${desc} (${lastDate})`,
             });
-        } catch (err: { message?: string }) {
+        } catch (err: any) {
             toast({
                 title: "Ошибка",
                 description: err.message || "Не удалось выполнить синхронизацию",
