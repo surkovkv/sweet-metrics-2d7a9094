@@ -13,6 +13,7 @@ import Upgrade from "./pages/Upgrade";
 import Contact from "./pages/Contact";
 import MatchupTable from "./pages/MatchupTable";
 import Admin from "./pages/Admin";
+import PublicOffer from "./pages/PublicOffer";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/matchups" element={<MatchupTable />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/public-offer" element={<PublicOffer />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

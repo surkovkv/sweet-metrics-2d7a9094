@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, MessageSquare, Send, CheckCircle, Image as ImageIcon, X, Loader2 } from "lucide-react";
+import { Mail, MessageSquare, Send, CheckCircle, Image as ImageIcon, X, Loader2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
+import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { useT } from "@/i18n/useTranslation";
 import { supabase } from "@/integrations/supabase/client";
@@ -113,9 +114,27 @@ const Contact = () => {
                         {t("contact.badge")}
                     </div>
                     <h1 className="font-display text-4xl font-bold text-foreground mb-3">{t("contact.title")}</h1>
-                    <p className="text-muted-foreground text-lg mb-10">
+                    <p className="text-muted-foreground text-lg mb-6">
                         {t("contact.subtitle")}
                     </p>
+
+                    {/* Direct contact info — always visible */}
+                    <div className="flex flex-col sm:flex-row gap-3 mb-10">
+                        <a
+                            href="mailto:kikus.banhelper@gmail.com"
+                            className="flex items-center gap-2 px-4 py-3 rounded-xl bg-card border border-border hover:border-primary/40 transition-colors text-sm"
+                        >
+                            <Mail className="h-4 w-4 text-primary shrink-0" />
+                            <span className="text-foreground font-medium">kikus.banhelper@gmail.com</span>
+                        </a>
+                        <a
+                            href="tel:+79962168957"
+                            className="flex items-center gap-2 px-4 py-3 rounded-xl bg-card border border-border hover:border-primary/40 transition-colors text-sm"
+                        >
+                            <Phone className="h-4 w-4 text-primary shrink-0" />
+                            <span className="text-foreground font-medium">+7 996 216-89-57</span>
+                        </a>
+                    </div>
 
                     {sent ? (
                         <motion.div
@@ -206,6 +225,8 @@ const Contact = () => {
                     )}
                 </motion.div>
             </main>
+
+            <Footer />
         </div>
     );
 };

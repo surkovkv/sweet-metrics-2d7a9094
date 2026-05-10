@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, Crown, Sparkles, Brain, Target, History, Zap, ArrowRight, Star, Trophy, Clock } from "lucide-react";
+import { Check, Crown, Sparkles, Brain, Target, History, Zap, ArrowRight, Star, Trophy, Clock, CreditCard, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
+import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 import bronzeIconImg from "@/assets/rank-bronze.png";
@@ -47,11 +50,16 @@ const LegendaryIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
 const Upgrade = () => {
   const { user, profile } = useAuth();
   const isPro = profile?.is_pro ?? false;
+  const [offerAccepted, setOfferAccepted] = useState(false);
+
+  const handleBuy = () => {
+    window.open("https://t.me/tourneyhelper_bot", "_blank");
+  };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <ManaLensNavbar />
-      <main className="container mx-auto px-4 pt-24 pb-12 max-w-6xl">
+      <main className="container mx-auto px-4 pt-24 pb-12 max-w-6xl flex-1">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
 
           {/* Header */}
@@ -69,6 +77,7 @@ const Upgrade = () => {
             </p>
           </div>
 
+          {/* Active Legendary banner */}
           {user && isPro && (
             <div className="mb-8 p-4 rounded-xl bg-yellow-400/10 border border-yellow-400/40 flex items-center gap-3">
               <LegendaryIcon className="h-6 w-6" />
@@ -79,10 +88,36 @@ const Upgrade = () => {
             </div>
           )}
 
+          {/* Offer acceptance checkbox */}
+          <div className="mb-8 p-4 rounded-xl bg-card border border-border flex items-start gap-3">
+            <Checkbox
+              id="offer-accept"
+              checked={offerAccepted}
+              onCheckedChange={(v) => setOfferAccepted(!!v)}
+              className="mt-0.5 shrink-0"
+            />
+            <label htmlFor="offer-accept" className="text-sm text-muted-foreground cursor-pointer select-none leading-relaxed">
+              Я ознакомлен и согласен с условиями{" "}
+              <Link to="/public-offer" className="text-primary hover:underline font-medium" target="_blank">
+                публичной оферты
+              </Link>
+              . Я понимаю, что оплачиваю доступ к цифровому сервису,
+              и подтверждаю согласие с условиями возврата.
+            </label>
+          </div>
+
+          {!offerAccepted && (
+            <div className="mb-6 flex items-center gap-2 text-xs text-amber-400/80">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              Примите условия оферты, чтобы оформить подписку
+            </div>
+          )}
+
           {/* Three tiers grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+
             {/* FREE */}
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-border flex flex-col">
               <CardHeader>
                 <CardTitle className="font-display text-xl flex items-center gap-2">
                   <BronzeIcon /> Free
@@ -92,8 +127,8 @@ const Upgrade = () => {
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">Базовый доступ — для знакомства</p>
               </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 mb-6">
+              <CardContent className="flex flex-col flex-1">
+                <ul className="space-y-3 mb-6 flex-1">
                   {FREE_FEATURES.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
                       <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
@@ -142,7 +177,8 @@ const Upgrade = () => {
                 </ul>
                 <Button
                   className="w-full gap-2 bg-orange-400 text-black hover:bg-orange-300 shadow-lg shadow-orange-500/30"
-                  onClick={() => window.open("https://t.me/tourneyhelper_bot", "_blank")}
+                  disabled={!offerAccepted}
+                  onClick={handleBuy}
                 >
                   <Clock className="h-4 w-4" /> Активировать на 24 часа
                 </Button>
@@ -196,13 +232,44 @@ const Upgrade = () => {
                 ) : (
                   <Button
                     className="w-full gap-2 bg-yellow-400 text-black hover:bg-yellow-300 shadow-lg shadow-yellow-500/30"
-                    onClick={() => window.open("https://t.me/tourneyhelper_bot", "_blank")}
+                    disabled={!offerAccepted}
+                    onClick={handleBuy}
                   >
                     <Crown className="h-4 w-4" /> Оформить Legendary <ArrowRight className="h-4 w-4" />
                   </Button>
                 )}
               </CardContent>
             </Card>
+
+          </div>
+
+          {/* Payment methods block */}
+          <div className="rounded-2xl border border-border bg-card p-6 mb-12">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="flex items-center gap-2 shrink-0">
+                <CreditCard className="h-5 w-5 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Способы оплаты</span>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap justify-center sm:justify-start">
+                {/* Visa */}
+                <div className="flex items-center justify-center h-8 px-3 bg-[#1A1F71] rounded-md">
+                  <span className="text-white font-bold text-sm tracking-wide font-sans">VISA</span>
+                </div>
+                {/* Mastercard */}
+                <div className="flex items-center justify-center h-8 px-2 bg-white rounded-md gap-0.5">
+                  <div className="h-5 w-5 rounded-full bg-[#EB001B]" />
+                  <div className="h-5 w-5 rounded-full bg-[#F79E1B] -ml-2" />
+                </div>
+                {/* MIR */}
+                <div className="flex items-center justify-center h-8 px-3 bg-gradient-to-r from-[#00A650] to-[#009FE3] rounded-md">
+                  <span className="text-white font-bold text-xs tracking-wider">МИР</span>
+                </div>
+              </div>
+              <div className="sm:ml-auto text-center sm:text-right">
+                <p className="text-xs text-muted-foreground">Платёж обрабатывается через</p>
+                <p className="text-sm font-semibold text-foreground">Robokassa</p>
+              </div>
+            </div>
           </div>
 
           {/* Pricing tiers */}
@@ -255,11 +322,13 @@ const Upgrade = () => {
           </div>
 
           <p className="text-center text-xs text-muted-foreground">
-            Оплата через Telegram-бот. Подписку можно отменить в любой момент.
+            Оплата через Robokassa. Подписку можно отменить в любой момент.
           </p>
 
         </motion.div>
       </main>
+
+      <Footer />
     </div>
   );
 };

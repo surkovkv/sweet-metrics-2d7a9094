@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ManaLensNavbar from "@/components/ManaLensNavbar";
+import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { useT } from "@/i18n/useTranslation";
 
@@ -166,34 +167,13 @@ const Landing = () => {
 
         <div className="flex-1 min-h-[2vh]" />
 
-        {/* Footer */}
-        <footer className="border-t border-border pt-8 pb-4 mt-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center justify-center h-6 w-6 rounded bg-yellow-400 text-black font-display text-[10px] font-bold shadow-sm">
-                HS
-              </span>
-              <span className="font-display text-sm font-semibold text-foreground">
-                Tourney<span className="text-primary">Helper</span>
-              </span>
-            </div>
-            <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
-              <Link to="/contact" className="hover:text-foreground transition-colors flex items-center gap-1">
-                <MessageCircle className="h-3 w-3" /> {t("nav.contact")}
-              </Link>
-              <a href="https://hearthstone.blizzard.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-                Hearthstone®
-              </a>
-            </div>
-            <div className="text-xs text-muted-foreground text-center md:text-right">
-              <p>{t("landing.copyright")}</p>
-              <p className="mt-1 text-[10px]">{t("landing.notAffiliated")}</p>
-            </div>
-          </div>
-        </footer>
+
       </main>
+
+      <Footer />
     </div>
   );
 };
 
 export default Landing;
+
